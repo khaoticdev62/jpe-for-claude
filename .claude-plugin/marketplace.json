@@ -1,15 +1,25 @@
 {
   "name": "jpe-marketplace",
-  "owner": { "name": "JPE For Claude contributors" },
-  "metadata": { "description": "Marketplace for the JPE For Claude plugin." },
+  "owner": {
+    "name": "khaoticdev62"
+  },
+  "metadata": {
+    "description": "Marketplace for the JPE For Claude plugin."
+  },
   "plugins": [
     {
       "name": "jpe",
       "source": "./",
       "description": "Just Plain English: explains what Claude Code does and why, verifies against real docs, diagnostics and tests, and reports honest evidence.",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "category": "development",
-      "tags": ["explain", "verification", "documentation", "lsp", "teaching"]
+      "tags": [
+        "explain",
+        "verification",
+        "documentation",
+        "lsp",
+        "teaching"
+      ]
     }
   ]
 }

@@ -14,7 +14,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outIndex = process.argv.indexOf("--out");
 const outRoot = path.resolve(outIndex !== -1 ? (process.argv[outIndex + 1] ?? "release") : path.join(root, "release"));
 
-const PLUGIN_ENTRIES = [".claude-plugin/plugin.json", "skills", "agents", "hooks", ".mcp.json", "README.md", "LICENSE", "CHANGELOG.md"];
+const PLUGIN_ENTRIES = [".claude-plugin/plugin.json", ".claude-plugin/icon.png", "skills", "agents", "hooks", ".mcp.json", "README.md", "LICENSE", "CHANGELOG.md"];
 const BUNDLES = ["cli.js", "hook.js", "mcp.js", "package.json"];
 
 async function readJson(file) {

@@ -19,6 +19,13 @@ Requirements: Claude Code and Node.js 20 or newer.
 
 The installer shows what it will run, verifies the package checksums, and asks before changing anything. Details, other install routes and uninstalling are in [INSTALL.md](docs/INSTALL.md). Then restart Claude Code and type `/jpe`.
 
+Or install straight from GitHub with Claude Code's plugin commands:
+
+```
+claude plugin marketplace add khaoticdev62/jpe-for-claude
+claude plugin install jpe@jpe-marketplace
+```
+
 ## Commands
 
 | Command | What it does |
@@ -62,7 +69,7 @@ Language-server support: TypeScript, JavaScript, Python, Go, Rust, C, C++, C#, J
 
 - Declaration, import and risk detection in explanation briefings is pattern matching, not a parser; briefings say so and Claude is told to read the code.
 - Context7 is queried by the researcher agent through MCP, not by the command line.
-- Bare `/jpe` and the plugin were exercised in real Claude Code on Windows. Linux and macOS are covered by CI only once the workflow has run there; see [INSTALL.md](docs/INSTALL.md) for what is verified.
+- Bare `/jpe` and the plugin were exercised in real Claude Code on Windows. Linux and macOS have not been run on real machines; the cross-platform CI workflow is manual-only. See [INSTALL.md](docs/INSTALL.md) for what is verified.
 - If Claude Code's own language-server plugin is also installed you may see diagnostics twice; turn JPE's off with `jpe config set lsp.continuousDiagnostics false`.
 
 ## Development
@@ -74,4 +81,4 @@ claude --plugin-dir .          # try the plugin from a checkout
 npm run package                # build the release folder, zip and checksums into release/
 ```
 
-See [CHANGELOG.md](CHANGELOG.md). Licensed under MIT.
+More: [User guide](docs/USER-GUIDE.md) · [Developer guide](docs/DEVELOPER-GUIDE.md) · [Security](docs/SECURITY.md) · [Changelog](CHANGELOG.md). Licensed under MIT.

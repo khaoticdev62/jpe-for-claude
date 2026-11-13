@@ -26,7 +26,14 @@ What the installer does, in order:
 
 Options (PowerShell / shell): scope `-Scope user|project` / `--scope user|project` (default `user`; `project` needs `-ProjectDir` / `--project-dir` or the current folder), `-DryRun` / `--dry-run` (show everything, change nothing), `-Source` / `--source` (path to the `jpe-marketplace` folder).
 
-## Option 2: by hand
+## Option 2: from GitHub
+
+```
+claude plugin marketplace add khaoticdev62/jpe-for-claude
+claude plugin install jpe@jpe-marketplace --scope user
+```
+
+## Option 2b: by hand from an unzipped release
 
 ```
 claude plugin marketplace add ./jpe-marketplace
@@ -79,7 +86,7 @@ node <plugin folder>/dist/cli.js doctor --deep    # also tests online sources an
 |---|---|
 | Plugin, hooks, MCP server and agents loading in Claude Code | Run for real on Windows 11 with Claude Code 2.1.323 |
 | Windows installer / uninstaller (PowerShell) | Run for real against an isolated Claude configuration |
-| Shell installer / uninstaller | Run for real under Git Bash on Windows; Linux and macOS runs are produced by the CI workflow once it executes there |
+| Shell installer / uninstaller | Run for real under Git Bash on Windows; not yet run on real Linux or macOS (the CI workflow is manual-only) |
 | Release package | Built twice with identical bytes (reproducible) |
 
 Anything not listed has not been verified on that platform.
