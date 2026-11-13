@@ -93,7 +93,9 @@ export const localPackageProvider: DocProvider = {
       }
       const dts = await ctx.fs.readText(file);
       if (dts !== undefined) {
-        results.push({ ...base, kind: "api-signature", title: `${request.library} type declarations (${candidate})`, content: focusOnTopic(dts, request.topic, MAX_TYPES_CHARS) });
+        const found = await collectDeclarations(dir, file, dts, request.topic, (f) => ctx.fs.readText(f));
+        results.push({ ...base, kind: "api-signature", title: `${request.library} type declarations (${candidate}${found.files > 1 ? ` and ${found.files - 1} re-exported file(s)` : ""})`, content: found.content });
+        if (!found.topicFound && topicWords(request.topic).length > 0) notes.push(`"${request.topic}" does not appear in ${request.library}'s type declarations; it may not exist in the installed version.`);
         foundTypes = true;
         break;
       }
@@ -102,6 +104,68 @@ export const localPackageProvider: DocProvider = {
     return { results, notes };
   },
 };
+
+const MAX_DECLARATION_FILES = 40;
+const REEXPORT = /(?:^|\n)\s*(?:export|import)\s[^;]*?from\s*["'](\.{1,2}\/[^"']+)["']/g;
+
+function topicWords(topic: string): string[] {
+  return topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
+}
+
+/** Declaration file names TypeScript would look for when a .d.ts file re-exports `spec`. */
+function declarationCandidates(fromFile: string, spec: string): string[] {
+  const base = path.resolve(path.dirname(fromFile), spec);
+  const mapped = base.replace(/\.(c|m)?js$/, (_m, k: string | undefined) => `.d.${k ?? ""}ts`);
+  return [...new Set([mapped, `${base}.d.ts`, `${base}.d.cts`, `${base}.d.mts`, path.join(base, "index.d.ts"), path.join(base, "index.d.cts")])];
+}
+
+/**
+ * Reads the entry declaration file and, when the topic is not in it, follows relative re-exports
+ * (bounded, never leaving the package folder) so signatures behind `export * from "./x"` are found.
+ */
+async function collectDeclarations(
+  packageDir: string,
+  entry: string,
+  entryText: string,
+  topic: string,
+  read: (file: string) => Promise<string | undefined>,
+): Promise<{ content: string; topicFound: boolean; files: number }> {
+  const words = topicWords(topic);
+  const mentions = (text: string): boolean => words.some((w) => text.toLowerCase().includes(w));
+  if (words.length === 0 || mentions(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words.length > 0, files: 1 };
+
+  const seen = new Set<string>([path.normalize(entry)]);
+  const queue: Array<{ file: string; text: string }> = [{ file: entry, text: entryText }];
+  const excerpts: string[] = [];
+  let used = 0;
+  while (queue.length > 0 && seen.size <= MAX_DECLARATION_FILES) {
+    const current = queue.shift() as { file: string; text: string };
+    for (const m of current.text.matchAll(REEXPORT)) {
+      for (const candidate of declarationCandidates(current.file, m[1] ?? "")) {
+        const normal = path.normalize(candidate);
+        if (seen.has(normal)) continue;
+        try {
+          resolveInside(packageDir, path.relative(packageDir, normal));
+        } catch {
+          continue; // never follow a re-export out of the package
+        }
+        const text = await read(normal);
+        if (text === undefined) continue;
+        seen.add(normal);
+        queue.push({ file: normal, text });
+        if (mentions(text) && used < MAX_TYPES_CHARS) {
+          const excerpt = `// ${path.relative(packageDir, normal).split(path.sep).join("/")}\n${focusOnTopic(text, topic, Math.min(8000, MAX_TYPES_CHARS - used))}`;
+          excerpts.push(excerpt);
+          used += excerpt.length;
+        }
+        break;
+      }
+    }
+  }
+  return excerpts.length > 0
+    ? { content: excerpts.join("\n\n"), topicFound: true, files: seen.size }
+    : { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: false, files: seen.size };
+}
 
 function safeJson(text: string): unknown {
   try {

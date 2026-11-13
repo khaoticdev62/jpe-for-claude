@@ -19,3 +19,21 @@ node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" checks
 - One next step in plain English (for example "run /jpe:verify", or "tests are missing for this project").
 
 Do not run the project's tests here; this command only reads recorded results. Do not change files.
+
+## Without a shell
+
+If the Bash tool is unavailable or denied, use the plugin's MCP tools instead; they run the same code and print the same output:
+
+| Command | MCP tool |
+|---|---|
+| `checks` | `jpe_overview` |
+| `brief file`, `brief change`, `brief error` | `jpe_briefing` (kind, target) |
+| `research <library>` | `jpe_research` |
+| `verify` / `verify --baseline` | `jpe_run_verify` (baseline: true) |
+| `status` | `jpe_verify_status` |
+| `lsp status` / `lsp diagnostics <files>` | `jpe_lsp_status` / `jpe_lsp_diagnostics` |
+| `impact <file>` | `jpe_impact` |
+| `install-plan <language>` | `jpe_install_plan` |
+| `scan` / `audit` | `jpe_scan` / `jpe_audit` |
+| `doctor` | `jpe_doctor` |
+| `config show` | `jpe_config_show` |

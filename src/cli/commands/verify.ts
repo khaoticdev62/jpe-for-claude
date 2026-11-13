@@ -13,7 +13,7 @@ import { flagBool, flagString, type ParsedArgs } from "../args.js";
 import type { CliContext } from "../context.js";
 
 const runMetaSchema = z.strictObject({ at: z.iso.datetime(), required: z.array(checkNameSchema) });
-const baselineSchema = z.record(z.string(), z.enum(["pass", "fail"]));
+const baselineSchema = z.record(z.string(), z.strictObject({ result: z.enum(["pass", "fail"]), signature: z.string() }));
 
 /** Exit codes: 0 verified/partial/warnings, 1 failed, 3 blocked, 4 nothing tested. (2 is reserved for crashes.) */
 export function exitCodeFor(status: CompletionStatus): number {
@@ -32,7 +32,9 @@ function formatStatus(report: StatusReport, extra: string[] = []): string {
 }
 
 function failureDetail(outcomes: readonly CheckOutcome[]): string[] {
-  return outcomes.filter(isFailure).flatMap((o) => ["", `--- ${o.display} (${o.state}${o.exitCode !== undefined ? `, exit ${o.exitCode}` : ""}) ---`, redactSecrets(o.output.slice(-1500))]);
+  return outcomes.filter(isFailure).flatMap((o) => [
+    ...(o.changedFailure ? ["", `NOTE: ${o.display} was already failing before the change, but it now fails differently, so this is treated as a NEW failure.`] : []),
+    "", `--- ${o.display} (${o.state}${o.exitCode !== undefined ? `, exit ${o.exitCode}` : ""}) ---`, redactSecrets(o.output.slice(-1500))]);
 }
 
 async function select(args: ParsedArgs, ctx: CliContext): Promise<{ checks: DiscoveredCheck[]; warnings: string[] }> {
@@ -76,7 +78,7 @@ export async function verifyCommand(args: ParsedArgs, ctx: CliContext): Promise<
   if (flagBool(args, "baseline")) {
     const baseline = await captureBaseline(checks, deps);
     await ctx.writeText(path.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline)));
-    ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline].map(([cmd, r]) => `  ${r === "pass" ? "passing" : "FAILING"}: ${cmd}`)].join("\n"));
+    ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline].map(([cmd, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd}`)].join("\n"));
     return 0;
   }
 

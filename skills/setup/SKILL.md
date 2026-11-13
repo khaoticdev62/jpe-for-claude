@@ -43,3 +43,21 @@ Summarise in plain English: the languages found, which language servers are read
 
 - Install anything, edit global Claude Code settings, or change PATH without explicit approval for that specific action.
 - Claim a language server works because the binary exists. Only a successful diagnostics run proves it answers.
+
+## Without a shell
+
+If the Bash tool is unavailable or denied, use the plugin's MCP tools instead; they run the same code and print the same output:
+
+| Command | MCP tool |
+|---|---|
+| `checks` | `jpe_overview` |
+| `brief file`, `brief change`, `brief error` | `jpe_briefing` (kind, target) |
+| `research <library>` | `jpe_research` |
+| `verify` / `verify --baseline` | `jpe_run_verify` (baseline: true) |
+| `status` | `jpe_verify_status` |
+| `lsp status` / `lsp diagnostics <files>` | `jpe_lsp_status` / `jpe_lsp_diagnostics` |
+| `impact <file>` | `jpe_impact` |
+| `install-plan <language>` | `jpe_install_plan` |
+| `scan` / `audit` | `jpe_scan` / `jpe_audit` |
+| `doctor` | `jpe_doctor` |
+| `config show` | `jpe_config_show` |

@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: failing-test-detected
+description: A real failing unit test is run, reported as FAILED, and its cause is identified.
+context:
+  scaffold_script: scaffold.sh

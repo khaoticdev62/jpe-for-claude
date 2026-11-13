@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { isJpeError } from "../core/errors.js";
 import type { CheckName } from "../core/evidence.js";
 import type { EvidenceLedger } from "../core/ledger.js";
@@ -19,13 +20,39 @@ export interface CheckOutcome {
   display: string;
   state: OutcomeState;
   exitCode?: number;
-  /** True when this check was already failing before the change (see captureBaseline). */
+  /** True when this check was already failing before the change, in the same way (see captureBaseline). */
   preexisting: boolean;
+  /** True when the check failed before the change too, but now fails differently: treated as a new failure. */
+  changedFailure: boolean;
   output: string;
 }
 
-/** Maps a check's command line to whether it passed before any change was made. */
-export type Baseline = ReadonlyMap<string, "pass" | "fail">;
+export interface BaselineEntry {
+  result: "pass" | "fail";
+  /** Fingerprint of the failure output, so "still failing the same way" can be told from "now failing differently". */
+  signature: string;
+}
+
+/** Maps a check's command line to how it behaved before any change was made. */
+export type Baseline = ReadonlyMap<string, BaselineEntry>;
+
+const MAX_SIGNATURE_INPUT = 64 * 1024;
+
+/**
+ * Fingerprint of a failure: the output with numbers (timings, counts, line numbers), colour codes and
+ * whitespace removed. One command (say `npm test`) can fail for an old reason and a new one at once; comparing
+ * fingerprints stops a new failure from hiding behind an old one.
+ */
+export function failureSignature(output: string): string {
+  const normalized = output
+    .slice(-MAX_SIGNATURE_INPUT)
+    // eslint-disable-next-line no-control-regex
+    .replace(/\u001b\[[0-9;]*m/g, "")
+    .replace(/\d+(\.\d+)?/g, "#")
+    .replace(/\s+/g, " ")
+    .trim();
+  return createHash("sha256").update(normalized).digest("hex").slice(0, 32);
+}
 
 function combinedOutput(result: RunResult): string {
   return [result.stdout, result.stderr].filter((s) => s !== "").join("\n");
@@ -62,13 +89,16 @@ export async function runChecks(checks: readonly DiscoveredCheck[], deps: Runner
     const ran = await runOne(check, deps);
     if ("unavailable" in ran) {
       deps.ledger.recordNotRun(check.check, ran.unavailable);
-      outcomes.push({ check: check.check, display: check.display, state: "unavailable", preexisting: false, output: ran.unavailable });
+      outcomes.push({ check: check.check, display: check.display, state: "unavailable", preexisting: false, changedFailure: false, output: ran.unavailable });
       continue;
     }
     const { result } = ran;
     const failed = result.exitCode !== 0 || result.timedOut;
-    const preexisting = failed && baseline?.get(check.display) === "fail";
     const output = combinedOutput(result);
+    const before = baseline?.get(check.display);
+    const failedBefore = failed && before?.result === "fail";
+    const preexisting = failedBefore && before?.signature === failureSignature(output);
+    const changedFailure = failedBefore && !preexisting;
     deps.ledger.recordCommand({
       check: check.check,
       command: check.display,
@@ -85,6 +115,7 @@ export async function runChecks(checks: readonly DiscoveredCheck[], deps: Runner
       state: result.timedOut ? "timed-out" : failed ? "failed" : "passed",
       exitCode: result.exitCode,
       preexisting,
+      changedFailure,
       output,
     });
   }
@@ -96,16 +127,17 @@ export async function runChecks(checks: readonly DiscoveredCheck[], deps: Runner
  * Nothing is written to the ledger, because these results describe the old code, not the change.
  */
 export async function captureBaseline(checks: readonly DiscoveredCheck[], deps: Pick<RunnerDeps, "run" | "cwd" | "timeoutMs">): Promise<Baseline> {
-  const baseline = new Map<string, "pass" | "fail">();
+  const baseline = new Map<string, BaselineEntry>();
   for (const check of checks) {
     const ran = await runOne(check, deps);
     if ("unavailable" in ran) continue;
-    baseline.set(check.display, ran.result.exitCode === 0 && !ran.result.timedOut ? "pass" : "fail");
+    const passed = ran.result.exitCode === 0 && !ran.result.timedOut;
+    baseline.set(check.display, { result: passed ? "pass" : "fail", signature: passed ? "" : failureSignature(combinedOutput(ran.result)) });
   }
   return baseline;
 }
 
-/** Checks that passed before the change but fail now: the definition of a regression. */
+/** Checks that passed before the change but fail now, or that now fail in a new way: the definition of a regression. */
 export function findRegressions(baseline: Baseline, outcomes: readonly CheckOutcome[]): CheckOutcome[] {
-  return outcomes.filter((o) => isFailure(o) && baseline.get(o.display) === "pass");
+  return outcomes.filter((o) => isFailure(o) && (baseline.get(o.display)?.result === "pass" || o.changedFailure));
 }
