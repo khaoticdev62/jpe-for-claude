@@ -44,13 +44,15 @@ const MAX_SIGNATURE_INPUT = 64 * 1024;
  * fingerprints stops a new failure from hiding behind an old one.
  */
 export function failureSignature(output: string): string {
+  // Normalise first, then bound the size: slicing raw text first would let a number that gains a digit
+  // shift the window and make an identical failure look different.
   const normalized = output
-    .slice(-MAX_SIGNATURE_INPUT)
     // eslint-disable-next-line no-control-regex
     .replace(/\u001b\[[0-9;]*m/g, "")
     .replace(/\d+(\.\d+)?/g, "#")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+    .slice(-MAX_SIGNATURE_INPUT);
   return createHash("sha256").update(normalized).digest("hex").slice(0, 32);
 }
 

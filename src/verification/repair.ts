@@ -58,7 +58,9 @@ export interface RepairLoopResult {
 function signature(failures: readonly CheckOutcome[]): string {
   return failures
     .map((f) => {
-      const tail = f.output.slice(-400).replace(/\d+/g, "#").replace(/\s+/g, " ");
+      // Normalise BEFORE taking the tail: otherwise a timing that gains a digit shifts the window and
+      // makes an identical failure look different, which defeats stall detection.
+      const tail = f.output.replace(/\d+(\.\d+)?/g, "#").replace(/\s+/g, " ").trim().slice(-400);
       return `${f.display}|${f.exitCode ?? "x"}|${createHash("sha256").update(tail).digest("hex").slice(0, 16)}`;
     })
     .sort()

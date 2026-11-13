@@ -5,7 +5,7 @@ import { deriveStatus } from "../../src/core/status.js";
 import type { DiscoveredCheck } from "../../src/project/checks.js";
 import { runCommand, type RunOptions, type RunResult } from "../../src/security/run.js";
 import { repairLoop } from "../../src/verification/repair.js";
-import { captureBaseline, findRegressions, runChecks, type RunnerDeps } from "../../src/verification/runner.js";
+import { captureBaseline, failureSignature, findRegressions, runChecks, type RunnerDeps } from "../../src/verification/runner.js";
 
 const check = (name: DiscoveredCheck["check"], display: string): DiscoveredCheck => ({
   check: name,
@@ -161,5 +161,28 @@ describe("repairLoop", () => {
     const r = await repairLoop({ ...base, checks: [TEST, BUILD], deps: deps(s.run), baseline, maxAttempts: 3, repair: async () => ((called = true), { changed: true, summary: "" }) });
     expect(r.outcome).toBe("passed");
     expect(called).toBe(false);
+  });
+});
+
+describe("failure fingerprints", () => {
+  it("ignore timings even when a number gains a digit (regression: the window used to shift)", () => {
+    const body = "x".repeat(420);
+    expect(failureSignature(`${body}
+# duration_ms 99.1
+# fail 1`)).toBe(failureSignature(`${body}
+# duration_ms 1005.4427
+# fail 1`));
+  });
+  it("still tell different failures apart", () => {
+    expect(failureSignature("not ok - legacy formatting")).not.toBe(failureSignature("not ok - legacy formatting\nnot ok - withDiscount"));
+  });
+  it("the repair loop treats an identical failure with a longer timing as stalled", async () => {
+    const outputs = ["x".repeat(500) + " duration_ms 99.1 FAIL add", "x".repeat(500) + " duration_ms 1005.44 FAIL add"];
+    let i = 0;
+    const run = async (): Promise<RunResult> => fail(outputs[Math.min(i++, 1)] ?? "");
+    let calls = 0;
+    const r = await repairLoop({ now: () => 0, deadlineMs: 1000, checks: [TEST], deps: deps(run), maxAttempts: 5, repair: async () => (calls++, { changed: true, summary: "" }) });
+    expect(r.outcome).toBe("stalled");
+    expect(calls).toBe(1);
   });
 });
