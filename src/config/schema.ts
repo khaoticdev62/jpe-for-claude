@@ -52,7 +52,8 @@ const engineering = z
     commandTimeoutMs: z.number().int().min(1000).max(1_800_000).default(300_000),
     backups: z.boolean().default(true),
     rollback: z.boolean().default(true),
-    approval: z.enum(["risk-based", "always", "never-auto"]).default("risk-based"),
+    /** risk-based = JPE asks first for destructive and sensitive actions; always = ask for every command and edit JPE sees; off = JPE never forces a prompt (Claude Code's own rules apply alone). */
+    approval: z.enum(["risk-based", "always", "off"]).default("risk-based"),
   })
   .prefault({});
 
@@ -71,6 +72,15 @@ const runtime = z
   })
   .prefault({});
 
+const hooks = z
+  .strictObject({
+    /** Block ending a turn once if source files were edited and no verification ran since. */
+    requireVerificationBeforeStop: z.boolean().default(true),
+    /** Upper bound on language-server runs triggered by edits in one session. */
+    maxDiagnosticsPerSession: z.number().int().min(0).max(500).default(40),
+  })
+  .prefault({});
+
 export const configSchema = z.strictObject({
   schemaVersion: z.literal(CONFIG_SCHEMA_VERSION).default(CONFIG_SCHEMA_VERSION),
   explanation,
@@ -79,6 +89,7 @@ export const configSchema = z.strictObject({
   engineering,
   security,
   runtime,
+  hooks,
 });
 
 export type JpeConfig = z.infer<typeof configSchema>;

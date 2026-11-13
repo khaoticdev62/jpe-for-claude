@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: { index: "src/index.ts", cli: "src/cli/bin.ts" },
+  entry: { index: "src/index.ts", cli: "src/cli/bin.ts", hook: "src/hooks/bin.ts" },
   format: ["esm"],
   target: "node20",
   platform: "node",

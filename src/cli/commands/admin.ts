@@ -106,7 +106,7 @@ export async function configCommand(args: ParsedArgs, ctx: CliContext): Promise<
   throw new JpeError("INVALID_INPUT", "Usage: jpe config show | path | set <key> <value> | export [--out file] | import <file>");
 }
 
-function store(ctx: CliContext): BackupStore {
+export function store(ctx: CliContext): BackupStore {
   return new BackupStore({ dir: path.join(ctx.stateDir(), "backups"), now: ctx.now, newId: () => `bk-${ctx.now().toISOString().replace(/\D/g, "").slice(0, 14)}-${ctx.newId().slice(0, 6)}` });
 }
 
