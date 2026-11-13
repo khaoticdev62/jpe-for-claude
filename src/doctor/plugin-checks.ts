@@ -91,8 +91,11 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
   out.push(manifest.error ? f("manifest", "fail", `Plugin manifest problem: ${manifest.error}.`, { fix: "Reinstall the plugin." }) : name === "jpe" ? f("manifest", "ok", "Plugin manifest is valid (name: jpe).") : f("manifest", "fail", `Plugin manifest has an unexpected name (${String(name)}).`));
 
   // Built bundles: skills, hooks and MCP all run these.
-  for (const bundle of ["cli.js", "hook.js", "mcp.js"]) {
-    out.push((await ctx.fs.exists(path.join(pluginRoot, "dist", bundle))) ? f(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`) : f(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
+  for (const bundle of ["cli.js", "hook.js", "mcp.js", "package.json"]) {
+    const present = await ctx.fs.exists(path.join(pluginRoot, "dist", bundle));
+    if (present) out.push(f(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`));
+    else if (bundle === "package.json") out.push(f(`bundle-${bundle}`, "warn", "dist/package.json is missing, so Node re-parses the bundles on every start and prints warnings.", { fix: "Reinstall a release build of the plugin." }));
+    else out.push(f(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run \`npm run build\` in a source checkout." }));
   }
 
   // Skills.
