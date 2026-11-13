@@ -35,7 +35,16 @@ const ENV_ALLOWLIST: readonly string[] = [
 const WINDOWS_SHIM_COMMANDS: ReadonlySet<string> = new Set(["npm", "npx", "pnpm", "yarn"]);
 const SAFE_SHELL_ARG = /^[A-Za-z0-9_@./:=+,\\-]+$/;
 
-function buildEnv(extra: Readonly<Record<string, string>> | undefined): Record<string, string> {
+/** A resolved executable path headed for the Windows shell: no shell metacharacters or quotes. */
+const SAFE_SHELL_PATH = /^[A-Za-z0-9_@./:=+,\\ ()-]+$/;
+
+function needsWindowsShell(file: string): boolean {
+  if (process.platform !== "win32") return false;
+  const base = path.basename(file).toLowerCase();
+  return /\.(cmd|bat)$/.test(base) || WINDOWS_SHIM_COMMANDS.has(base);
+}
+
+export function buildChildEnv(extra: Readonly<Record<string, string>> | undefined): Record<string, string> {
   const env: Record<string, string> = {};
   for (const key of ENV_ALLOWLIST) {
     const value = process.env[key];
@@ -44,7 +53,7 @@ function buildEnv(extra: Readonly<Record<string, string>> | undefined): Record<s
   return { ...env, ...extra };
 }
 
-function killTree(child: ChildProcess): void {
+export function killTree(child: ChildProcess): void {
   const pid = child.pid;
   if (pid === undefined) return;
   if (process.platform === "win32") {
@@ -63,29 +72,49 @@ function keepTail(current: string, chunk: string, max: number): { text: string; 
   return joined.length > max ? { text: joined.slice(-max), truncated: true } : { text: joined, truncated: false };
 }
 
+export interface SpawnOptions {
+  cwd: string;
+  env?: Readonly<Record<string, string>> | undefined;
+}
+
 /**
- * Runs one program without a shell, with a timeout, bounded output and a minimal environment.
- * Arguments are never concatenated into a command line, which removes command injection.
- * The single exception is npm/npx/pnpm/yarn on Windows, whose shims need a shell; there every
- * argument must match a strict allow-list or the call is refused.
+ * Starts one program without a shell and with a minimal environment. Arguments are never
+ * concatenated into a command line, which removes command injection. The single exception is
+ * Windows .cmd/.bat shims (npm, npx, pnpm, yarn and npm-installed tools), which need a shell;
+ * there the path and every argument must match a strict allow-list or the call is refused.
  */
+export function spawnSafely(file: string, args: readonly string[], options: SpawnOptions): ChildProcess {
+  if (file.includes("\0") || args.some((a) => a.includes("\0"))) {
+    throw new JpeError("INVALID_INPUT", "A command argument contained an invalid character.");
+  }
+  const useShim = needsWindowsShell(file);
+  if (useShim && (!SAFE_SHELL_PATH.test(file) || !args.every((a) => SAFE_SHELL_ARG.test(a)))) {
+    throw new JpeError("INVALID_INPUT", "A command or argument contains characters that are not safe to pass through the Windows shell.");
+  }
+  const spawnOptions = { cwd: options.cwd, env: buildChildEnv(options.env), windowsHide: true, detached: process.platform !== "win32" };
+  try {
+    return useShim
+      ? spawn([file.includes(" ") ? `"${file}"` : file, ...args].join(" "), { ...spawnOptions, shell: true })
+      : spawn(file, [...args], { ...spawnOptions, shell: false });
+  } catch (cause) {
+    throw new JpeError("TOOL_UNAVAILABLE", `Could not start "${file}".`, { cause });
+  }
+}
+
+/** Runs one program to completion, with a timeout, bounded output (the tail is kept) and a minimal environment. */
 export function runCommand(options: RunOptions): Promise<RunResult> {
   const { file, args, cwd, timeoutMs } = options;
   const maxBytes = options.maxOutputBytes ?? 1024 * 1024;
-  if (file.includes("\0") || args.some((a) => a.includes("\0"))) {
-    return Promise.reject(new JpeError("INVALID_INPUT", "A command argument contained an invalid character."));
-  }
-  const useShim = process.platform === "win32" && WINDOWS_SHIM_COMMANDS.has(path.basename(file).toLowerCase());
-  if (useShim && !args.every((a) => SAFE_SHELL_ARG.test(a))) {
-    return Promise.reject(new JpeError("INVALID_INPUT", "A command argument contains characters that are not safe to pass through the Windows shell."));
-  }
 
   return new Promise<RunResult>((resolve, reject) => {
     const started = Date.now();
-    const spawnOptions = { cwd, env: buildEnv(options.env), windowsHide: true, detached: process.platform !== "win32" };
-    const child = useShim
-      ? spawn([file, ...args].join(" "), { ...spawnOptions, shell: true })
-      : spawn(file, [...args], { ...spawnOptions, shell: false });
+    let child: ChildProcess;
+    try {
+      child = spawnSafely(file, args, { cwd, env: options.env });
+    } catch (error) {
+      reject(error);
+      return;
+    }
 
     let stdout = "";
     let stderr = "";
