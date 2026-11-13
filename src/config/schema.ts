@@ -15,11 +15,11 @@ const explanation = z
   })
   .prefault({});
 
-const docProviderName = z.enum(["context7", "official", "local-package", "repo-release"]);
+const docProviderName = z.enum(["context7", "official", "local-package", "repo-release", "osv"]);
 
 const docs = z
   .strictObject({
-    providers: z.array(docProviderName).min(1).default(["context7", "official", "local-package", "repo-release"]),
+    providers: z.array(docProviderName).min(1).default(["local-package", "context7", "official", "repo-release", "osv"]),
     /** Extra user-defined providers, referenced by an https base URL. Never holds credentials. */
     additionalProviders: z
       .array(z.strictObject({ name: z.string().min(1).max(64), baseUrl: z.url({ protocol: /^https$/ }) }))
