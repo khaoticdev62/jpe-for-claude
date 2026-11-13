@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { COMMAND_NAMES } from "../../src/cli/main.js";
+import { TOOLS } from "../../src/mcp/tools.js";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -80,24 +81,29 @@ describe("agents", () => {
     for (const forbidden of ["hooks", "mcpServers", "permissionMode"]) expect(doc.front[forbidden], forbidden).toBeUndefined();
   });
 
-  it("no agent can write or edit files, and none can spawn other agents", async () => {
+  it("no agent can write, edit, run shell commands or spawn agents; MCP tools named in tool lists really exist", async () => {
+    const realTools = new Set(TOOLS.map((t) => `mcp__plugin_jpe_jpe__${t.name}`));
     for (const name of AGENTS) {
       const doc = await load(path.join(root, "agents", `${name}.md`));
-      const tools = (doc.front["tools"] ?? "").split(",").map((t) => t.trim());
       if (doc.front["tools"]) {
-        for (const t of tools) expect(["Read", "Grep", "Glob", "Bash", "LSP"], `${name} lists ${t}`).toContain(t);
+        for (const t of doc.front["tools"].split(",").map((x) => x.trim())) {
+          expect(["Read", "Grep", "Glob", "LSP"].includes(t) || realTools.has(t), `${name} lists ${t}`).toBe(true);
+        }
       } else {
         const denied = (doc.front["disallowedTools"] ?? "").split(",").map((t) => t.trim());
-        expect(denied, name).toEqual(expect.arrayContaining(["Write", "Edit", "Agent"]));
+        expect(denied, name).toEqual(expect.arrayContaining(["Write", "Edit", "Agent", "Bash"]));
       }
     }
   });
 
-  it("every agent tells the model how to get the CLI path and to report honestly", async () => {
+  it("every agent describes its responsibilities and only mentions tools it can actually use", async () => {
     for (const name of AGENTS) {
       const doc = await load(path.join(root, "agents", `${name}.md`));
-      expect(doc.body, name).toContain("JPE CLI:");
       expect(doc.body, name).toMatch(/Responsibilities/);
+      for (const m of doc.body.matchAll(/`(jpe_[a-z_]+)`/g)) {
+        expect(TOOLS.some((t) => t.name === m[1]), `${name} mentions ${m[1]}`).toBe(true);
+        if (doc.front["tools"]) expect(doc.front["tools"], `${name} mentions ${m[1]} but cannot call it`).toContain(`mcp__plugin_jpe_jpe__${m[1]}`);
+      }
     }
   });
 });

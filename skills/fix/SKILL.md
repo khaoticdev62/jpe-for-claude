@@ -39,4 +39,4 @@ Run `verify` again, then the full set so regressions are caught. If it still fai
 
 ## Delegating to agents
 
-Agents do not receive plugin variables automatically. Whenever you delegate to a `jpe:jpe-*` agent, put this line in its prompt, exactly as written: `JPE CLI: node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js"`
+The `jpe:jpe-*` agents use the plugin's MCP tools (`jpe_*`) and need no extra setup. They cannot edit files or run shell commands. State the question and any file names clearly in the prompt.
