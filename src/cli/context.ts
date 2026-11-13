@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadConfig } from "../config/load.js";
 import { dataDir, type PathEnv } from "../config/paths.js";
 import type { JpeConfig } from "../config/schema.js";
@@ -27,6 +28,8 @@ export interface CliContext {
   loadConfig: () => Promise<JpeConfig>;
   /** Folder for this project's runs, baselines and backups. */
   stateDir: () => string;
+  /** Folder holding .claude-plugin/, skills/, agents/ and dist/; undefined when it cannot be determined. */
+  pluginRoot: string | undefined;
   /** Atomic text write that creates parent folders. */
   writeText: (file: string, text: string) => Promise<void>;
   readText: (file: string) => Promise<string | undefined>;
@@ -49,6 +52,17 @@ export function projectKey(root: string): string {
   return createHash("sha256").update(path.resolve(root).toLowerCase()).digest("hex").slice(0, 12);
 }
 
+/** The plugin folder: Claude Code's variable when set, otherwise the parent of the folder this bundle runs from (dist/). */
+function guessPluginRoot(): string | undefined {
+  const fromEnv = process.env["CLAUDE_PLUGIN_ROOT"];
+  if (fromEnv) return fromEnv;
+  try {
+    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  } catch {
+    return undefined;
+  }
+}
+
 export function createContext(overrides: Partial<CliContext> = {}): CliContext {
   const cwd = overrides.cwd ?? process.env["CLAUDE_PROJECT_DIR"] ?? process.cwd();
   const pathEnv: PathEnv = overrides.pathEnv ?? { platform: process.platform, env: process.env, homedir: os.homedir() };
@@ -66,6 +80,7 @@ export function createContext(overrides: Partial<CliContext> = {}): CliContext {
     now: () => new Date(),
     newId: () => randomUUID().replaceAll("-", "").slice(0, 16),
     loadConfig: () => loadConfig({ fs: { readText: (p) => fs.readText(p) }, pathEnv, projectRoot: cwd }),
+    pluginRoot: guessPluginRoot(),
     stateDir: () => path.join(dataDir(pathEnv), "projects", projectKey(cwd)),
     writeText: writeAtomic,
     readText: async (file) => {

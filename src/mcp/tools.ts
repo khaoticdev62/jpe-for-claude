@@ -150,6 +150,16 @@ export const TOOLS: readonly ToolSpec[] = [
     argv: () => ["audit"],
   },
   {
+    name: "jpe_doctor",
+    title: "JPE Doctor health check",
+    description:
+      "Checks the JPE installation for real: manifest, skills, agents, hooks (runs one), the MCP server (completes a handshake), language servers, configuration, storage, documentation cache, backup integrity and offline readiness. Report only; repairs are available through the CLI with the user's approval.",
+    input: { deep: z.boolean().optional().describe("Also test network reachability and start the language servers (slower)") },
+    readOnly: true,
+    network: true,
+    argv: (i) => cmd("doctor", [...on("deep", i["deep"])]),
+  },
+  {
     name: "jpe_config_show",
     title: "JPE settings",
     description: "The effective JPE configuration (defaults, global file, project file, environment). Read-only. Changing settings is deliberately not available through MCP.",

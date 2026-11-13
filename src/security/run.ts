@@ -13,6 +13,8 @@ export interface RunOptions {
   maxOutputBytes?: number;
   /** Extra environment variables for this one command. */
   env?: Readonly<Record<string, string>>;
+  /** Text written to the program's standard input, which is then closed. */
+  input?: string;
 }
 
 export interface RunResult {
@@ -114,6 +116,10 @@ export function runCommand(options: RunOptions): Promise<RunResult> {
     } catch (error) {
       reject(error);
       return;
+    }
+    if (options.input !== undefined) {
+      child.stdin?.on("error", () => undefined); // the program may exit before reading everything
+      child.stdin?.end(options.input);
     }
 
     let stdout = "";

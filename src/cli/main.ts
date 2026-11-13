@@ -2,6 +2,7 @@ import { isJpeError } from "../core/errors.js";
 import { redactSecrets } from "../core/redact.js";
 import { auditCommand, backupCommand, configCommand, scanCommand } from "./commands/admin.js";
 import { briefCommand } from "./commands/brief.js";
+import { doctorCommand } from "./commands/doctor.js";
 import { impactCommand, installPlanCommand, lspCommand } from "./commands/lsp.js";
 import { researchCommand } from "./commands/research.js";
 import { checksCommand, statusCommand, verifyCommand } from "./commands/verify.js";
@@ -23,6 +24,7 @@ const COMMANDS: Readonly<Record<string, { run: Handler; help: string }>> = {
   backup: { run: backupCommand, help: "backup create <files...> | seal <id> | verify <id> | rollback <id> [--force] | list | prune   Backups and rollback" },
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
+  doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" },
 };
 
 export const COMMAND_NAMES: readonly string[] = Object.keys(COMMANDS);
