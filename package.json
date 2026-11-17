@@ -1,6 +1,6 @@
 {
   "name": "jpe-for-claude",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   "private": true,
   "type": "module",

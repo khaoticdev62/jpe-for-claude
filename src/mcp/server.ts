@@ -4,7 +4,7 @@ import { redactSecrets } from "../core/redact.js";
 import { TOOLS, callTool } from "./tools.js";
 
 export const SERVER_NAME = "jpe";
-export const SERVER_VERSION = "1.0.0";
+export const SERVER_VERSION = "1.0.1";
 
 const INSTRUCTIONS = [
   "JPE For Claude tools: plain-English explanation briefings, version-aware documentation research, evidence-based verification, language-server diagnostics and impact analysis.",

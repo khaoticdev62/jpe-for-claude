@@ -41121,7 +41121,7 @@ async function callTool(spec, input2, makeContext = (c) => createContext(c)) {
 
 // src/mcp/server.ts
 var SERVER_NAME = "jpe";
-var SERVER_VERSION = "1.0.0";
+var SERVER_VERSION = "1.0.1";
 var INSTRUCTIONS = [
   "JPE For Claude tools: plain-English explanation briefings, version-aware documentation research, evidence-based verification, language-server diagnostics and impact analysis.",
   "Status words (VERIFIED, FUNCTIONAL_WITH_WARNINGS, PARTIALLY_VERIFIED, FAILED, BLOCKED, NOT_TESTED) come only from commands that actually ran; never upgrade them.",
