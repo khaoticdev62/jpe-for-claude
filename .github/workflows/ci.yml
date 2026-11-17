@@ -1,8 +1,12 @@
-# Cross-platform quality gate. MANUAL ONLY: it never runs on push or pull request, so it spends no
-# GitHub Actions minutes unless someone starts it from the Actions tab ("Run workflow") or with `gh workflow run ci.yml`.
+# Cross-platform quality gate: lint, typecheck, tests, packaging, committed-build check and a production dependency
+# audit on Linux, macOS and Windows. It runs on every push to master and on every pull request, and can still be
+# started by hand from the Actions tab or with `gh workflow run ci.yml`.
 name: ci
 
 on:
+  push:
+    branches: [master]
+  pull_request:
   workflow_dispatch:
 
 permissions:
