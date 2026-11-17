@@ -1,5 +1,5 @@
 # Cross-platform quality gate. MANUAL ONLY: it never runs on push or pull request, so it spends no
-# GitHub Actions minutes unless someone starts it from the Actions tab ("Run workflow").
+# GitHub Actions minutes unless someone starts it from the Actions tab ("Run workflow") or with `gh workflow run ci.yml`.
 name: ci
 
 on:
