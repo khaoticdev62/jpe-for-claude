@@ -155,9 +155,9 @@ describe("input safety", () => {
 
   it("keeps file access inside the project and turns failures into short tool errors", async () => {
     const client = await connect();
-    const escape = await client.callTool({ name: "jpe_briefing", arguments: { kind: "file", target: "../outside.ts" } });
-    expect(escape.isError).toBe(true);
-    expect(textOf(escape)).toContain("outside the project");
+    const escapeAttempt = await client.callTool({ name: "jpe_briefing", arguments: { kind: "file", target: "../outside.ts" } });
+    expect(escapeAttempt.isError).toBe(true);
+    expect(textOf(escapeAttempt)).toContain("outside the project");
     const missing = await client.callTool({ name: "jpe_briefing", arguments: { kind: "file", target: "nope.ts" } });
     expect(missing.isError).toBe(true);
     expect(textOf(missing)).not.toMatch(/\bat \w+.*\(/); // no stack traces

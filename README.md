@@ -76,7 +76,7 @@ Language-server support: TypeScript, JavaScript, Python, Go, Rust, C, C++, C#, J
 
 ```
 npm install
-npm run typecheck && npm test && npm run build
+npm run lint && npm run typecheck && npm test && npm run build
 claude --plugin-dir .          # try the plugin from a checkout
 npm run package                # build the release folder, zip and checksums into release/
 ```

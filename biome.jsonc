@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": ["src/**", "tests/**", "scripts/**", "*.ts", "*.mjs", "!tests/fixtures", "!dist", "!release"]
+  },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "complexity": {
+        // tsconfig sets noPropertyAccessFromIndexSignature, so bracket access (process.env["X"]) is required, not a style choice
+        "useLiteralKeys": "off"
+      },
+      "suspicious": {
+        // "${CLAUDE_PLUGIN_ROOT}" and similar are literal plugin variables that must stay unexpanded
+        "noTemplateCurlyInString": "off"
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { LspClient, type Position } from "./client.js";
+import type { LspClient, Position } from "./client.js";
 
 export interface FileReferences {
   file: string;

@@ -4,6 +4,15 @@ All notable changes to JPE For Claude are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Lint step (Biome, `npm run lint`) in the local checks and the CI workflow. The CI dependency audit now covers production dependencies only (`--omit=dev`), because the remaining findings are in build tools.
+
+### Fixed
+- A doctor test meant to cover Windows-style paths had lost its backslash to a string escape; it now tests what it says.
+- Three variables without a declared type, an unreturned `forEach` callback and a few comma/assignment-in-expression test idioms found by the linter.
+
 ## [1.0.1] - 2026-11-17
 
 ### Security

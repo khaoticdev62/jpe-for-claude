@@ -25,7 +25,7 @@ async function readJson(env: DoctorEnv, ...parts: string[]): Promise<{ value?: u
 
 /** One MCP stdio conversation: initialize, then tools/list. Uses plain JSON lines, so no SDK is needed here. */
 export async function mcpHandshake(serverJs: string, cwd: string, timeoutMs = 10_000): Promise<{ ok: boolean; serverName?: string; tools: string[]; detail: string }> {
-  let child;
+  let child: ReturnType<typeof spawnSafely>;
   try {
     child = spawnSafely(process.execPath, [serverJs], { cwd });
   } catch (error) {
@@ -95,7 +95,7 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
     const present = await ctx.fs.exists(path.join(pluginRoot, "dist", bundle));
     if (present) out.push(f(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`));
     else if (bundle === "package.json") out.push(f(`bundle-${bundle}`, "warn", "dist/package.json is missing, so Node re-parses the bundles on every start and prints warnings.", { fix: "Reinstall a release build of the plugin." }));
-    else out.push(f(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run \`npm run build\` in a source checkout." }));
+    else out.push(f(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
   }
 
   // Skills.

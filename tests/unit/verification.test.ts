@@ -107,7 +107,10 @@ describe("repairLoop", () => {
   it("reports passed without calling the repairer when nothing fails", async () => {
     const s = scripted({ "t test": [ok()] });
     let called = false;
-    const r = await repairLoop({ ...base, checks: [TEST], deps: deps(s.run), maxAttempts: 3, repair: async () => ((called = true), { changed: true, summary: "" }) });
+    const r = await repairLoop({ ...base, checks: [TEST], deps: deps(s.run), maxAttempts: 3, repair: async () => {
+        called = true;
+        return { changed: true, summary: "" };
+      } });
     expect(r).toMatchObject({ outcome: "passed", attempts: 0 });
     expect(called).toBe(false);
   });
@@ -158,7 +161,10 @@ describe("repairLoop", () => {
     const s = scripted({ "t test": [fail("old")], "t build": [new JpeError("TOOL_UNAVAILABLE", "missing")] });
     const baseline = await captureBaseline([TEST], { run: s.run, cwd: ".", timeoutMs: 1000 });
     let called = false;
-    const r = await repairLoop({ ...base, checks: [TEST, BUILD], deps: deps(s.run), baseline, maxAttempts: 3, repair: async () => ((called = true), { changed: true, summary: "" }) });
+    const r = await repairLoop({ ...base, checks: [TEST, BUILD], deps: deps(s.run), baseline, maxAttempts: 3, repair: async () => {
+        called = true;
+        return { changed: true, summary: "" };
+      } });
     expect(r.outcome).toBe("passed");
     expect(called).toBe(false);
   });
@@ -177,11 +183,14 @@ describe("failure fingerprints", () => {
     expect(failureSignature("not ok - legacy formatting")).not.toBe(failureSignature("not ok - legacy formatting\nnot ok - withDiscount"));
   });
   it("the repair loop treats an identical failure with a longer timing as stalled", async () => {
-    const outputs = ["x".repeat(500) + " duration_ms 99.1 FAIL add", "x".repeat(500) + " duration_ms 1005.44 FAIL add"];
+    const outputs = [`${"x".repeat(500)} duration_ms 99.1 FAIL add`, `${"x".repeat(500)} duration_ms 1005.44 FAIL add`];
     let i = 0;
     const run = async (): Promise<RunResult> => fail(outputs[Math.min(i++, 1)] ?? "");
     let calls = 0;
-    const r = await repairLoop({ now: () => 0, deadlineMs: 1000, checks: [TEST], deps: deps(run), maxAttempts: 5, repair: async () => (calls++, { changed: true, summary: "" }) });
+    const r = await repairLoop({ now: () => 0, deadlineMs: 1000, checks: [TEST], deps: deps(run), maxAttempts: 5, repair: async () => {
+        calls++;
+        return { changed: true, summary: "" };
+      } });
     expect(r.outcome).toBe("stalled");
     expect(calls).toBe(1);
   });

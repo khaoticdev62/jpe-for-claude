@@ -48,6 +48,7 @@ export function failureSignature(output: string): string {
   // shift the window and make an identical failure look different.
   const normalized = output
     // eslint-disable-next-line no-control-regex
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: matching the ESC character is how ANSI colour codes are removed
     .replace(/\u001b\[[0-9;]*m/g, "")
     .replace(/\d+(\.\d+)?/g, "#")
     .replace(/\s+/g, " ")

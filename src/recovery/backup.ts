@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { Stats } from "node:fs";
 import { mkdir, readFile, readdir, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
@@ -114,7 +115,7 @@ export class BackupStore {
       if (isSensitiveFileName(abs)) {
         throw new JpeError("NOT_PERMITTED", `"${key}" looks like a credentials file, so JPE will not copy it into a backup.`);
       }
-      let info;
+      let info: Stats;
       try {
         info = await stat(abs);
       } catch (error) {

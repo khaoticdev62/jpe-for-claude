@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { isJpeError } from "../core/errors.js";
@@ -19,7 +20,7 @@ export async function walkFiles(root: string, limit = MAX_FILES): Promise<string
   const found: string[] = [];
   async function visit(dir: string, depth: number): Promise<void> {
     if (found.length >= limit || depth > MAX_DEPTH) return;
-    let entries;
+    let entries: Dirent[];
     try {
       entries = await readdir(dir, { withFileTypes: true });
     } catch {

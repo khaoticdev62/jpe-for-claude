@@ -215,7 +215,7 @@ describe("report hygiene", () => {
   });
   it("sanitizing a JSON export hides Windows-style paths even though JSON doubles backslashes", () => {
     const home = os.homedir();
-    const report: DoctorReport = { generatedAt: "t", overall: "ok", findings: [{ id: "x", area: "A", status: "info", title: "t", detail: `${home}\proj and ${home.toLowerCase()}` }], repairs: [] };
+    const report: DoctorReport = { generatedAt: "t", overall: "ok", findings: [{ id: "x", area: "A", status: "info", title: "t", detail: `${home}\\proj and ${home.toLowerCase()}` }], repairs: [] };
     const text = exportDoctor(report);
     expect(text.toLowerCase()).not.toContain(path.basename(home).toLowerCase());
     expect(JSON.parse(text).findings[0].detail).toContain("~");

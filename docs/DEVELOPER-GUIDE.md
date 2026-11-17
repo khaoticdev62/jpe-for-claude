@@ -42,6 +42,7 @@ dist/                 built bundles (committed so marketplace installs work with
 
 ```
 npm install
+npm run lint          # Biome lint (config and rule reasons in biome.jsonc; formatting is not enforced)
 npm run typecheck     # strict TypeScript (tsconfig excludes the deliberately broken fixtures)
 npm test              # unit + e2e (e2e needs node and git; LSP cases skip without typescript-language-server)
 npm run build         # tsup -> dist/cli.js, hook.js, mcp.js, package.json
@@ -56,13 +57,13 @@ claude plugin eval . --scaffold --trust-plugin --runs 1 --threshold 0.75 --allow
 ## Releasing
 
 1. Bump the version in `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and `src/mcp/server.ts` (a test fails if they disagree), and add a CHANGELOG section.
-2. `npm run typecheck && npm test && npm run package`.
+2. `npm run lint && npm run typecheck && npm test && npm run package`.
 3. `claude plugin validate .` and `node dist/cli.js doctor`.
 4. Commit (including `dist/`), tag `v<version>`, push, and attach `release/jpe-<version>.zip` and its `.sha256` to a GitHub release.
 
 ## CI
 
-`.github/workflows/ci.yml` runs typecheck, tests, build, package and validation on Windows, Linux and macOS. It is **manual-only** (`workflow_dispatch`) so it never spends Actions minutes on its own; start it from the Actions tab when you want a cross-platform run.
+`.github/workflows/ci.yml` runs lint, typecheck, tests, build, package, a production-dependency audit and validation on Windows, Linux and macOS. It is **manual-only** (`workflow_dispatch`) so it never spends Actions minutes on its own; start it from the Actions tab when you want a cross-platform run.
 
 ## Adding things
 

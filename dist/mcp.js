@@ -36912,8 +36912,11 @@ function pinnedFetch(url2, init = {}) {
       (res) => {
         const responseHeaders = new Headers();
         for (const [key, value] of Object.entries(res.headers)) {
-          if (Array.isArray(value)) value.forEach((v) => responseHeaders.append(key, v));
-          else if (value !== void 0) responseHeaders.set(key, value);
+          if (Array.isArray(value)) {
+            for (const v of value) responseHeaders.append(key, v);
+          } else if (value !== void 0) {
+            responseHeaders.set(key, value);
+          }
         }
         const status = res.statusCode ?? 0;
         const body = NULL_BODY_STATUSES.has(status) ? null : Readable.toWeb(res);
@@ -38326,7 +38329,7 @@ async function auditCommand(_args, ctx) {
 }
 
 // src/cli/commands/brief.ts
-import path13 from "path";
+import path12 from "path";
 
 // src/explain/errors.ts
 var RULES = [
@@ -38671,18 +38674,268 @@ function summarizeChange(file2, before, after) {
 }
 
 // src/lsp/impact.ts
-import path12 from "path";
+import path11 from "path";
+async function impactViaLsp(client, file2, position, maxFiles = 200) {
+  const refs = await client.references(file2, position);
+  const counts = /* @__PURE__ */ new Map();
+  for (const r of refs) counts.set(r.file, (counts.get(r.file) ?? 0) + 1);
+  const all = [...counts.entries()].map(([f3, count2]) => ({ file: f3, count: count2 })).sort((a, b) => b.count - a.count);
+  return {
+    method: "lsp",
+    target: file2,
+    referencingFiles: all.slice(0, maxFiles),
+    truncated: all.length > maxFiles,
+    limitations: refs.length === 0 ? ["The server reported no references. The symbol may be unused, or the server may not have finished indexing."] : []
+  };
+}
+var JS_EXT = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
+var MAX_SCAN_FILES = 2e3;
+var MAX_SCAN_BYTES = 512 * 1024;
+var IMPORT_SPEC = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']/g;
+var stripExt = (p) => p.replace(/\.[^./\\]+$/, "");
+async function impactViaText(targetFile, deps) {
+  const target = path11.resolve(deps.root, targetFile);
+  const targetBase = stripExt(target);
+  const isJs = JS_EXT.test(target);
+  const isPy = /\.pyi?$/i.test(target);
+  const limitations = ["Text search finds files that import this module; it cannot tell which functions inside it they use, and it misses dynamic imports and re-exports through other packages."];
+  if (!isJs && !isPy) {
+    return { method: "text-search", target, referencingFiles: [], truncated: false, limitations: [...limitations, "Import scanning is only implemented for JavaScript/TypeScript and Python; install a language server for this language."] };
+  }
+  const files = (await deps.listFiles()).filter((f3) => isJs ? JS_EXT.test(f3) : /\.pyi?$/i.test(f3));
+  const results = [];
+  let scanned = 0;
+  const pyModule = isPy ? stripExt(path11.relative(deps.root, target)).split(path11.sep).join(".").replace(/\.__init__$/, "") : "";
+  for (const rel2 of files) {
+    if (scanned >= MAX_SCAN_FILES) break;
+    const abs = path11.resolve(deps.root, rel2);
+    if (abs === target) continue;
+    const text2 = await deps.readText(abs);
+    if (text2 === void 0 || text2.length > MAX_SCAN_BYTES) continue;
+    scanned++;
+    let hits = 0;
+    if (isJs) {
+      for (const m of text2.matchAll(IMPORT_SPEC)) {
+        const spec = m[1];
+        if (!spec?.startsWith(".")) continue;
+        const resolved = path11.resolve(path11.dirname(abs), spec);
+        if (stripExt(resolved) === targetBase || resolved === targetBase || path11.join(resolved, "index") === targetBase) hits++;
+      }
+    } else if (pyModule) {
+      const escaped = pyModule.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      hits = [...text2.matchAll(new RegExp(`^\\s*(?:from\\s+${escaped}\\s+import|import\\s+${escaped})\\b`, "gm"))].length;
+    }
+    if (hits > 0) results.push({ file: abs, count: hits });
+  }
+  const truncated = files.length > MAX_SCAN_FILES;
+  if (truncated) limitations.push(`Only the first ${MAX_SCAN_FILES} files were scanned.`);
+  return { method: "text-search", target, referencingFiles: results.sort((a, b) => b.count - a.count), truncated, limitations };
+}
+
+// src/cli/commands/brief.ts
+async function readProjectFile(ctx, rel2) {
+  if (!rel2) throw new JpeError("INVALID_INPUT", "Give the path of a file inside the project.");
+  const abs = resolveInside(ctx.cwd, rel2);
+  const text2 = await ctx.fs.readText(abs);
+  if (text2 === void 0) throw new JpeError("INVALID_INPUT", `"${rel2}" is not a readable file in this project.`);
+  return { abs, rel: path12.relative(ctx.cwd, abs).split(path12.sep).join("/"), text: text2 };
+}
+async function briefCommand(args, ctx) {
+  const [kind, ...rest] = args.positionals;
+  const cfg = (await ctx.loadConfig()).explanation;
+  if (kind === "file") {
+    const file2 = await readProjectFile(ctx, rest[0]);
+    let dependents;
+    if (flagBool(args, "dependents")) {
+      const impact = await impactViaText(file2.rel, { root: ctx.cwd, listFiles: () => listProjectFiles(ctx.cwd, ctx.git), readText: (f3) => ctx.fs.readText(f3) });
+      dependents = impact.referencingFiles.map((r) => path12.relative(ctx.cwd, r.file).split(path12.sep).join("/"));
+    }
+    const phase = flagString(args, "phase");
+    const briefing = buildFileBriefing({ file: file2.rel, content: file2.text, ...dependents ? { dependents } : {}, ...phase === "before" || phase === "after" ? { phase } : {} }, cfg);
+    ctx.out(briefing.text);
+    return 0;
+  }
+  if (kind === "change") {
+    const file2 = await readProjectFile(ctx, rest[0]);
+    const before = await ctx.git(["show", `HEAD:${file2.rel}`]);
+    const note = before.exitCode === 0 ? "" : `NOTE: ${file2.rel} has no committed version (new file or no git history), so the whole file counts as added.
+`;
+    const summary = summarizeChange(file2.rel, before.exitCode === 0 ? before.stdout : "", file2.text);
+    ctx.out(note + buildChangeBriefing(summary, cfg).text);
+    return 0;
+  }
+  if (kind === "error") {
+    const message = flagBool(args, "stdin") ? await ctx.readStdin() : rest.join(" ");
+    if (message.trim() === "") throw new JpeError("INVALID_INPUT", "Give the error message as text, or pipe it in with --stdin.");
+    ctx.out(buildErrorBriefing(message.slice(0, 8e3), cfg).text);
+    return 0;
+  }
+  throw new JpeError("INVALID_INPUT", "Usage: jpe brief file <path> [--dependents] [--phase before|after] | change <path> | error <message>|--stdin");
+}
+
+// src/doctor/doctor.ts
+import os2 from "os";
+
+// src/doctor/env-checks.ts
+import { mkdir as mkdir4, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
+import path16 from "path";
+
+// src/docs/cache.ts
+import { createHash as createHash3 } from "crypto";
+import { mkdir as mkdir3, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
+import path13 from "path";
+var sha256Hex = (text2) => createHash3("sha256").update(text2).digest("hex");
+var MAX_CONTENT_CHARS = 2e5;
+var entrySchema = external_exports.strictObject({
+  key: external_exports.string().regex(/^[a-f0-9]{64}$/),
+  fetchedAt: external_exports.iso.datetime(),
+  expiresAt: external_exports.iso.datetime(),
+  contentHash: external_exports.string().length(64),
+  drafts: external_exports.array(
+    external_exports.strictObject({
+      provider: external_exports.string(),
+      kind: external_exports.enum(["reference", "api-signature", "release-notes", "advisory", "metadata"]),
+      title: external_exports.string(),
+      url: external_exports.string().optional(),
+      content: external_exports.string(),
+      trust: external_exports.enum(["official", "registry", "local", "third-party"]),
+      docVersion: external_exports.string().optional()
+    })
+  )
+});
+var hashDrafts = (drafts) => sha256Hex(drafts.map((d) => d.content).join("\0"));
+var DocCache = class {
+  constructor(deps) {
+    this.deps = deps;
+  }
+  deps;
+  static key(provider, library, version2, topic) {
+    return sha256Hex([provider, library, version2 ?? "", topic.trim().toLowerCase()].join("\0"));
+  }
+  file(key) {
+    return path13.join(this.deps.dir, `${key}.json`);
+  }
+  async put(key, drafts) {
+    const stored = drafts.map((d) => ({ ...d, content: redactSecrets(d.content).slice(0, MAX_CONTENT_CHARS) }));
+    const now = this.deps.now();
+    const entry = {
+      key,
+      fetchedAt: now.toISOString(),
+      expiresAt: new Date(now.getTime() + this.deps.ttlHours * 36e5).toISOString(),
+      contentHash: hashDrafts(stored),
+      drafts: stored
+    };
+    await mkdir3(this.deps.dir, { recursive: true });
+    const temp = `${this.file(key)}.tmp-${process.pid}`;
+    await writeFile3(temp, JSON.stringify(entry));
+    await rename3(temp, this.file(key));
+    return entry;
+  }
+  /** Returns undefined for a missing, malformed or tampered entry. */
+  async get(key) {
+    let text2;
+    try {
+      text2 = await readFile4(this.file(key), "utf8");
+    } catch (error62) {
+      if (error62.code === "ENOENT") return void 0;
+      throw error62;
+    }
+    let raw;
+    try {
+      raw = JSON.parse(text2);
+    } catch {
+      return void 0;
+    }
+    const parsed = entrySchema.safeParse(raw);
+    if (!parsed.success || parsed.data.key !== key) return void 0;
+    if (hashDrafts(parsed.data.drafts) !== parsed.data.contentHash) return void 0;
+    return { entry: parsed.data, expired: new Date(parsed.data.expiresAt).getTime() <= this.deps.now().getTime() };
+  }
+  /** Removes the oldest entries beyond `maxEntries` (plus any leftover temp files). Returns how many were removed. */
+  async prune(maxEntries) {
+    let names;
+    try {
+      names = await readdir3(this.deps.dir);
+    } catch (error62) {
+      if (error62.code === "ENOENT") return 0;
+      throw error62;
+    }
+    const files = await Promise.all(
+      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path13.join(this.deps.dir, n))).mtimeMs }))
+    );
+    files.sort((a, b) => b.mtime - a.mtime);
+    const doomed = files.slice(Math.max(0, maxEntries));
+    await Promise.all(doomed.map((f3) => unlink2(path13.join(this.deps.dir, f3.n))));
+    return doomed.length;
+  }
+};
+
+// src/hooks/state.ts
+import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
+import path14 from "path";
+
+// src/hooks/payload.ts
+import { createHash as createHash4 } from "crypto";
+var base = {
+  session_id: external_exports.string().min(1).max(200),
+  cwd: external_exports.string().min(1),
+  hook_event_name: external_exports.string(),
+  transcript_path: external_exports.string().optional()
+};
+var toolInput = external_exports.record(external_exports.string(), external_exports.unknown());
+var payloadSchemas = {
+  SessionStart: external_exports.looseObject({ ...base, source: external_exports.string().optional() }),
+  UserPromptSubmit: external_exports.looseObject({ ...base, prompt: external_exports.string() }),
+  PreToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput }),
+  PostToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
+  PostToolUseFailure: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
+  Stop: external_exports.looseObject({ ...base, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
+};
+var HOOK_EVENTS = Object.keys(payloadSchemas);
+
+// src/hooks/state.ts
+var stateSchema = external_exports.strictObject({
+  startedAt: external_exports.iso.datetime(),
+  promptNudged: external_exports.boolean(),
+  stopNudged: external_exports.boolean(),
+  /** file key -> ISO time of the last edit JPE saw */
+  edits: external_exports.record(external_exports.string(), external_exports.iso.datetime()),
+  /** file key -> id of the backup taken before the first edit */
+  backups: external_exports.record(external_exports.string(), external_exports.string()),
+  /** file key -> content hash already checked for diagnostics */
+  checked: external_exports.record(external_exports.string(), external_exports.string()),
+  diagnosticsRuns: external_exports.number().int().min(0)
+});
+var STALE_MS = 7 * 24 * 36e5;
+async function pruneStaleStates(ctx) {
+  const dir = path14.join(ctx.stateDir(), "sessions");
+  let names;
+  try {
+    names = await readdir4(dir);
+  } catch {
+    return;
+  }
+  const cutoff = ctx.now().getTime() - STALE_MS;
+  for (const name of names) {
+    if (!name.endsWith(".json")) continue;
+    const file2 = path14.join(dir, name);
+    try {
+      if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
+    } catch {
+    }
+  }
+}
 
 // src/lsp/client.ts
-import { readFile as readFile4 } from "fs/promises";
-import path11 from "path";
+import { readFile as readFile5 } from "fs/promises";
+import path15 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path11.normalize(file2).toLowerCase() : path11.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path15.normalize(file2).toLowerCase() : path15.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path11.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path15.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -38721,7 +38974,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path11.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path15.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -38900,7 +39153,7 @@ var LspClient = class _LspClient {
   }
   /** Reads a file from disk and opens it on the server. */
   async openFromDisk(file2, languageId) {
-    const text2 = await readFile4(file2, "utf8");
+    const text2 = await readFile5(file2, "utf8");
     this.openFile(file2, languageId, text2);
     return text2;
   }
@@ -38931,258 +39184,6 @@ var LspClient = class _LspClient {
     this.closed = true;
   }
 };
-
-// src/lsp/impact.ts
-async function impactViaLsp(client, file2, position, maxFiles = 200) {
-  const refs = await client.references(file2, position);
-  const counts = /* @__PURE__ */ new Map();
-  for (const r of refs) counts.set(r.file, (counts.get(r.file) ?? 0) + 1);
-  const all = [...counts.entries()].map(([f3, count2]) => ({ file: f3, count: count2 })).sort((a, b) => b.count - a.count);
-  return {
-    method: "lsp",
-    target: file2,
-    referencingFiles: all.slice(0, maxFiles),
-    truncated: all.length > maxFiles,
-    limitations: refs.length === 0 ? ["The server reported no references. The symbol may be unused, or the server may not have finished indexing."] : []
-  };
-}
-var JS_EXT = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/i;
-var MAX_SCAN_FILES = 2e3;
-var MAX_SCAN_BYTES = 512 * 1024;
-var IMPORT_SPEC = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']/g;
-var stripExt = (p) => p.replace(/\.[^./\\]+$/, "");
-async function impactViaText(targetFile, deps) {
-  const target = path12.resolve(deps.root, targetFile);
-  const targetBase = stripExt(target);
-  const isJs = JS_EXT.test(target);
-  const isPy = /\.pyi?$/i.test(target);
-  const limitations = ["Text search finds files that import this module; it cannot tell which functions inside it they use, and it misses dynamic imports and re-exports through other packages."];
-  if (!isJs && !isPy) {
-    return { method: "text-search", target, referencingFiles: [], truncated: false, limitations: [...limitations, "Import scanning is only implemented for JavaScript/TypeScript and Python; install a language server for this language."] };
-  }
-  const files = (await deps.listFiles()).filter((f3) => isJs ? JS_EXT.test(f3) : /\.pyi?$/i.test(f3));
-  const results = [];
-  let scanned = 0;
-  const pyModule = isPy ? stripExt(path12.relative(deps.root, target)).split(path12.sep).join(".").replace(/\.__init__$/, "") : "";
-  for (const rel2 of files) {
-    if (scanned >= MAX_SCAN_FILES) break;
-    const abs = path12.resolve(deps.root, rel2);
-    if (abs === target) continue;
-    const text2 = await deps.readText(abs);
-    if (text2 === void 0 || text2.length > MAX_SCAN_BYTES) continue;
-    scanned++;
-    let hits = 0;
-    if (isJs) {
-      for (const m of text2.matchAll(IMPORT_SPEC)) {
-        const spec = m[1];
-        if (!spec?.startsWith(".")) continue;
-        const resolved = path12.resolve(path12.dirname(abs), spec);
-        if (stripExt(resolved) === targetBase || resolved === targetBase || path12.join(resolved, "index") === targetBase) hits++;
-      }
-    } else if (pyModule) {
-      const escaped = pyModule.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      hits = [...text2.matchAll(new RegExp(`^\\s*(?:from\\s+${escaped}\\s+import|import\\s+${escaped})\\b`, "gm"))].length;
-    }
-    if (hits > 0) results.push({ file: abs, count: hits });
-  }
-  const truncated = files.length > MAX_SCAN_FILES;
-  if (truncated) limitations.push(`Only the first ${MAX_SCAN_FILES} files were scanned.`);
-  return { method: "text-search", target, referencingFiles: results.sort((a, b) => b.count - a.count), truncated, limitations };
-}
-
-// src/cli/commands/brief.ts
-async function readProjectFile(ctx, rel2) {
-  if (!rel2) throw new JpeError("INVALID_INPUT", "Give the path of a file inside the project.");
-  const abs = resolveInside(ctx.cwd, rel2);
-  const text2 = await ctx.fs.readText(abs);
-  if (text2 === void 0) throw new JpeError("INVALID_INPUT", `"${rel2}" is not a readable file in this project.`);
-  return { abs, rel: path13.relative(ctx.cwd, abs).split(path13.sep).join("/"), text: text2 };
-}
-async function briefCommand(args, ctx) {
-  const [kind, ...rest] = args.positionals;
-  const cfg = (await ctx.loadConfig()).explanation;
-  if (kind === "file") {
-    const file2 = await readProjectFile(ctx, rest[0]);
-    let dependents;
-    if (flagBool(args, "dependents")) {
-      const impact = await impactViaText(file2.rel, { root: ctx.cwd, listFiles: () => listProjectFiles(ctx.cwd, ctx.git), readText: (f3) => ctx.fs.readText(f3) });
-      dependents = impact.referencingFiles.map((r) => path13.relative(ctx.cwd, r.file).split(path13.sep).join("/"));
-    }
-    const phase = flagString(args, "phase");
-    const briefing = buildFileBriefing({ file: file2.rel, content: file2.text, ...dependents ? { dependents } : {}, ...phase === "before" || phase === "after" ? { phase } : {} }, cfg);
-    ctx.out(briefing.text);
-    return 0;
-  }
-  if (kind === "change") {
-    const file2 = await readProjectFile(ctx, rest[0]);
-    const before = await ctx.git(["show", `HEAD:${file2.rel}`]);
-    const note = before.exitCode === 0 ? "" : `NOTE: ${file2.rel} has no committed version (new file or no git history), so the whole file counts as added.
-`;
-    const summary = summarizeChange(file2.rel, before.exitCode === 0 ? before.stdout : "", file2.text);
-    ctx.out(note + buildChangeBriefing(summary, cfg).text);
-    return 0;
-  }
-  if (kind === "error") {
-    const message = flagBool(args, "stdin") ? await ctx.readStdin() : rest.join(" ");
-    if (message.trim() === "") throw new JpeError("INVALID_INPUT", "Give the error message as text, or pipe it in with --stdin.");
-    ctx.out(buildErrorBriefing(message.slice(0, 8e3), cfg).text);
-    return 0;
-  }
-  throw new JpeError("INVALID_INPUT", "Usage: jpe brief file <path> [--dependents] [--phase before|after] | change <path> | error <message>|--stdin");
-}
-
-// src/doctor/doctor.ts
-import os2 from "os";
-
-// src/doctor/env-checks.ts
-import { mkdir as mkdir4, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
-import path16 from "path";
-
-// src/docs/cache.ts
-import { createHash as createHash3 } from "crypto";
-import { mkdir as mkdir3, readFile as readFile5, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path14 from "path";
-var sha256Hex = (text2) => createHash3("sha256").update(text2).digest("hex");
-var MAX_CONTENT_CHARS = 2e5;
-var entrySchema = external_exports.strictObject({
-  key: external_exports.string().regex(/^[a-f0-9]{64}$/),
-  fetchedAt: external_exports.iso.datetime(),
-  expiresAt: external_exports.iso.datetime(),
-  contentHash: external_exports.string().length(64),
-  drafts: external_exports.array(
-    external_exports.strictObject({
-      provider: external_exports.string(),
-      kind: external_exports.enum(["reference", "api-signature", "release-notes", "advisory", "metadata"]),
-      title: external_exports.string(),
-      url: external_exports.string().optional(),
-      content: external_exports.string(),
-      trust: external_exports.enum(["official", "registry", "local", "third-party"]),
-      docVersion: external_exports.string().optional()
-    })
-  )
-});
-var hashDrafts = (drafts) => sha256Hex(drafts.map((d) => d.content).join("\0"));
-var DocCache = class {
-  constructor(deps) {
-    this.deps = deps;
-  }
-  deps;
-  static key(provider, library, version2, topic) {
-    return sha256Hex([provider, library, version2 ?? "", topic.trim().toLowerCase()].join("\0"));
-  }
-  file(key) {
-    return path14.join(this.deps.dir, `${key}.json`);
-  }
-  async put(key, drafts) {
-    const stored = drafts.map((d) => ({ ...d, content: redactSecrets(d.content).slice(0, MAX_CONTENT_CHARS) }));
-    const now = this.deps.now();
-    const entry = {
-      key,
-      fetchedAt: now.toISOString(),
-      expiresAt: new Date(now.getTime() + this.deps.ttlHours * 36e5).toISOString(),
-      contentHash: hashDrafts(stored),
-      drafts: stored
-    };
-    await mkdir3(this.deps.dir, { recursive: true });
-    const temp = `${this.file(key)}.tmp-${process.pid}`;
-    await writeFile3(temp, JSON.stringify(entry));
-    await rename3(temp, this.file(key));
-    return entry;
-  }
-  /** Returns undefined for a missing, malformed or tampered entry. */
-  async get(key) {
-    let text2;
-    try {
-      text2 = await readFile5(this.file(key), "utf8");
-    } catch (error62) {
-      if (error62.code === "ENOENT") return void 0;
-      throw error62;
-    }
-    let raw;
-    try {
-      raw = JSON.parse(text2);
-    } catch {
-      return void 0;
-    }
-    const parsed = entrySchema.safeParse(raw);
-    if (!parsed.success || parsed.data.key !== key) return void 0;
-    if (hashDrafts(parsed.data.drafts) !== parsed.data.contentHash) return void 0;
-    return { entry: parsed.data, expired: new Date(parsed.data.expiresAt).getTime() <= this.deps.now().getTime() };
-  }
-  /** Removes the oldest entries beyond `maxEntries` (plus any leftover temp files). Returns how many were removed. */
-  async prune(maxEntries) {
-    let names;
-    try {
-      names = await readdir3(this.deps.dir);
-    } catch (error62) {
-      if (error62.code === "ENOENT") return 0;
-      throw error62;
-    }
-    const files = await Promise.all(
-      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path14.join(this.deps.dir, n))).mtimeMs }))
-    );
-    files.sort((a, b) => b.mtime - a.mtime);
-    const doomed = files.slice(Math.max(0, maxEntries));
-    await Promise.all(doomed.map((f3) => unlink2(path14.join(this.deps.dir, f3.n))));
-    return doomed.length;
-  }
-};
-
-// src/hooks/state.ts
-import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path15 from "path";
-
-// src/hooks/payload.ts
-import { createHash as createHash4 } from "crypto";
-var base = {
-  session_id: external_exports.string().min(1).max(200),
-  cwd: external_exports.string().min(1),
-  hook_event_name: external_exports.string(),
-  transcript_path: external_exports.string().optional()
-};
-var toolInput = external_exports.record(external_exports.string(), external_exports.unknown());
-var payloadSchemas = {
-  SessionStart: external_exports.looseObject({ ...base, source: external_exports.string().optional() }),
-  UserPromptSubmit: external_exports.looseObject({ ...base, prompt: external_exports.string() }),
-  PreToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput }),
-  PostToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
-  PostToolUseFailure: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
-  Stop: external_exports.looseObject({ ...base, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
-};
-var HOOK_EVENTS = Object.keys(payloadSchemas);
-
-// src/hooks/state.ts
-var stateSchema = external_exports.strictObject({
-  startedAt: external_exports.iso.datetime(),
-  promptNudged: external_exports.boolean(),
-  stopNudged: external_exports.boolean(),
-  /** file key -> ISO time of the last edit JPE saw */
-  edits: external_exports.record(external_exports.string(), external_exports.iso.datetime()),
-  /** file key -> id of the backup taken before the first edit */
-  backups: external_exports.record(external_exports.string(), external_exports.string()),
-  /** file key -> content hash already checked for diagnostics */
-  checked: external_exports.record(external_exports.string(), external_exports.string()),
-  diagnosticsRuns: external_exports.number().int().min(0)
-});
-var STALE_MS = 7 * 24 * 36e5;
-async function pruneStaleStates(ctx) {
-  const dir = path15.join(ctx.stateDir(), "sessions");
-  let names;
-  try {
-    names = await readdir4(dir);
-  } catch {
-    return;
-  }
-  const cutoff = ctx.now().getTime() - STALE_MS;
-  for (const name of names) {
-    if (!name.endsWith(".json")) continue;
-    const file2 = path15.join(dir, name);
-    try {
-      if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
-    } catch {
-    }
-  }
-}
 
 // src/project/detect.ts
 var NPM_NAME = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;

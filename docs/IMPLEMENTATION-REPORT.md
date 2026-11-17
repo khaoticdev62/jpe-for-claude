@@ -51,7 +51,6 @@ Windows 11: Tested. Linux, macOS: not run on real machines; code paths for them 
 - Deep documentation support is npm-centric; other ecosystems get advisories and Context7.
 - Context7 is only reachable through the researcher agent's MCP access.
 - Duplicate diagnostics if Claude Code's own LSP plugin is also installed (setting to turn JPE's off).
-- No lint step (strict TypeScript only).
 
 ## Remaining work
 
@@ -59,8 +58,7 @@ Done after 1.0.0: repository published (public), tag v1.0.0 and release assets a
 
 1. Run the manual CI workflow for Linux and macOS evidence. A first dispatch was refused by GitHub (account billing lock), so no job started.
 2. Live-test the remaining agents and the alias forwarding to an installed plugin.
-3. Add a lint step to the checks.
-4. `npm audit` reports 7 high findings, all in dev build tools (picomatch ReDoS via vitest, tsup, vite). `npm audit --omit=dev` reports 0, so nothing in the shipped bundle is affected. The suggested fixes are major-version downgrades; revisit when upstream releases a patched picomatch.
+3. `npm audit` reports 7 high findings, all in dev build tools (picomatch ReDoS via vitest, tsup, vite). `npm audit --omit=dev` reports 0, so nothing in the shipped bundle is affected. The suggested fixes are major-version downgrades; revisit when upstream releases a patched picomatch.
 
 ## Installation
 

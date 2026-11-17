@@ -257,7 +257,10 @@ describe("install-plan and research (offline)", () => {
       "node_modules/zod/index.d.ts": "export declare function strictObject<T>(shape: T): ZodObject<T>;\n",
     });
     let networkCalls = 0;
-    const net = { resolve: async () => ["93.184.216.34"], fetch: (async () => (networkCalls++, new Response("x"))) as typeof fetch };
+    const net = { resolve: async () => ["93.184.216.34"], fetch: async () => {
+        networkCalls++;
+        return new Response("x");
+      } };
     expect(await runCli(["research", "zod", "--topic", "strictObject", "--offline"], makeCtx({ net }))).toBe(0);
     expect(networkCalls).toBe(0);
     expect(out()).toContain("MODE: offline");

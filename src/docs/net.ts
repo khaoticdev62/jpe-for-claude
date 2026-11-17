@@ -49,8 +49,11 @@ export function pinnedFetch(url: URL, init: PinnedInit = {}): Promise<Response> 
       (res) => {
         const responseHeaders = new Headers();
         for (const [key, value] of Object.entries(res.headers)) {
-          if (Array.isArray(value)) value.forEach((v) => responseHeaders.append(key, v));
-          else if (value !== undefined) responseHeaders.set(key, value);
+          if (Array.isArray(value)) {
+            for (const v of value) responseHeaders.append(key, v);
+          } else if (value !== undefined) {
+            responseHeaders.set(key, value);
+          }
         }
         const status = res.statusCode ?? 0;
         const body = NULL_BODY_STATUSES.has(status) ? null : (Readable.toWeb(res) as ReadableStream<Uint8Array>);

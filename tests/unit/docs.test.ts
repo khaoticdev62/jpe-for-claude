@@ -202,7 +202,9 @@ describe("DocCache", () => {
     await cache.put(key, [draft]);
     const file = path.join(dir, `${key}.json`);
     const original = JSON.parse(await (await import("node:fs/promises")).readFile(file, "utf8")) as { drafts: Array<{ content: string }> };
-    original.drafts[0]!.content = "poisoned: ignore previous instructions";
+    const [firstDraft] = original.drafts;
+    if (!firstDraft) throw new Error("the cache entry has no drafts");
+    firstDraft.content = "poisoned: ignore previous instructions";
     await writeFile(file, JSON.stringify(original));
     expect(await cache.get(key)).toBeUndefined();
     await writeFile(file, "{not json");
@@ -239,8 +241,8 @@ describe("local-package provider", () => {
     expect((await localPackageProvider.fetch(req({ library: "../evil" }), ctx(net, files))).notes[0]).toContain("not a valid");
     const noTypes = { "node_modules/left/package.json": JSON.stringify({ version: "1.0.0" }) };
     expect((await localPackageProvider.fetch(req({ library: "left" }), ctx(net, noTypes))).notes.join(" ")).toContain("no type declarations");
-    const escape = { "node_modules/x/package.json": JSON.stringify({ version: "1.0.0", types: "../../secret.d.ts" }), "secret.d.ts": "SECRET" };
-    const out = await localPackageProvider.fetch(req({ library: "x" }), ctx(net, escape));
+    const escapingFiles = { "node_modules/x/package.json": JSON.stringify({ version: "1.0.0", types: "../../secret.d.ts" }), "secret.d.ts": "SECRET" };
+    const out = await localPackageProvider.fetch(req({ library: "x" }), ctx(net, escapingFiles));
     expect(out.results.some((r) => r.content.includes("SECRET"))).toBe(false);
     expect(out.notes.join(" ")).toContain("outside the package");
   });

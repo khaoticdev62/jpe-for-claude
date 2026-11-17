@@ -8,6 +8,7 @@ const INJECTION_PATTERNS: ReadonlyArray<{ name: string; pattern: RegExp }> = [
 ];
 
 // Control characters (except tab/newline), zero-width and bidirectional-override characters.
+// biome-ignore lint/suspicious/noControlCharactersInRegex: this pattern exists to find and strip control and invisible characters
 const HIDDEN_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F​-‏‪-‮⁠-⁤⁦-⁩﻿]/g;
 
 export interface UntrustedResult {
