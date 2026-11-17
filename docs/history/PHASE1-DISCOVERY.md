@@ -1,6 +1,6 @@
 # JPE For Claude — Phase 1: Agile Discovery & Stack Selection
 
-Status: AWAITING APPROVAL. No code has been written. Environment: Windows 11, Node v22.21.0, Git 2.53, Claude Code 2.1.323. Target dir `C:\Users\thecr\Desktop\JPE Claude` is empty (greenfield).
+Status: AWAITING APPROVAL. No code has been written. Environment: Windows 11, Node v22.21.0, Git 2.53, Claude Code 2.1.323. Target dir (the project directory) is empty (greenfield).
 
 ## 1. Core Mechanical Problem (JPE)
 
