@@ -83,4 +83,4 @@ npm version patch|minor        # bump package.json, then sync plugin.json and ma
 npm run package                # build the release folder, zip and checksums into release/
 ```
 
-More: [User guide](docs/USER-GUIDE.md) · [Command center](docs/COMMAND-CENTER.md) · [Design system](docs/DESIGN-SYSTEM.md) · [Developer guide](docs/DEVELOPER-GUIDE.md) · [Security](docs/SECURITY.md) · [Changelog](CHANGELOG.md). Licensed under MIT.
+More: [User guide](docs/USER-GUIDE.md) · [Command center](docs/COMMAND-CENTER.md) · [`jpe show` views](docs/SHOW.md) · [Design system](docs/DESIGN-SYSTEM.md) · [Developer guide](docs/DEVELOPER-GUIDE.md) · [Security](docs/SECURITY.md) · [Changelog](CHANGELOG.md). Licensed under MIT.

@@ -19772,8 +19772,14 @@ var CHORD_PATTERN = /^(?:(?:ctrl|alt|shift)\+)*(?:[a-zA-Z0-9/?:.,;'=\-[\]\\`]|en
 
 // src/ui/tokens.ts
 var THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"];
-var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
-var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8, keyword: 13, string: 10, comment: 8, number: 11 };
+var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8, keyword: 5, string: 2, comment: 8, number: 3 };
+var SYNTAX = {
+  jpe: { keyword: "#C792EA", string: "#A5D6A7", comment: "#9AA5B1", number: "#F78C6C" },
+  "jpe-contrast": { keyword: "#DDB8FF", string: "#B9F5BD", comment: "#C8D0D8", number: "#FFB59A" },
+  "jpe-colorblind": { keyword: "#8FA8FF", string: "#E8D88A", comment: "#9AA5B1", number: "#FFA66B" },
+  "jpe-light": { keyword: "#7A3EB8", string: "#1F6B3A", comment: "#5B6B7B", number: "#B14A00" }
+};
 var THEMES = {
   jpe: {
     name: "jpe",
@@ -19782,6 +19788,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -19803,6 +19810,7 @@ var THEMES = {
     background: "#000000",
     surface: "#1A1A1A",
     colors: {
+      ...SYNTAX["jpe-contrast"],
       text: "#FFFFFF",
       muted: "#E6E6E6",
       heading: "#FFFFFF",
@@ -19824,6 +19832,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe-colorblind"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -19845,6 +19854,7 @@ var THEMES = {
     background: "#FAFAFA",
     surface: "#EDEDED",
     colors: {
+      ...SYNTAX["jpe-light"],
       text: "#1A1A1A",
       muted: "#4A4A4A",
       heading: "#000000",

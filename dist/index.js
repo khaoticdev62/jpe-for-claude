@@ -21032,9 +21032,15 @@ function resolveKey(keymap, event, options = {}) {
 
 // src/ui/tokens.ts
 var THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"];
-var ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border"];
-var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
-var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+var ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border", "keyword", "string", "comment", "number"];
+var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8, keyword: 13, string: 10, comment: 8, number: 11 };
+var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8, keyword: 5, string: 2, comment: 8, number: 3 };
+var SYNTAX = {
+  jpe: { keyword: "#C792EA", string: "#A5D6A7", comment: "#9AA5B1", number: "#F78C6C" },
+  "jpe-contrast": { keyword: "#DDB8FF", string: "#B9F5BD", comment: "#C8D0D8", number: "#FFB59A" },
+  "jpe-colorblind": { keyword: "#8FA8FF", string: "#E8D88A", comment: "#9AA5B1", number: "#FFA66B" },
+  "jpe-light": { keyword: "#7A3EB8", string: "#1F6B3A", comment: "#5B6B7B", number: "#B14A00" }
+};
 var THEMES = {
   jpe: {
     name: "jpe",
@@ -21043,6 +21049,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -21064,6 +21071,7 @@ var THEMES = {
     background: "#000000",
     surface: "#1A1A1A",
     colors: {
+      ...SYNTAX["jpe-contrast"],
       text: "#FFFFFF",
       muted: "#E6E6E6",
       heading: "#FFFFFF",
@@ -21085,6 +21093,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe-colorblind"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -21106,6 +21115,7 @@ var THEMES = {
     background: "#FAFAFA",
     surface: "#EDEDED",
     colors: {
+      ...SYNTAX["jpe-light"],
       text: "#1A1A1A",
       muted: "#4A4A4A",
       heading: "#000000",
@@ -22981,7 +22991,7 @@ function measure(content, family, symbols) {
   return { codeLines, commentLines, functions, branches, maxNesting, asyncMarkers, advancedMarkers, score: score2 };
 }
 var RISK_RULES = [
-  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|\bexec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
+  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|(?<![.\w$])exec\s*\(\s*[A-Za-z_]|\b(?:child_process|childProcess|cp)\.exec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
   { id: "html-injection", families: ["js"], severity: "medium", re: /\.innerHTML\s*=|dangerouslySetInnerHTML|document\.write\s*\(/, message: "Possible HTML injection point: inserting text as HTML can let outside text run as script (XSS)." },
   { id: "shell-from-string", families: ["js", "python"], severity: "high", re: /\b(?:exec|execSync|spawn|system|popen)\s*\(\s*(?:`[^`]*\$\{|["'][^"']*["']\s*\+)|shell\s*=\s*True/, message: "Possible shell command built from text or run through a shell: unsafe input could add its own commands (command injection)." },
   { id: "sql-from-string", families: ["js", "python", "go", "rust"], severity: "high", re: /\b(select|insert\s+into|update|delete\s+from)\b[^\n]*(\$\{|["']\s*\+\s*\w|%s|\bformat!?\s*\(|\bf["'])/i, message: "Possible SQL built by pasting text together: unsafe input could change the query (SQL injection). Parameterised queries avoid this." },
@@ -23141,9 +23151,15 @@ var countBy = (items) => {
   for (const r of items) counts.set(r.id, (counts.get(r.id) ?? 0) + 1);
   return counts;
 };
+function toLines(text) {
+  if (text === "") return [];
+  const lines = text.split(/\r?\n/);
+  if (lines[lines.length - 1] === "") lines.pop();
+  return lines;
+}
 function summarizeChange(file2, before, after) {
-  const a = before.split(/\r?\n/);
-  const b = after.split(/\r?\n/);
+  const a = toLines(before);
+  const b = toLines(after);
   const approximate = (a.length + 1) * (b.length + 1) > MAX_CELLS;
   let stats;
   if (approximate) {

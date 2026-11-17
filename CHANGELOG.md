@@ -6,6 +6,20 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-17
+
+### Added
+- `jpe show file|change|review|impact|docs|diagnostics` (`src/show/`, `src/cli/commands/show.ts`, documented in `docs/SHOW.md`): rich, width-aware views of what the engines verified. A file's code with possible risks marked on their lines beside its structure and plain-English concepts; a change as a diff; a review of every uncommitted file with notes marked confirmed or heuristic and a reviewer's checklist; what depends on a file (exact or approximate, stated); official documentation with trust, version match and freshness shown, deprecations quoted exactly, advisories raised and sources cited; and compiler or language-server findings with general-guidance explanations. `--json` gives the underlying data.
+- Syntax highlighting for JavaScript/TypeScript, Python, Go, Rust and JSON (`src/ui/highlight.ts`), with four syntax roles in every theme at measured contrast. It is lossless: highlighted text always equals the original.
+- Display components for code and explanations (`src/ui/code.ts`): code blocks with line numbers and annotations, side-by-side panels that stack when narrow, collapsible sections, and callouts. Each carries a glyph and a word so status is never colour-only, has a screen-reader form, and never exceeds the terminal width.
+
+### Fixed
+- The static analyzer flagged every `regex.exec(...)` call as "possible dynamic code execution (high risk)". It now flags `eval`, `new Function`, a bare `exec(...)` and `child_process.exec(...`, and leaves regular-expression matching alone.
+- A new file's change summary reported "-1 lines removed" (empty text counted as one empty line), and a file's final newline counted as an extra line. Line counts are now exact.
+
+### Changed
+- `jpe research`, `jpe lsp diagnostics` and `jpe impact` now share their logic with the matching `jpe show` view instead of each carrying a copy. Their output is unchanged.
+
 ## [1.2.0] - 2026-11-17
 
 ### Added

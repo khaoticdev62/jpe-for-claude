@@ -51,8 +51,18 @@ async function statusSub(ctx: CliContext): Promise<number> {
   return 0;
 }
 
-async function diagnosticsSub(args: ParsedArgs, ctx: CliContext): Promise<number> {
-  const inputs = args.positionals.slice(1);
+export interface DiagnosticsRun {
+  report: DiagnosticsReport;
+  /** Plain-English remarks, for example that the language server is not installed so the results are not LSP-verified. */
+  notes: string[];
+}
+
+/**
+ * Collects diagnostics for files that share one language server (the server if installed, else the compiler command,
+ * labelled as such) and records what was observed in the evidence ledger. Shared by `jpe lsp diagnostics` and
+ * `jpe show diagnostics`.
+ */
+export async function collectDiagnostics(inputs: readonly string[], ctx: CliContext): Promise<DiagnosticsRun> {
   if (inputs.length === 0) throw new JpeError("INVALID_INPUT", "Usage: jpe lsp diagnostics <file> [more files]");
   const cfg = await ctx.loadConfig();
   const files = inputs.map((f) => resolveInside(ctx.cwd, f));
@@ -73,17 +83,31 @@ async function diagnosticsSub(args: ParsedArgs, ctx: CliContext): Promise<number
   await mkdir(path.dirname(ledgerFile), { recursive: true });
   await appendFile(ledgerFile, `${ledger.toJsonLines()}\n`);
 
-  const missing = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
-  ctx.out([...formatDiagnostics(ctx, report), ...missing].join("\n"));
+  const notes = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
+  return { report, notes };
+}
+
+async function diagnosticsSub(args: ParsedArgs, ctx: CliContext): Promise<number> {
+  const { report, notes } = await collectDiagnostics(args.positionals.slice(1), ctx);
+  ctx.out([...formatDiagnostics(ctx, report), ...notes].join("\n"));
   return report.source === "lsp" && report.errors > 0 ? 1 : 0;
 }
 
-async function impactSub(args: ParsedArgs, ctx: CliContext): Promise<number> {
-  const target = args.positionals[0];
+export interface ImpactRun {
+  report: ImpactReport;
+  /** Absolute path of the file asked about. */
+  abs: string;
+  /** Remarks about what was tried, for example that the language server failed and import scanning was used. */
+  notes: string[];
+}
+
+/**
+ * Finds what depends on a file: exact references from the language server when a position is given and a server is
+ * installed, otherwise by scanning imports (labelled as approximate). Shared by `jpe impact` and `jpe show impact`.
+ */
+export async function computeImpact(target: string | undefined, line: number, column: number, ctx: CliContext): Promise<ImpactRun> {
   if (!target) throw new JpeError("INVALID_INPUT", "Usage: jpe impact <file> [--line N --column N]");
   const abs = resolveInside(ctx.cwd, target);
-  const line = Number(flagString(args, "line"));
-  const column = Number(flagString(args, "column"));
   const hit = languageForFile(abs);
   let report: ImpactReport | undefined;
   const notes: string[] = [];
@@ -105,7 +129,11 @@ async function impactSub(args: ParsedArgs, ctx: CliContext): Promise<number> {
     } else notes.push(`${hit.language.server.binary} is not installed; used import scanning instead.`);
   }
   report ??= await impactViaText(target, { root: ctx.cwd, listFiles: () => listProjectFiles(ctx.cwd, ctx.git), readText: (f) => ctx.fs.readText(f) });
+  return { report, abs, notes };
+}
 
+async function impactSub(args: ParsedArgs, ctx: CliContext): Promise<number> {
+  const { report, abs, notes } = await computeImpact(args.positionals[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
   ctx.out(
     [
       `Impact analysis for ${rel(ctx, abs)} (${report.method === "lsp" ? "language server: exact references" : "import scanning"})`,

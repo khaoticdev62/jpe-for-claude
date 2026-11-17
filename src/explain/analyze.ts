@@ -206,7 +206,7 @@ interface RiskRule {
 }
 
 const RISK_RULES: readonly RiskRule[] = [
-  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|\bexec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
+  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|(?<![.\w$])exec\s*\(\s*[A-Za-z_]|\b(?:child_process|childProcess|cp)\.exec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
   { id: "html-injection", families: ["js"], severity: "medium", re: /\.innerHTML\s*=|dangerouslySetInnerHTML|document\.write\s*\(/, message: "Possible HTML injection point: inserting text as HTML can let outside text run as script (XSS)." },
   { id: "shell-from-string", families: ["js", "python"], severity: "high", re: /\b(?:exec|execSync|spawn|system|popen)\s*\(\s*(?:`[^`]*\$\{|["'][^"']*["']\s*\+)|shell\s*=\s*True/, message: "Possible shell command built from text or run through a shell: unsafe input could add its own commands (command injection)." },
   { id: "sql-from-string", families: ["js", "python", "go", "rust"], severity: "high", re: /\b(select|insert\s+into|update|delete\s+from)\b[^\n]*(\$\{|["']\s*\+\s*\w|%s|\bformat!?\s*\(|\bf["'])/i, message: "Possible SQL built by pasting text together: unsafe input could change the query (SQL injection). Parameterised queries avoid this." },

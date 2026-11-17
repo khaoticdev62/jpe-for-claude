@@ -2700,10 +2700,10 @@ var require_validate = __commonJS({
         else
           this.params = obj;
       }
-      block$data(valid, codeBlock, $dataValid = codegen_1.nil) {
+      block$data(valid, codeBlock2, $dataValid = codegen_1.nil) {
         this.gen.block(() => {
           this.check$data(valid, $dataValid);
-          codeBlock();
+          codeBlock2();
         });
       }
       check$data(valid = codegen_1.nil, $dataValid = codegen_1.nil) {
@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path26) {
-      let input2 = path26;
+    function removeDotSegments(path27) {
+      let input2 = path27;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3337,11 +3337,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path26) {
-      if (path26 === "" || path26[0] === "/") {
-        return removeDotSegments(path26);
+    function removeDotSegmentsRelative(path27) {
+      if (path27 === "" || path27[0] === "/") {
+        return removeDotSegments(path27);
       }
-      const segments = path26.split("/");
+      const segments = path27.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -3704,8 +3704,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path26 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path26 && path26 !== "/" ? path26 : void 0;
+        const path27 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path27 && path27 !== "/" ? path27 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -8075,10 +8075,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path26) {
-  if (!path26)
+function getElementAtPath(obj, path27) {
+  if (!path27)
     return obj;
-  return path26.reduce((acc, key) => acc?.[key], obj);
+  return path27.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8418,11 +8418,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path26, issues) {
+function prefixIssues(path27, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path26);
+    iss.path.unshift(path27);
     return iss;
   });
 }
@@ -8884,16 +8884,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path26 = []) => {
+  const processError = (error63, path27 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path26, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path27, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
       } else {
-        const fullpath = [...path26, ...issue2.path];
+        const fullpath = [...path27, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8932,17 +8932,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path26 = []) => {
+  const processError = (error63, path27 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path26, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path27, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
       } else {
-        const fullpath = [...path26, ...issue2.path];
+        const fullpath = [...path27, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8981,8 +8981,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path26 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path26) {
+  const path27 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path27) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -26120,13 +26120,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path26 = ref.slice(1).split("/").filter(Boolean);
-  if (path26.length === 0) {
+  const path27 = ref.slice(1).split("/").filter(Boolean);
+  if (path27.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path26[0] === defsKey) {
-    const key = path26[1] === void 0 ? void 0 : decodeJSONPointerSegment(path26[1]);
+  if (path27[0] === defsKey) {
+    const key = path27[1] === void 0 ? void 0 : decodeJSONPointerSegment(path27[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -28984,8 +28984,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path26, errorMaps, issueData } = params;
-  const fullPath = [...path26, ...issueData.path || []];
+  const { data, path: path27, errorMaps, issueData } = params;
+  const fullPath = [...path27, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -29100,11 +29100,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path26, key) {
+  constructor(parent, value, path27, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path26;
+    this._path = path27;
     this._key = key;
   }
   get path() {
@@ -32655,11 +32655,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path26) {
-  if (path26.length === 0) {
+function getDotPath(path27) {
+  if (path27.length === 0) {
     return "object root";
   }
-  return path26.reduce((acc, seg, index) => {
+  return path27.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -36681,7 +36681,7 @@ function redactSecrets(text2) {
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.2.0",
+  version: "1.3.0",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",
@@ -36874,9 +36874,15 @@ function chordLabel(chord) {
 
 // src/ui/tokens.ts
 var THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"];
-var ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border"];
-var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
-var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+var ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border", "keyword", "string", "comment", "number"];
+var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8, keyword: 13, string: 10, comment: 8, number: 11 };
+var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8, keyword: 5, string: 2, comment: 8, number: 3 };
+var SYNTAX = {
+  jpe: { keyword: "#C792EA", string: "#A5D6A7", comment: "#9AA5B1", number: "#F78C6C" },
+  "jpe-contrast": { keyword: "#DDB8FF", string: "#B9F5BD", comment: "#C8D0D8", number: "#FFB59A" },
+  "jpe-colorblind": { keyword: "#8FA8FF", string: "#E8D88A", comment: "#9AA5B1", number: "#FFA66B" },
+  "jpe-light": { keyword: "#7A3EB8", string: "#1F6B3A", comment: "#5B6B7B", number: "#B14A00" }
+};
 var THEMES = {
   jpe: {
     name: "jpe",
@@ -36885,6 +36891,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -36906,6 +36913,7 @@ var THEMES = {
     background: "#000000",
     surface: "#1A1A1A",
     colors: {
+      ...SYNTAX["jpe-contrast"],
       text: "#FFFFFF",
       muted: "#E6E6E6",
       heading: "#FFFFFF",
@@ -36927,6 +36935,7 @@ var THEMES = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe-colorblind"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -36948,6 +36957,7 @@ var THEMES = {
     background: "#FAFAFA",
     surface: "#EDEDED",
     colors: {
+      ...SYNTAX["jpe-light"],
       text: "#1A1A1A",
       muted: "#4A4A4A",
       heading: "#000000",
@@ -37797,7 +37807,7 @@ function measure(content, family, symbols) {
   return { codeLines, commentLines, functions, branches, maxNesting, asyncMarkers, advancedMarkers, score: score2 };
 }
 var RISK_RULES = [
-  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|\bexec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
+  { id: "dynamic-eval", families: ["js", "python"], severity: "high", re: /\beval\s*\(|\bnew\s+Function\s*\(|(?<![.\w$])exec\s*\(\s*[A-Za-z_]|\b(?:child_process|childProcess|cp)\.exec\s*\(\s*[A-Za-z_]/, message: "Possible dynamic code execution (eval/exec): if any part of the text comes from a user, they could run their own code." },
   { id: "html-injection", families: ["js"], severity: "medium", re: /\.innerHTML\s*=|dangerouslySetInnerHTML|document\.write\s*\(/, message: "Possible HTML injection point: inserting text as HTML can let outside text run as script (XSS)." },
   { id: "shell-from-string", families: ["js", "python"], severity: "high", re: /\b(?:exec|execSync|spawn|system|popen)\s*\(\s*(?:`[^`]*\$\{|["'][^"']*["']\s*\+)|shell\s*=\s*True/, message: "Possible shell command built from text or run through a shell: unsafe input could add its own commands (command injection)." },
   { id: "sql-from-string", families: ["js", "python", "go", "rust"], severity: "high", re: /\b(select|insert\s+into|update|delete\s+from)\b[^\n]*(\$\{|["']\s*\+\s*\w|%s|\bformat!?\s*\(|\bf["'])/i, message: "Possible SQL built by pasting text together: unsafe input could change the query (SQL injection). Parameterised queries avoid this." },
@@ -38393,7 +38403,7 @@ var BackupStore = class {
 };
 
 // src/cli/args.ts
-var BOOLEAN_FLAGS = /* @__PURE__ */ new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader"]);
+var BOOLEAN_FLAGS = /* @__PURE__ */ new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader", "collapse", "all"]);
 function parseArgs(argv) {
   const positionals = [];
   const flags = /* @__PURE__ */ new Map();
@@ -38736,6 +38746,10 @@ var MATCHERS = GLOSSARY.map((entry) => {
 function findJargon(text2) {
   return MATCHERS.filter(({ pattern }) => pattern.test(text2)).map(({ entry }) => entry);
 }
+function lookupTerm(term) {
+  const t = term.trim().toLowerCase();
+  return GLOSSARY.find((e) => e.term.toLowerCase() === t || e.aliases?.some((a) => a.toLowerCase() === t));
+}
 
 // src/explain/briefing.ts
 var SECTIONS = [
@@ -38917,9 +38931,15 @@ var countBy = (items) => {
   for (const r of items) counts.set(r.id, (counts.get(r.id) ?? 0) + 1);
   return counts;
 };
+function toLines(text2) {
+  if (text2 === "") return [];
+  const lines = text2.split(/\r?\n/);
+  if (lines[lines.length - 1] === "") lines.pop();
+  return lines;
+}
 function summarizeChange(file2, before, after) {
-  const a = before.split(/\r?\n/);
-  const b = after.split(/\r?\n/);
+  const a = toLines(before);
+  const b = toLines(after);
   const approximate = (a.length + 1) * (b.length + 1) > MAX_CELLS;
   let stats;
   if (approximate) {
@@ -39204,15 +39224,15 @@ async function detectRust(root, fs, info) {
   for (const m of lock.matchAll(/\[\[package\]\]\s*name\s*=\s*"([^"]+)"\s*version\s*=\s*"([^"]+)"/g)) {
     if (m[1] && m[2]) locked.set(m[1], m[2]);
   }
-  let section = "";
+  let section2 = "";
   for (const raw of manifest.split(/\r?\n/)) {
     const line = raw.trim();
     const header = /^\[([^\]]+)\]$/.exec(line);
     if (header?.[1]) {
-      section = header[1];
+      section2 = header[1];
       continue;
     }
-    if (section !== "dependencies" && section !== "dev-dependencies") continue;
+    if (section2 !== "dependencies" && section2 !== "dev-dependencies") continue;
     const dep = /^([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]+)"|\{[^}]*version\s*=\s*"([^"]+)")/.exec(line);
     if (!dep?.[1]) continue;
     const version2 = locked.get(dep[1]);
@@ -39221,7 +39241,7 @@ async function detectRust(root, fs, info) {
       ecosystem: "rust",
       declared: dep[2] ?? dep[3] ?? "",
       ...version2 ? { version: version2, versionSource: "lockfile" } : { versionSource: "declared" },
-      dev: section === "dev-dependencies"
+      dev: section2 === "dev-dependencies"
     });
   }
   if (lock !== "") info.hasLockfile = true;
@@ -41466,8 +41486,7 @@ async function statusSub(ctx) {
   ctx.out(lines.join("\n"));
   return 0;
 }
-async function diagnosticsSub(args, ctx) {
-  const inputs = args.positionals.slice(1);
+async function collectDiagnostics(inputs, ctx) {
   if (inputs.length === 0) throw new JpeError("INVALID_INPUT", "Usage: jpe lsp diagnostics <file> [more files]");
   const cfg = await ctx.loadConfig();
   const files = inputs.map((f3) => resolveInside(ctx.cwd, f3));
@@ -41484,16 +41503,17 @@ async function diagnosticsSub(args, ctx) {
   await mkdir5(path21.dirname(ledgerFile), { recursive: true });
   await appendFile(ledgerFile, `${ledger.toJsonLines()}
 `);
-  const missing = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
-  ctx.out([...formatDiagnostics(ctx, report), ...missing].join("\n"));
+  const notes = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
+  return { report, notes };
+}
+async function diagnosticsSub(args, ctx) {
+  const { report, notes } = await collectDiagnostics(args.positionals.slice(1), ctx);
+  ctx.out([...formatDiagnostics(ctx, report), ...notes].join("\n"));
   return report.source === "lsp" && report.errors > 0 ? 1 : 0;
 }
-async function impactSub(args, ctx) {
-  const target = args.positionals[0];
+async function computeImpact(target, line, column, ctx) {
   if (!target) throw new JpeError("INVALID_INPUT", "Usage: jpe impact <file> [--line N --column N]");
   const abs = resolveInside(ctx.cwd, target);
-  const line = Number(flagString(args, "line"));
-  const column = Number(flagString(args, "column"));
   const hit = languageForFile(abs);
   let report;
   const notes = [];
@@ -41514,6 +41534,10 @@ async function impactSub(args, ctx) {
     } else notes.push(`${hit.language.server.binary} is not installed; used import scanning instead.`);
   }
   report ??= await impactViaText(target, { root: ctx.cwd, listFiles: () => listProjectFiles(ctx.cwd, ctx.git), readText: (f3) => ctx.fs.readText(f3) });
+  return { report, abs, notes };
+}
+async function impactSub(args, ctx) {
+  const { report, abs, notes } = await computeImpact(args.positionals[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
   ctx.out(
     [
       `Impact analysis for ${rel(ctx, abs)} (${report.method === "lsp" ? "language server: exact references" : "import scanning"})`,
@@ -41554,6 +41578,9 @@ async function installPlanCommand(args, ctx) {
   );
   return 0;
 }
+
+// src/cli/commands/research.ts
+import path24 from "path";
 
 // src/security/untrusted.ts
 var INJECTION_PATTERNS = [
@@ -41696,13 +41723,13 @@ var pkgSchema = external_exports.looseObject({
 var MAX_README_CHARS = 8e3;
 var MAX_TYPES_CHARS = 3e4;
 function focusOnTopic(text2, topic, maxChars, window = 8) {
-  const words = topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
+  const words2 = topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
   const lines = text2.split(/\r?\n/);
-  if (words.length > 0) {
+  if (words2.length > 0) {
     const keep = /* @__PURE__ */ new Set();
     lines.forEach((line, i) => {
       const lower = line.toLowerCase();
-      if (words.some((w) => lower.includes(w))) for (let j = Math.max(0, i - 2); j <= Math.min(lines.length - 1, i + window); j++) keep.add(j);
+      if (words2.some((w) => lower.includes(w))) for (let j = Math.max(0, i - 2); j <= Math.min(lines.length - 1, i + window); j++) keep.add(j);
     });
     if (keep.size > 0) {
       const picked = [];
@@ -41781,9 +41808,9 @@ function declarationCandidates(fromFile, spec) {
   return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path22.join(base3, "index.d.ts"), path22.join(base3, "index.d.cts")])];
 }
 async function collectDeclarations(packageDir, entry, entryText, topic, read) {
-  const words = topicWords(topic);
-  const mentions = (text2) => words.some((w) => text2.toLowerCase().includes(w));
-  if (words.length === 0 || mentions(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words.length > 0, files: 1 };
+  const words2 = topicWords(topic);
+  const mentions2 = (text2) => words2.some((w) => text2.toLowerCase().includes(w));
+  if (words2.length === 0 || mentions2(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words2.length > 0, files: 1 };
   const seen = /* @__PURE__ */ new Set([path22.normalize(entry)]);
   const queue = [{ file: entry, text: entryText }];
   const excerpts = [];
@@ -41803,7 +41830,7 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
         if (text2 === void 0) continue;
         seen.add(normal);
         queue.push({ file: normal, text: text2 });
-        if (mentions(text2) && used < MAX_TYPES_CHARS) {
+        if (mentions2(text2) && used < MAX_TYPES_CHARS) {
           const excerpt2 = `// ${path22.relative(packageDir, normal).split(path22.sep).join("/")}
 ${focusOnTopic(text2, topic, Math.min(8e3, MAX_TYPES_CHARS - used))}`;
           excerpts.push(excerpt2);
@@ -41989,14 +42016,13 @@ var repoReleaseProvider = {
 };
 
 // src/cli/commands/research.ts
-import path24 from "path";
 var PROVIDERS = {
   "local-package": localPackageProvider,
   official: officialProvider,
   "repo-release": repoReleaseProvider,
   osv: osvProvider
 };
-async function researchCommand(args, ctx) {
+async function runResearch(args, ctx) {
   const library = args.positionals[0];
   if (!library) throw new JpeError("INVALID_INPUT", "Usage: jpe research <library> [--topic <what you need>] [--version <exact>] [--offline]");
   const cfg = await ctx.loadConfig();
@@ -42019,9 +42045,635 @@ async function researchCommand(args, ctx) {
       now: ctx.now
     }
   );
-  const context7 = cfg.docs.providers.includes("context7") ? "\nContext7: not queried by this command. The jpe-researcher agent queries it through its MCP tools; treat its output as third-party and unversioned.\n" : "";
-  ctx.out(versionNote + formatReport(report) + context7);
+  const context7Note = cfg.docs.providers.includes("context7") ? "\nContext7: not queried by this command. The jpe-researcher agent queries it through its MCP tools; treat its output as third-party and unversioned.\n" : "";
+  return { report, versionNote, context7Note };
+}
+async function researchCommand(args, ctx) {
+  const { report, versionNote, context7Note } = await runResearch(args, ctx);
+  ctx.out(versionNote + formatReport(report) + context7Note);
   return 0;
+}
+
+// src/cli/commands/show.ts
+import path25 from "path";
+
+// src/ui/highlight.ts
+var EXTENSIONS = {
+  ts: "js",
+  tsx: "js",
+  mts: "js",
+  cts: "js",
+  js: "js",
+  jsx: "js",
+  mjs: "js",
+  cjs: "js",
+  py: "python",
+  pyi: "python",
+  go: "go",
+  rs: "rust",
+  json: "json",
+  jsonc: "json"
+};
+function languageFor(file2) {
+  const dot = file2.lastIndexOf(".");
+  return dot === -1 ? "plain" : EXTENSIONS[file2.slice(dot + 1).toLowerCase()] ?? "plain";
+}
+var words = (list) => new Set(list.split(" "));
+var KEYWORDS = {
+  js: words("const let var function return if else for while do switch case break continue class extends new this super import export from default async await try catch finally throw typeof instanceof in of interface type enum implements public private protected readonly static abstract null undefined true false void as satisfies keyof declare namespace yield delete"),
+  python: words("def class return if elif else for while in not and or is import from as with try except finally raise pass break continue lambda yield async await None True False global nonlocal assert del match case"),
+  go: words("func package import return if else for range switch case default break continue type struct interface map chan go defer select var const nil true false fallthrough goto"),
+  rust: words("fn let mut pub struct enum impl trait use mod return if else for while loop match break continue as in ref self Self super crate const static async await move where true false unsafe dyn type"),
+  json: words("true false null"),
+  plain: /* @__PURE__ */ new Set()
+};
+var SYNTAX2 = {
+  js: { lineComment: "//", blockComment: true, quotes: `"'`, multiLineQuote: "`", tripleQuotes: false },
+  python: { lineComment: "#", blockComment: false, quotes: `"'`, tripleQuotes: true },
+  go: { lineComment: "//", blockComment: true, quotes: `"'`, multiLineQuote: "`", tripleQuotes: false },
+  rust: { lineComment: "//", blockComment: true, quotes: '"', tripleQuotes: false },
+  json: { blockComment: false, quotes: '"', tripleQuotes: false },
+  plain: { blockComment: false, quotes: "", tripleQuotes: false }
+};
+var MAX_HIGHLIGHT_LINE = 2e3;
+var IDENT_START = /[A-Za-z_$]/;
+var IDENT_PART = /[\w$]/;
+var RUST_CHAR = /^'(?:\\.|[^\\'])'/;
+var NUMBER = /^(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?)/;
+function pushPiece(pieces, text2, role) {
+  if (text2 === "") return;
+  const last = pieces.at(-1);
+  if (last !== void 0 && last.role === role) last.text += text2;
+  else pieces.push(role === void 0 ? { text: text2 } : { text: text2, role });
+}
+function stringEnd(line, start, quote) {
+  for (let i = start + 1; i < line.length; i++) {
+    const ch = line.charAt(i);
+    if (ch === "\\") i++;
+    else if (ch === quote) return { end: i + 1, closed: true };
+  }
+  return { end: line.length, closed: false };
+}
+function lexLine(line, language, carry) {
+  const syntax = SYNTAX2[language];
+  const keywords = KEYWORDS[language];
+  const pieces = [];
+  let i = 0;
+  let state = carry;
+  if (state.kind === "block") {
+    const close = line.indexOf("*/");
+    if (close === -1) return { pieces: [{ text: line, role: "comment" }], carry: state };
+    pushPiece(pieces, line.slice(0, close + 2), "comment");
+    i = close + 2;
+    state = { kind: "none" };
+  } else if (state.kind === "multi") {
+    const close = line.indexOf(state.close);
+    if (close === -1) return { pieces: [{ text: line, role: "string" }], carry: state };
+    pushPiece(pieces, line.slice(0, close + state.close.length), "string");
+    i = close + state.close.length;
+    state = { kind: "none" };
+  }
+  while (i < line.length) {
+    const ch = line.charAt(i);
+    const rest = line.slice(i);
+    if (syntax.lineComment !== void 0 && rest.startsWith(syntax.lineComment)) {
+      pushPiece(pieces, rest, "comment");
+      break;
+    }
+    if (syntax.blockComment && rest.startsWith("/*")) {
+      const close = line.indexOf("*/", i + 2);
+      if (close === -1) {
+        pushPiece(pieces, rest, "comment");
+        return { pieces, carry: { kind: "block" } };
+      }
+      pushPiece(pieces, line.slice(i, close + 2), "comment");
+      i = close + 2;
+      continue;
+    }
+    if (syntax.tripleQuotes && (rest.startsWith('"""') || rest.startsWith("'''"))) {
+      const quote = rest.slice(0, 3);
+      const close = line.indexOf(quote, i + 3);
+      if (close === -1) {
+        pushPiece(pieces, rest, "string");
+        return { pieces, carry: { kind: "multi", close: quote } };
+      }
+      pushPiece(pieces, line.slice(i, close + 3), "string");
+      i = close + 3;
+      continue;
+    }
+    if (syntax.multiLineQuote !== void 0 && ch === syntax.multiLineQuote) {
+      const close = line.indexOf(ch, i + 1);
+      if (close === -1) {
+        pushPiece(pieces, rest, "string");
+        return { pieces, carry: { kind: "multi", close: ch } };
+      }
+      pushPiece(pieces, line.slice(i, close + 1), "string");
+      i = close + 1;
+      continue;
+    }
+    if (language === "rust" && ch === "'") {
+      const literal2 = RUST_CHAR.exec(rest);
+      if (literal2 !== null) {
+        pushPiece(pieces, literal2[0], "string");
+        i += literal2[0].length;
+        continue;
+      }
+    }
+    if (syntax.quotes.includes(ch)) {
+      const { end } = stringEnd(line, i, ch);
+      pushPiece(pieces, line.slice(i, end), "string");
+      i = end;
+      continue;
+    }
+    const previous = i === 0 ? "" : line.charAt(i - 1);
+    if (/\d/.test(ch) && !IDENT_PART.test(previous)) {
+      const match = NUMBER.exec(rest);
+      if (match !== null) {
+        pushPiece(pieces, match[0], "number");
+        i += match[0].length;
+        continue;
+      }
+    }
+    if (IDENT_START.test(ch)) {
+      let end = i + 1;
+      while (end < line.length && IDENT_PART.test(line.charAt(end))) end++;
+      const word = line.slice(i, end);
+      pushPiece(pieces, word, keywords.has(word) ? "keyword" : void 0);
+      i = end;
+      continue;
+    }
+    pushPiece(pieces, ch);
+    i++;
+  }
+  return { pieces, carry: state };
+}
+function highlight(code, language) {
+  const lines = code.split("\n");
+  if (language === "plain") return lines.map((line) => plain(line));
+  let carry = { kind: "none" };
+  return lines.map((line) => {
+    if (line.length > MAX_HIGHLIGHT_LINE) return plain(line);
+    const result = lexLine(line, language, carry);
+    carry = result.carry;
+    return result.pieces.length === 0 ? plain(line) : result.pieces.map((p) => p.role === void 0 ? span(p.text) : span(p.text, { role: p.role }));
+  });
+}
+
+// src/ui/code.ts
+var LEVEL_WORD = { error: "error", warning: "warning", info: "note" };
+var MIN_CONTENT = 8;
+function codeBlock(options, profile) {
+  const width = Math.min(options.width ?? profile.width, profile.width);
+  const start = options.startLine ?? 1;
+  const text2 = sanitize(options.code);
+  const raw = (text2.endsWith("\n") ? text2.slice(0, -1) : text2).split("\n");
+  const total = raw.length;
+  const shownCount = options.maxLines === void 0 ? total : Math.max(0, Math.min(total, options.maxLines));
+  const marked = new Set(options.marked ?? []);
+  const annotations = options.annotations ?? [];
+  const byLine = /* @__PURE__ */ new Map();
+  for (const a of annotations) byLine.set(a.line, [...byLine.get(a.line) ?? [], a]);
+  const digits = String(start + total - 1).length;
+  const { box, ellipsis, status } = profile.symbols;
+  const plainMode = profile.screenReader;
+  const gutterWidth = plainMode ? digits + 2 : digits + 3;
+  const contentWidth = Math.max(MIN_CONTENT, width - gutterWidth);
+  const lines = plainMode ? raw.map((l) => plain(l)) : highlight(raw.join("\n"), options.language);
+  const markBar = profile.unicode ? "\u2503" : ">";
+  const out = [];
+  for (let i = 0; i < shownCount; i++) {
+    const lineNumber = start + i;
+    const number4 = String(lineNumber).padStart(digits);
+    const isMarked = marked.has(lineNumber);
+    const gutter = plainMode ? [span(`${number4}: `, { role: "muted" })] : [span(number4, { role: isMarked ? "accent" : "muted", bold: isMarked }), span(` ${isMarked ? markBar : box.vertical} `, { role: isMarked ? "accent" : "border" })];
+    out.push(fitLine([...gutter, ...lines[i] ?? plain("")], width, ellipsis));
+    for (const a of byLine.get(lineNumber) ?? []) {
+      const label = `${LEVEL_WORD[a.level]}: ${inline(a.text)}`;
+      if (plainMode) {
+        for (const wrapped2 of wrapText(`Note on line ${lineNumber} (${label})`, Math.max(MIN_CONTENT, width))) out.push([span(wrapped2, { role: a.level })]);
+        continue;
+      }
+      const indent = span(" ".repeat(digits + 3));
+      const wrapped = wrapText(label, Math.max(1, contentWidth - 2));
+      for (const [n, piece] of wrapped.entries()) out.push([indent, span(`${n === 0 ? status[a.level] : " "} ${piece}`, { role: a.level, bold: n === 0 })]);
+    }
+  }
+  if (shownCount < total) {
+    const hiddenAnnotations = annotations.filter((a) => a.line - start >= shownCount && a.line - start < total).length;
+    const note = `${ellipsis} ${total - shownCount} more ${total - shownCount === 1 ? "line" : "lines"}${hiddenAnnotations === 0 ? "" : ` (${hiddenAnnotations} ${hiddenAnnotations === 1 ? "annotation" : "annotations"} hidden)`}`;
+    out.push([span(" ".repeat(plainMode ? 0 : digits + 3)), span(truncate(note, contentWidth, ellipsis), { role: hiddenAnnotations === 0 ? "muted" : "warning" })]);
+  }
+  return out;
+}
+var MIN_SIDE_BY_SIDE = 80;
+var MIN_COLUMN = 24;
+function sideBySide(options, profile) {
+  const heading2 = (title) => [span(inline(title), { role: "heading", bold: true })];
+  if (profile.screenReader || profile.width < MIN_SIDE_BY_SIDE) {
+    const stacked = (panel2) => [
+      ...wrapText(inline(panel2.title), profile.width).map((t) => [span(t, { role: "heading", bold: true })]),
+      ...panel2.render(profile.width).map((l) => fitLine(l, profile.width, profile.symbols.ellipsis))
+    ];
+    return [...stacked(options.left), plain(""), ...stacked(options.right)];
+  }
+  const separator = ` ${profile.symbols.box.vertical} `;
+  const room = profile.width - displayWidth(separator);
+  const leftWidth = Math.max(MIN_COLUMN, Math.min(room - MIN_COLUMN, Math.round(room * (options.split ?? 0.6))));
+  const rightWidth = room - leftWidth;
+  const left = [heading2(options.left.title), ...options.left.render(leftWidth)];
+  const right = [heading2(options.right.title), ...options.right.render(rightWidth)];
+  const rows = Math.max(left.length, right.length);
+  const out = [];
+  for (let i = 0; i < rows; i++) {
+    const l = fitLine(left[i] ?? plain(""), leftWidth, profile.symbols.ellipsis);
+    const r = fitLine(right[i] ?? plain(""), rightWidth, profile.symbols.ellipsis);
+    out.push([...padLine(l, leftWidth), span(separator, { role: "border" }), ...r]);
+  }
+  return out;
+}
+function section(options, profile) {
+  const title = inline(options.title);
+  const count2 = options.body.length;
+  const headLines = (text2) => wrapText(text2, profile.width).map((l) => [span(l, { role: "heading", bold: true })]);
+  if (profile.screenReader) {
+    const state = options.expanded ? "expanded" : `collapsed, ${count2} ${count2 === 1 ? "line" : "lines"} hidden`;
+    return [...headLines(`${title} (${state})`), ...options.expanded ? options.body.map((l) => fitLine(l, profile.width, profile.symbols.ellipsis)) : []];
+  }
+  const marker = profile.unicode ? options.expanded ? "\u25BE" : "\u25B8" : options.expanded ? "v" : ">";
+  const label = `${marker} ${title}${options.expanded ? "" : ` (${count2} ${count2 === 1 ? "line" : "lines"})`}`;
+  return [...headLines(label), ...options.expanded ? options.body.map((l) => fitLine([span("  "), ...l], profile.width, profile.symbols.ellipsis)) : []];
+}
+var CALLOUT_WORD = { success: "OK", warning: "Warning", error: "Error", info: "Note", inactive: "Inactive", pending: "Pending" };
+function callout(options, profile) {
+  const title = inline(options.title);
+  const head = profile.screenReader ? `${CALLOUT_WORD[options.level]}: ${title}` : `${profile.symbols.status[options.level]} ${title}`;
+  const wrapped = wrapText(head, profile.width).map((l) => [span(l, { role: options.level, bold: true })]);
+  const body = options.body === void 0 || options.body.trim() === "" ? [] : wrapText(sanitize(options.body), Math.max(MIN_CONTENT, profile.width - 2)).map((l) => [span("  "), span(l)]);
+  return [...wrapped, ...body];
+}
+
+// src/show/explain-views.ts
+var withWidth = (profile, width) => ({ ...profile, width });
+var SEVERITY_LEVEL = { high: "error", medium: "warning", low: "info" };
+function symbolLine(s) {
+  const params = s.params === void 0 || s.params === "" ? "" : `(${s.params})`;
+  return [span(`${s.kind} `, { role: "muted" }), span(`${s.name}${params}`, { role: "accent" }), span(`  line ${s.line}${s.exported ? ", exported" : ""}`, { role: "muted" })];
+}
+function structurePanel(analysis, expanded, profile) {
+  const m = analysis.metrics;
+  const concepts = analysis.concepts.map((term) => {
+    const entry = lookupTerm(term);
+    return entry === void 0 ? term : `${entry.term}: ${entry.plain}`;
+  });
+  return [
+    ...section({ title: `Symbols (${analysis.symbols.length})`, body: analysis.symbols.length === 0 ? [[span("none found", { role: "muted" })]] : analysis.symbols.slice(0, 40).map(symbolLine), expanded }, profile),
+    ...section(
+      {
+        title: "Measures",
+        body: keyValues(
+          [
+            ["Code lines", String(m.codeLines)],
+            ["Comment lines", String(m.commentLines)],
+            ["Functions", String(m.functions)],
+            ["Branches", String(m.branches)],
+            ["Deepest nesting", String(m.maxNesting)],
+            ["Complexity score", String(m.score)]
+          ],
+          profile
+        ),
+        expanded
+      },
+      profile
+    ),
+    ...concepts.length === 0 ? [] : section({ title: `Concepts in this code (${concepts.length})`, body: bulletList(concepts.slice(0, 12), profile), expanded }, profile),
+    ...analysis.imports.length === 0 ? [] : section({ title: `Imports (${analysis.imports.length})`, body: analysis.imports.slice(0, 30).map((i) => [span(inline(i))]), expanded }, profile)
+  ];
+}
+function fileView(analysis, content, profile, options) {
+  const annotations = analysis.risks.map((r) => ({ line: r.line, level: SEVERITY_LEVEL[r.severity], text: `${r.severity} risk: ${r.message}` }));
+  const risks = analysis.risks.length;
+  return [
+    ...heading(`${analysis.file} (${analysis.family === "other" ? "language not specifically analysed" : analysis.family})`, profile),
+    ...risks === 0 ? [] : [...callout({ level: "warning", title: `${risks} possible ${risks === 1 ? "risk" : "risks"} found by pattern matching`, body: "These are patterns that often cause trouble, not proof of a problem. Check each one in the code." }, profile), blank()],
+    ...sideBySide(
+      {
+        left: { title: "Code", render: (width) => codeBlock({ code: content, language: languageFor(analysis.file), annotations, width, maxLines: options.maxLines }, withWidth(profile, width)) },
+        right: { title: "Structure", render: (width) => structurePanel(analysis, options.expanded, withWidth(profile, width)) }
+      },
+      profile
+    )
+  ];
+}
+var diffLine = (sign, text2, profile) => fitLine([span(`${sign} `, { role: sign === "+" ? "success" : "error", bold: true }), span(text2, { role: sign === "+" ? "success" : "error" })], profile.width, profile.symbols.ellipsis);
+function changeView(summary, profile, options) {
+  const risk = (r) => `line ${r.line}, ${r.severity}: ${r.message}`;
+  const out = [
+    ...heading(summary.file, profile),
+    ...summary.added === 0 && summary.removed === 0 && !summary.approximate ? textLines("No changes compared with the committed version.", profile.width) : [],
+    ...textLines(`+${summary.added} lines added, -${summary.removed} lines removed, ${summary.unchanged} unchanged.${summary.approximate ? " This file was too large for an exact line diff, so only the counts are approximate and no hunks are shown." : ""}`, profile.width)
+  ];
+  if (summary.symbolsAdded.length > 0) out.push(blank(), ...textLines(`Added: ${summary.symbolsAdded.join(", ")}`, profile.width, { role: "success" }));
+  if (summary.symbolsRemoved.length > 0) out.push(blank(), ...textLines(`Removed: ${summary.symbolsRemoved.join(", ")}. Other code may still use ${summary.symbolsRemoved.length === 1 ? "it" : "them"}; run /jpe:impact on the file to see.`, profile.width, { role: "warning" }));
+  for (const r of summary.risksIntroduced) out.push(blank(), ...callout({ level: r.severity === "high" ? "error" : "warning", title: "A possible risk was introduced", body: risk(r) }, profile));
+  for (const r of summary.risksResolved) out.push(blank(), ...callout({ level: "success", title: "A possible risk no longer matches", body: risk(r) }, profile));
+  for (const hunk of summary.hunks) {
+    out.push(blank(), [span(`@@ -${hunk.beforeStart} +${hunk.afterStart} @@`, { role: "muted" })]);
+    const lines = [...hunk.removed.map((t) => diffLine("-", t, profile)), ...hunk.added.map((t) => diffLine("+", t, profile))];
+    out.push(...lines.slice(0, options.maxHunkLines));
+    if (lines.length > options.maxHunkLines) out.push([span(`${profile.symbols.ellipsis} ${lines.length - options.maxHunkLines} more changed lines in this hunk`, { role: "muted" })]);
+  }
+  return out;
+}
+var LARGE_CHANGE_LINES = 300;
+function reviewNotes(files) {
+  const notes = [];
+  for (const f3 of files) {
+    for (const r of f3.summary.risksIntroduced) notes.push({ basis: "confirmed", text: `${f3.summary.file}:${r.line} introduces a possible ${r.severity} risk (a pattern match, not proof): ${r.message}` });
+  }
+  for (const f3 of files) {
+    if (f3.summary.symbolsRemoved.length > 0) notes.push({ basis: "confirmed", text: `${f3.summary.file} no longer defines ${f3.summary.symbolsRemoved.join(", ")}. Whether anything else still uses ${f3.summary.symbolsRemoved.length === 1 ? "it" : "them"} has not been checked: run /jpe:impact on the file.` });
+  }
+  const deleted = files.filter((f3) => f3.status === "deleted");
+  if (deleted.length > 0) notes.push({ basis: "confirmed", text: `${deleted.length} ${deleted.length === 1 ? "file was" : "files were"} deleted: ${deleted.map((f3) => f3.summary.file).join(", ")}.` });
+  const sourceChanged = files.some((f3) => !f3.isTest && f3.status !== "deleted");
+  if (sourceChanged && !files.some((f3) => f3.isTest)) notes.push({ basis: "heuristic", text: "Source files changed and no test files did. That is a pattern worth a look, not a finding: the existing tests may already cover it." });
+  const total = files.reduce((n, f3) => n + f3.summary.added + f3.summary.removed, 0);
+  if (total > LARGE_CHANGE_LINES) notes.push({ basis: "heuristic", text: `${total} lines changed. Large changes are harder to review well; consider whether it can be split.` });
+  return notes;
+}
+var riskCounts = (summary) => {
+  const by = (s) => summary.risksIntroduced.filter((r) => r.severity === s).length;
+  const parts = [`${by("high")} high`, `${by("medium")} medium`, `${by("low")} low`].filter((p) => !p.startsWith("0 "));
+  return parts.length === 0 ? "none found" : parts.join(", ");
+};
+function reviewView(files, profile, options) {
+  const notes = reviewNotes(files);
+  const introduced = files.reduce((n, f3) => n + f3.summary.risksIntroduced.length, 0);
+  const out = [...heading("Code review of uncommitted changes", profile)];
+  if (files.length === 0) {
+    if (options.skipped.length === 0) return [...out, ...textLines("There are no uncommitted changes to review.", profile.width)];
+    return [...out, ...textLines("There are uncommitted changes, but none of the changed files could be analysed.", profile.width), blank(), ...callout({ level: "info", title: `${options.skipped.length} ${options.skipped.length === 1 ? "file was" : "files were"} not analysed`, body: options.skipped.join("; ") }, profile)];
+  }
+  out.push(
+    ...textLines(`${files.length} ${files.length === 1 ? "file" : "files"} changed. ${introduced === 0 ? "No possible risks were introduced by pattern matching (that does not prove the change is correct)." : `${introduced} possible ${introduced === 1 ? "risk" : "risks"} introduced (pattern matches, not proof).`}`, profile.width),
+    blank(),
+    ...table(
+      {
+        columns: [{ header: "File", min: 12 }, { header: "Kind", min: 8 }, { header: "Lines", min: 8 }, { header: "Risks introduced", min: 10 }],
+        rows: files.map((f3) => [f3.summary.file, `${f3.status}${f3.isTest ? ", test" : ""}`, `+${f3.summary.added} -${f3.summary.removed}`, riskCounts(f3.summary)])
+      },
+      profile
+    )
+  );
+  if (options.skipped.length > 0) out.push(blank(), ...callout({ level: "info", title: `${options.skipped.length} ${options.skipped.length === 1 ? "file was" : "files were"} not analysed`, body: options.skipped.join("; ") }, profile));
+  if (notes.length > 0) {
+    out.push(blank(), ...heading("Review notes", profile));
+    for (const n of notes) out.push(...textLines(`[${n.basis}] ${n.text}`, profile.width, { role: n.basis === "confirmed" ? "warning" : "muted" }));
+  }
+  out.push(blank(), ...heading("Checklist for the reviewer", profile), ...bulletList(checklist(files), profile));
+  out.push(blank(), ...heading("Changes", profile));
+  files.forEach((f3, i) => {
+    out.push(...section({ title: `${f3.summary.file}  +${f3.summary.added} -${f3.summary.removed}`, body: changeView(f3.summary, profile, { maxHunkLines: options.maxHunkLines }), expanded: options.expanded && i < 5 }, profile));
+  });
+  return out;
+}
+function checklist(files) {
+  const items = [];
+  const risky = files.flatMap((f3) => f3.summary.risksIntroduced.map((r) => `${f3.summary.file}:${r.line}`));
+  if (risky.length > 0) items.push(`Confirm each possible risk is intended: ${risky.slice(0, 8).join(", ")}${risky.length > 8 ? ", ..." : ""}.`);
+  if (files.some((f3) => f3.summary.symbolsRemoved.length > 0)) items.push("Confirm nothing still uses the removed symbols (/jpe:impact).");
+  items.push("Read each diff below; the tool can find patterns but cannot judge intent.");
+  if (files.some((f3) => !f3.isTest && f3.status !== "deleted")) items.push("Run the project's checks after approving (/jpe:verify).");
+  return items;
+}
+
+// src/show/intel-views.ts
+var BAR_WIDTH = 10;
+function impactView(report, target, notes, rel2, profile) {
+  const out = [...heading(`What depends on ${inline(target)}`, profile)];
+  out.push(...statusBadge(report.method === "lsp" ? "success" : "warning", report.method === "lsp" ? "exact references from the language server" : "approximate: found by scanning import statements", profile));
+  const files = [...report.referencingFiles].sort((a, b) => b.count - a.count || a.file.localeCompare(b.file));
+  out.push(blank());
+  if (files.length === 0) out.push(...textLines("No referencing files were found.", profile.width));
+  else {
+    out.push(...textLines(`${files.length}${report.truncated ? "+" : ""} ${files.length === 1 ? "file depends" : "files depend"} on it${report.truncated ? " (the search stopped early, so there may be more)" : ""}:`, profile.width));
+    const max = Math.max(...files.map((f3) => f3.count));
+    const rows = files.slice(0, 40).map((f3) => {
+      const filled = Math.max(1, Math.round(f3.count / max * BAR_WIDTH));
+      const bar = profile.screenReader ? "" : `${profile.symbols.barFull.repeat(filled)}${profile.symbols.barEmpty.repeat(BAR_WIDTH - filled)} `;
+      return [rel2(f3.file), `${bar}${f3.count}`];
+    });
+    out.push(...table({ columns: [{ header: "File", min: 12 }, { header: profile.screenReader ? "References" : "References", min: 6 }], rows }, profile));
+    if (files.length > 40) out.push([span(`${profile.symbols.ellipsis} ${files.length - 40} more files`, { role: "muted" })]);
+  }
+  for (const n of notes) out.push(blank(), ...callout({ level: "info", title: n }, profile));
+  if (report.limitations.length > 0) out.push(blank(), ...heading("What this cannot see", profile), ...bulletList(report.limitations, profile));
+  return out;
+}
+var VERSION_WORDS = {
+  exact: "matches the installed version",
+  "same-minor": "same minor version",
+  "same-major": "same major version only",
+  mismatch: "a DIFFERENT version",
+  unversioned: "version not stated",
+  "unknown-request": "installed version unknown"
+};
+var ECOSYSTEM_LANGUAGE = { node: "js", python: "python", go: "go", rust: "rust" };
+var MAX_EXCERPT_LINES = 14;
+var MAX_FINDINGS = 6;
+var MAX_FIND_RESULTS = 30;
+var DEPRECATION = /\bdeprecat/i;
+var ALTERNATIVE = /\b(?:use|using|replaced by|replace with|instead|prefer|migrate to|switch to)\b/i;
+var freshness = (r) => r.verification === "fresh" ? "fresh this run" : `cached ${r.retrievedAt.slice(0, 10)}, NOT re-verified`;
+function mentions(results, test, limit) {
+  const found = [];
+  results.forEach((r, i) => {
+    for (const raw of r.content.split("\n")) {
+      const line = inline(raw).trim();
+      if (line !== "" && test(line)) found.push({ n: i + 1, line });
+      if (found.length >= limit) return;
+    }
+  });
+  return found.slice(0, limit);
+}
+function docsView(report, versionNote, profile, options) {
+  const { request } = report;
+  const out = [...heading(`Documentation: ${inline(request.library)}${request.version === void 0 ? "" : `@${inline(request.version)}`} (${inline(request.topic)})`, profile)];
+  out.push(...statusBadge(report.offline ? "warning" : "info", report.offline ? "offline: network sources were not contacted" : "online", profile));
+  if (!report.hasFreshSource) out.push(...callout({ level: "warning", title: "Nothing was freshly verified in this run", body: "Do not treat the material below as confirmed current." }, profile));
+  if (versionNote.trim() !== "") out.push(...callout({ level: "info", title: versionNote.replace(/^NOTE:\s*/, "").trim() }, profile));
+  if (!report.hasApiSignature) out.push(...callout({ level: "info", title: "API signatures were not verified from installed type declarations in this run" }, profile));
+  if (report.results.length === 0) {
+    out.push(blank(), ...textLines("No documentation was found.", profile.width));
+  } else {
+    out.push(
+      blank(),
+      ...table(
+        {
+          columns: [{ header: "#", align: "right", min: 2 }, { header: "Source", min: 10 }, { header: "Trust", min: 8 }, { header: "Version", min: 10 }, { header: "Freshness", min: 10 }],
+          rows: report.results.map((r, i) => [String(i + 1), `${r.provider}: ${r.title}`, r.trust, VERSION_WORDS[r.versionMatch] + (r.docVersion === void 0 ? "" : ` (documents ${r.docVersion})`), freshness(r)])
+        },
+        profile
+      )
+    );
+  }
+  for (const r of report.results.filter((x) => x.kind === "advisory")) out.push(blank(), ...callout({ level: "error", title: `Security advisory: ${inline(r.title)}`, body: truncate(inline(r.content), 300, profile.symbols.ellipsis) }, profile));
+  const deprecations = mentions(report.results, (l) => DEPRECATION.test(l), MAX_FINDINGS);
+  for (const d of deprecations) {
+    const alt = ALTERNATIVE.test(d.line);
+    out.push(blank(), ...callout({ level: "warning", title: `Deprecation mentioned in source [${d.n}]${alt ? ", with an alternative named" : ""}`, body: `The documentation says: ${truncate(d.line, 280, profile.symbols.ellipsis)}` }, profile));
+  }
+  if (options.find !== void 0 && options.find.trim() !== "") {
+    const needle = options.find.trim().toLowerCase();
+    const hits = mentions(report.results, (l) => l.toLowerCase().includes(needle), MAX_FIND_RESULTS);
+    out.push(blank(), ...heading(`Lines mentioning "${inline(options.find)}"`, profile));
+    out.push(...hits.length === 0 ? textLines(`No line in the ${report.results.length} retrieved ${report.results.length === 1 ? "source" : "sources"} mentions it.`, profile.width) : hits.flatMap((h) => textLines(`[${h.n}] ${h.line}`, profile.width)));
+  } else {
+    const language = ECOSYSTEM_LANGUAGE[request.ecosystem] ?? "plain";
+    report.results.forEach((r, i) => {
+      const caution = wrapUntrusted(r.url ?? r.title, r.content).flags;
+      const excerpt2 = r.content.split("\n").slice(0, MAX_EXCERPT_LINES).join("\n");
+      const body = [
+        ...caution.length === 0 ? [] : callout({ level: "warning", title: "This text contains instruction-like phrases", body: `(${caution.join(", ")}). It is quoted as data only and was not followed.` }, profile),
+        ...r.kind === "api-signature" ? codeBlock({ code: excerpt2, language, width: profile.width - 2 }, profile) : textLines(excerpt2, profile.width - 2),
+        ...r.content.split("\n").length > MAX_EXCERPT_LINES ? [[span(`${profile.symbols.ellipsis} ${r.content.split("\n").length - MAX_EXCERPT_LINES} more lines in the source`, { role: "muted" })]] : []
+      ];
+      out.push(blank(), ...section({ title: `[${i + 1}] ${r.title} (${r.kind})`, body, expanded: options.expanded && i < 3 }, profile));
+    });
+  }
+  out.push(blank(), ...heading("Sources", profile), ...report.results.flatMap((r, i) => textLines(`[${i + 1}] ${r.url ?? `${r.provider}: ${r.title}`}`, profile.width)));
+  for (const f3 of report.failures) out.push(...callout({ level: "error", title: `${f3.provider} failed`, body: f3.message }, profile));
+  for (const s of report.skipped) out.push(...callout({ level: "info", title: `${s.provider} was skipped`, body: s.reason }, profile));
+  for (const n of report.notes) out.push(...callout({ level: "info", title: n }, profile));
+  return out;
+}
+var SEVERITY_ORDER = { error: 0, warning: 1, info: 2, hint: 3 };
+var SEVERITY_LEVEL2 = { error: "error", warning: "warning", info: "info", hint: "info" };
+var MAX_DIAGNOSTICS = 60;
+var MAX_EXPLANATIONS = 6;
+function diagnosticsView(report, notes, rel2, profile, options) {
+  const out = [...heading("Diagnostics", profile)];
+  out.push(
+    ...report.source === "lsp" ? statusBadge("success", `language server: ${inline(report.server)}`, profile) : report.source === "cli" ? statusBadge("warning", `compiler command (NOT a language server): ${inline(report.server)}`, profile) : statusBadge("error", "nothing could be collected", profile),
+    ...textLines(`${report.errors} ${report.errors === 1 ? "error" : "errors"}, ${report.warnings} ${report.warnings === 1 ? "warning" : "warnings"}.`, profile.width)
+  );
+  const sorted = [...report.diagnostics].sort((a, b) => a.file.localeCompare(b.file) || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || a.line - b.line);
+  const byFile = /* @__PURE__ */ new Map();
+  for (const d of sorted.slice(0, MAX_DIAGNOSTICS)) byFile.set(d.file, [...byFile.get(d.file) ?? [], d]);
+  for (const [file2, list] of byFile) {
+    const body = list.flatMap((d) => {
+      const level = SEVERITY_LEVEL2[d.severity];
+      const head = `${profile.screenReader ? `${d.severity}: ` : `${profile.symbols.status[level]} `}${d.line}:${d.column}${d.code === void 0 ? "" : ` ${d.code}`}`;
+      return [fitLine([span(head, { role: level, bold: true })], profile.width, profile.symbols.ellipsis), ...textLines(d.message, profile.width - 2).map((l) => [span("  "), ...l])];
+    });
+    out.push(blank(), ...section({ title: `${rel2(file2)} (${list.length})`, body, expanded: options.expanded }, profile));
+  }
+  if (sorted.length > MAX_DIAGNOSTICS) out.push([span(`${profile.symbols.ellipsis} ${sorted.length - MAX_DIAGNOSTICS} more findings not shown`, { role: "muted" })]);
+  const seen = /* @__PURE__ */ new Set();
+  const explanations = [];
+  for (const d of sorted) {
+    if (seen.size >= MAX_EXPLANATIONS) break;
+    const hit = explainError(d.message.slice(0, 4e3))[0];
+    if (hit === void 0 || seen.has(hit.id)) continue;
+    seen.add(hit.id);
+    explanations.push(...callout({ level: "info", title: hit.title, body: `${hit.plain} Usual fix (general guidance, not a diagnosis of this project; confirm against the code): ${hit.usualFix}` }, profile));
+  }
+  if (explanations.length > 0) out.push(blank(), ...heading("What these usually mean", profile), ...explanations);
+  for (const n of [...report.notes, ...notes]) out.push(blank(), ...callout({ level: "info", title: n }, profile));
+  if (report.diagnostics.length === 0 && report.source !== "none") out.push(blank(), plain(report.source === "lsp" ? "The language server reported nothing for these files." : "The compiler command reported nothing."));
+  return out;
+}
+
+// src/cli/commands/show.ts
+var VIEWS = ["file", "change", "review", "impact", "docs", "diagnostics"];
+var USAGE = `Usage: jpe show <${VIEWS.join("|")}> ...
+  file <path>              a file's code with possible risks marked, beside its structure
+  change <path>            one file's uncommitted change as a diff
+  review                   every uncommitted change: overview, notes, checklist, diffs
+  impact <file>            what depends on a file
+  docs <library>           official documentation for the installed version
+  diagnostics <files...>   compiler or language-server findings`;
+var MAX_FILE_LINES = 80;
+var MAX_HUNK_LINES = 40;
+var MAX_REVIEW_FILES = 40;
+var MAX_REVIEW_BYTES = 4e5;
+var TEST_PATH = /(^|\/)(tests?|__tests__|spec|specs)\/|\.(test|spec)\.[a-z0-9]+$/i;
+async function beforeText(ctx, rel2) {
+  const result = await ctx.git(["show", `HEAD:${rel2}`]);
+  return result.exitCode === 0 ? result.stdout : void 0;
+}
+async function reviewFiles(ctx) {
+  const state = await readGitState(ctx.git);
+  if (!state.available) throw new JpeError("TOOL_UNAVAILABLE", "Git is not installed, so there is nothing to compare against.");
+  if (!state.isRepo) throw new JpeError("INVALID_INPUT", "This folder is not a git repository, so there is no committed version to compare against.");
+  const top = await ctx.git(["rev-parse", "--show-toplevel"]);
+  const root = top.exitCode === 0 && top.stdout.trim() !== "" ? top.stdout.trim() : ctx.cwd;
+  const files = [];
+  const skipped = [];
+  for (const changed of state.changedFiles.slice(0, MAX_REVIEW_FILES)) {
+    const rel2 = changed.path;
+    const deleted = changed.status.includes("D");
+    const added = changed.status.includes("?") || changed.status.includes("A");
+    const after = deleted ? "" : await ctx.fs.readText(path25.resolve(root, rel2));
+    if (after === void 0) {
+      skipped.push(`${rel2} (not readable as text)`);
+      continue;
+    }
+    const before = added ? "" : await beforeText(ctx, rel2) ?? "";
+    if (before.length > MAX_REVIEW_BYTES || after.length > MAX_REVIEW_BYTES) {
+      skipped.push(`${rel2} (over ${MAX_REVIEW_BYTES / 1e3} KB)`);
+      continue;
+    }
+    files.push({ summary: summarizeChange(rel2, before, after), status: deleted ? "deleted" : added ? "added" : "modified", isTest: TEST_PATH.test(rel2) });
+  }
+  if (state.changedFiles.length > MAX_REVIEW_FILES) skipped.push(`${state.changedFiles.length - MAX_REVIEW_FILES} more changed files beyond the first ${MAX_REVIEW_FILES}`);
+  return { files, skipped };
+}
+async function showCommand(args, ctx) {
+  const view = args.positionals[0];
+  if (view === void 0 || !VIEWS.includes(view)) throw new JpeError("INVALID_INPUT", USAGE);
+  const { profile } = await renderContext(args, ctx);
+  const json2 = flagBool(args, "json");
+  const expanded = !flagBool(args, "collapse");
+  const all = flagBool(args, "all");
+  const rest = args.positionals.slice(1);
+  const emit = (data, lines) => {
+    ctx.out(json2 ? JSON.stringify(data, null, 2) : paint(lines(), profile));
+    return 0;
+  };
+  if (view === "file") {
+    const file2 = await readProjectFile(ctx, rest[0]);
+    const analysis = analyzeCode(file2.rel, file2.text);
+    return emit(analysis, () => fileView(analysis, file2.text, profile, { expanded, maxLines: all ? Number.MAX_SAFE_INTEGER : MAX_FILE_LINES }));
+  }
+  if (view === "change") {
+    const file2 = await readProjectFile(ctx, rest[0]);
+    const before = await beforeText(ctx, file2.rel);
+    const summary = summarizeChange(file2.rel, before ?? "", file2.text);
+    const note = before === void 0 ? `${file2.rel} has no committed version (a new file, or no git history), so every line counts as added.
+` : "";
+    return emit(summary, () => [...note === "" ? [] : [[{ text: note.trim(), role: "muted" }]], ...changeView(summary, profile, { maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES })]);
+  }
+  if (view === "review") {
+    const { files, skipped } = await reviewFiles(ctx);
+    return emit(
+      { files: files.map((f3) => ({ status: f3.status, isTest: f3.isTest, summary: f3.summary })), notes: reviewNotes(files), checklist: checklist(files), skipped },
+      () => reviewView(files, profile, { expanded, maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES, skipped })
+    );
+  }
+  if (view === "impact") {
+    const run2 = await computeImpact(rest[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
+    const rel3 = (file2) => path25.relative(ctx.cwd, file2).split(path25.sep).join("/") || file2;
+    return emit({ report: run2.report, notes: run2.notes }, () => impactView(run2.report, rel3(run2.abs), run2.notes, rel3, profile));
+  }
+  if (view === "docs") {
+    const { report, versionNote } = await runResearch({ positionals: rest, flags: args.flags }, ctx);
+    const find = flagString(args, "find");
+    return emit({ versionNote, report: { ...report, results: report.results.map((r) => ({ ...r, content: r.content.slice(0, 4e3) })) } }, () => docsView(report, versionNote, profile, { expanded, ...find === void 0 ? {} : { find } }));
+  }
+  const run = await collectDiagnostics(rest, ctx);
+  const rel2 = (file2) => path25.relative(ctx.cwd, file2).split(path25.sep).join("/") || file2;
+  return emit(run, () => diagnosticsView(run.report, run.notes, rel2, profile, { expanded }));
 }
 
 // src/ui/preview.ts
@@ -42138,7 +42790,7 @@ async function uiCommand(args, ctx) {
 }
 
 // src/cli/commands/verify.ts
-import path25 from "path";
+import path26 from "path";
 
 // src/verification/runner.ts
 import { createHash as createHash5 } from "crypto";
@@ -42272,12 +42924,12 @@ async function verifyCommand(args, ctx) {
   const deps = { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs };
   if (flagBool(args, "baseline")) {
     const baseline2 = await captureBaseline(checks, deps);
-    await ctx.writeText(path25.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
+    await ctx.writeText(path26.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
     ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline2].map(([cmd2, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd2}`)].join("\n"));
     return 0;
   }
   let baseline;
-  const saved = await ctx.readText(path25.join(dir, "baseline.json"));
+  const saved = await ctx.readText(path26.join(dir, "baseline.json"));
   if (saved) {
     const parsed = baselineSchema.safeParse(JSON.parse(saved));
     if (parsed.success) baseline = new Map(Object.entries(parsed.data));
@@ -42285,9 +42937,9 @@ async function verifyCommand(args, ctx) {
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   const outcomes = await runChecks(checks, { ...deps, ledger }, baseline);
   const required2 = [...new Set(checks.map((c) => c.check))];
-  await ctx.writeText(path25.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
+  await ctx.writeText(path26.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
 `);
-  await ctx.writeText(path25.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
+  await ctx.writeText(path26.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
   const report = deriveStatus(ledger.entries, required2);
   const extra = [
     ...warnings.map((w) => `WARNING: ${w}`),
@@ -42322,6 +42974,7 @@ var COMMANDS = {
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
   center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
+  show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },
   ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },
   doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" }
 };

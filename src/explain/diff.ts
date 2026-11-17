@@ -74,10 +74,18 @@ const countBy = (items: readonly RiskFinding[]): Map<string, number> => {
   return counts;
 };
 
+/** The lines of a text. Empty text has none, and the newline that ends a file does not start another line. */
+function toLines(text: string): string[] {
+  if (text === "") return [];
+  const lines = text.split(/\r?\n/);
+  if (lines[lines.length - 1] === "") lines.pop();
+  return lines;
+}
+
 /** Before-and-after facts about one file: line changes, declarations added or removed, and risk patterns gained or lost. */
 export function summarizeChange(file: string, before: string, after: string): ChangeSummary {
-  const a = before.split(/\r?\n/);
-  const b = after.split(/\r?\n/);
+  const a = toLines(before);
+  const b = toLines(after);
   const approximate = (a.length + 1) * (b.length + 1) > MAX_CELLS;
   let stats: { hunks: Hunk[]; added: number; removed: number; unchanged: number };
   if (approximate) {

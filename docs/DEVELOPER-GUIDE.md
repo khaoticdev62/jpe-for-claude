@@ -27,6 +27,7 @@ src/
   doctor/             health checks and safe repairs
   cli/                the `jpe` command line (all features are reachable here)
   ui/                 design system: tokens, terminal capabilities, text safety, components, keymap (docs/DESIGN-SYSTEM.md)
+  show/               pure views over engine data for `jpe show`: file, change, review, impact, docs, diagnostics (docs/SHOW.md)
   center/             command center logic, pure: commands, fuzzy search, palette, suggestions, memory, home screen, HUD facts (docs/COMMAND-CENTER.md)
   mod/                the in-Claude-Code interface module (center.tsx), built to hooks/center.js; claude-code.d.ts is a small description of the API it uses
 tests/unit            fast tests, no network

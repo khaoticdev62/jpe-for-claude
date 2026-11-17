@@ -4,7 +4,7 @@ export interface ParsedArgs {
 }
 
 /** Flags that never take a value. Anything else written as `--name value` consumes the next word. */
-const BOOLEAN_FLAGS: ReadonlySet<string> = new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader"]);
+const BOOLEAN_FLAGS: ReadonlySet<string> = new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader", "collapse", "all"]);
 
 /** Small, dependency-free parser for `--flag`, `--flag value` and `--flag=value`. */
 export function parseArgs(argv: readonly string[]): ParsedArgs {

@@ -72,7 +72,7 @@ describe("every theme", () => {
 });
 
 describe("contrast (WCAG), measured against each theme's own background and surface", () => {
-  const textRoles: readonly Role[] = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "pending", "inactive", "border"];
+  const textRoles: readonly Role[] = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "pending", "inactive", "border", "keyword", "string", "comment", "number"];
 
   it("jpe: every text role reaches 4.5:1 (AA) on the background", () => {
     for (const role of textRoles) {

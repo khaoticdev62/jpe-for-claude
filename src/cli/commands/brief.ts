@@ -8,7 +8,8 @@ import { resolveInside } from "../../security/paths.js";
 import { flagBool, flagString, type ParsedArgs } from "../args.js";
 import type { CliContext } from "../context.js";
 
-async function readProjectFile(ctx: CliContext, rel: string | undefined): Promise<{ abs: string; rel: string; text: string }> {
+/** Reads a text file inside the project (never outside it), or throws a plain-English error. Shared with `jpe show`. */
+export async function readProjectFile(ctx: CliContext, rel: string | undefined): Promise<{ abs: string; rel: string; text: string }> {
   if (!rel) throw new JpeError("INVALID_INPUT", "Give the path of a file inside the project.");
   const abs = resolveInside(ctx.cwd, rel);
   const text = await ctx.fs.readText(abs);

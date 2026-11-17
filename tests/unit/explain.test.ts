@@ -102,6 +102,19 @@ describe("static analysis", () => {
     expect(analyzeCode("a.ts", SIMPLE).risks).toEqual([]);
   });
 
+  it("does not mistake a regular expression's exec() for dynamic code execution, but still flags the real thing", () => {
+    const flagged = (code: string, file = "a.ts"): boolean => analyzeCode(file, code).risks.some((r) => r.id === "dynamic-eval");
+    // Common, harmless: matching a pattern against text.
+    for (const harmless of ["const m = /a+/.exec(text);", "const hit = PATTERN.exec(line);", "while ((m = re.exec(s)) !== null) {}", "const x = this.regex.exec(input)"]) expect(flagged(harmless), harmless).toBe(false);
+    // Real: running text as code, in the forms JavaScript and Python use.
+    expect(flagged("eval(userInput)")).toBe(true);
+    expect(flagged("const f = new Function(body)")).toBe(true);
+    expect(flagged("exec(command)")).toBe(true);
+    expect(flagged("cp.exec(command)")).toBe(true);
+    expect(flagged("child_process.exec(cmd)")).toBe(true);
+    expect(flagged("exec(code)", "a.py")).toBe(true);
+  });
+
   it("flags python and rust specific patterns and multi-line swallowed errors", () => {
     expect(analyzeCode("a.py", "try:\n  x()\nexcept Exception:\n  pass\nimport pickle\npickle.loads(d)\n").risks.map((r) => r.id)).toEqual(expect.arrayContaining(["swallowed-error-py", "unsafe-deserialize"]));
     expect(analyzeCode("a.rs", "fn f() { let v = g().unwrap(); unsafe { h() } }").risks.map((r) => r.id)).toEqual(expect.arrayContaining(["unwrap", "unsafe-block"]));

@@ -22,6 +22,7 @@ JPE makes Claude Code explain its work in plain English and back its claims with
 ## Commands
 
 - `/jpe` on its own opens the command center: a pane with your project's facts, numbered next steps (press a number to run one) and a searchable command palette. Where no pane can be shown it prints the same screen as text. `/jpe verify`, `/jpe explain ...` and so on route straight to the sub-commands. Commands that can change things (`fix`, `setup`, `config`) always ask first. Details: [Command center](COMMAND-CENTER.md).
+- `jpe show review` (in a terminal, or ask Claude to run it) shows every uncommitted change with risk notes and a reviewer's checklist; `jpe show file`, `change`, `impact`, `docs` and `diagnostics` show a file, a diff, what depends on a file, the official documentation for your installed version, and compiler findings as readable screens. Details: [jpe show](SHOW.md).
 - `/jpe:explain src/app.ts` explains a file: what it does, why, how, where it is used, what goes in and out, what depends on it, risks, concepts and an example. Simple code gets a short answer; hard code a step-by-step one.
 - `/jpe:explain change src/app.ts` explains your uncommitted edits to a file.
 - `/jpe:explain error "<message>"` explains an error message.

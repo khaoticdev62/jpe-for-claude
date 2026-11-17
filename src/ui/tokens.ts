@@ -12,8 +12,12 @@ export const THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"
 export type ThemeName = (typeof THEME_NAMES)[number];
 
 /** What a piece of text means, independent of how it is painted. */
-export const ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border"] as const;
+export const ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border", "keyword", "string", "comment", "number"] as const;
 export type Role = (typeof ROLES)[number];
+
+/** Roles used to colour source code. Decoration only: code stays readable without them. */
+export const SYNTAX_ROLES = ["keyword", "string", "comment", "number"] as const;
+export type SyntaxRole = (typeof SYNTAX_ROLES)[number];
 
 /** Roles that carry a status meaning and therefore always travel with a glyph and a label. */
 export const STATUS_ROLES = ["success", "warning", "error", "info", "inactive", "pending"] as const;
@@ -34,8 +38,16 @@ export interface Theme {
   ansi16: Readonly<Record<Role, number>>;
 }
 
-const ANSI16_DARK: Theme["ansi16"] = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
-const ANSI16_LIGHT: Theme["ansi16"] = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+const ANSI16_DARK: Theme["ansi16"] = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8, keyword: 13, string: 10, comment: 8, number: 11 };
+const ANSI16_LIGHT: Theme["ansi16"] = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8, keyword: 5, string: 2, comment: 8, number: 3 };
+
+/** Source-code colours per theme. Each is held to the same contrast bar as the theme's text roles (see the tests). */
+const SYNTAX: Readonly<Record<ThemeName, Readonly<Record<SyntaxRole, string>>>> = {
+  jpe: { keyword: "#C792EA", string: "#A5D6A7", comment: "#9AA5B1", number: "#F78C6C" },
+  "jpe-contrast": { keyword: "#DDB8FF", string: "#B9F5BD", comment: "#C8D0D8", number: "#FFB59A" },
+  "jpe-colorblind": { keyword: "#8FA8FF", string: "#E8D88A", comment: "#9AA5B1", number: "#FFA66B" },
+  "jpe-light": { keyword: "#7A3EB8", string: "#1F6B3A", comment: "#5B6B7B", number: "#B14A00" },
+};
 
 export const THEMES: Readonly<Record<ThemeName, Theme>> = {
   jpe: {
@@ -45,6 +57,7 @@ export const THEMES: Readonly<Record<ThemeName, Theme>> = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -66,6 +79,7 @@ export const THEMES: Readonly<Record<ThemeName, Theme>> = {
     background: "#000000",
     surface: "#1A1A1A",
     colors: {
+      ...SYNTAX["jpe-contrast"],
       text: "#FFFFFF",
       muted: "#E6E6E6",
       heading: "#FFFFFF",
@@ -87,6 +101,7 @@ export const THEMES: Readonly<Record<ThemeName, Theme>> = {
     background: "#121212",
     surface: "#292929",
     colors: {
+      ...SYNTAX["jpe-colorblind"],
       text: "#F0F0F0",
       muted: "#BDBDBD",
       heading: "#FAFAFA",
@@ -108,6 +123,7 @@ export const THEMES: Readonly<Record<ThemeName, Theme>> = {
     background: "#FAFAFA",
     surface: "#EDEDED",
     colors: {
+      ...SYNTAX["jpe-light"],
       text: "#1A1A1A",
       muted: "#4A4A4A",
       heading: "#000000",

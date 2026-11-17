@@ -1,14 +1,14 @@
+import path from "node:path";
 import { dataDir } from "../../config/paths.js";
 import { JpeError } from "../../core/errors.js";
 import { DocCache } from "../../docs/cache.js";
-import { formatReport, researchDocs } from "../../docs/engine.js";
+import { formatReport, type ResearchReport, researchDocs } from "../../docs/engine.js";
 import { localPackageProvider } from "../../docs/providers/local-package.js";
 import { officialProvider } from "../../docs/providers/official.js";
 import { osvProvider } from "../../docs/providers/osv.js";
 import { repoReleaseProvider } from "../../docs/providers/repo-release.js";
 import type { DocProvider } from "../../docs/types.js";
 import { detectProject } from "../../project/detect.js";
-import path from "node:path";
 import { flagBool, flagString, type ParsedArgs } from "../args.js";
 import type { CliContext } from "../context.js";
 
@@ -19,8 +19,20 @@ const PROVIDERS: Record<string, DocProvider> = {
   osv: osvProvider,
 };
 
-/** `jpe research <library> [--topic t] [--version v] [--offline]`: version-aware documentation research. */
-export async function researchCommand(args: ParsedArgs, ctx: CliContext): Promise<number> {
+export interface ResearchRun {
+  report: ResearchReport;
+  /** Said first: why version matching is limited, when it is. Empty when the exact version is known. */
+  versionNote: string;
+  /** Said last: Context7 is queried by the researcher agent, not here. Empty when it is not configured. */
+  context7Note: string;
+}
+
+/**
+ * Runs version-aware documentation research for `<library>` (the first positional argument), using the configured
+ * providers and the local cache. Shared by `jpe research` (text for Claude) and `jpe show docs` (the rich view), so the
+ * two can never research differently.
+ */
+export async function runResearch(args: ParsedArgs, ctx: CliContext): Promise<ResearchRun> {
   const library = args.positionals[0];
   if (!library) throw new JpeError("INVALID_INPUT", "Usage: jpe research <library> [--topic <what you need>] [--version <exact>] [--offline]");
   const cfg = await ctx.loadConfig();
@@ -48,7 +60,13 @@ export async function researchCommand(args: ParsedArgs, ctx: CliContext): Promis
       now: ctx.now,
     },
   );
-  const context7 = cfg.docs.providers.includes("context7") ? "\nContext7: not queried by this command. The jpe-researcher agent queries it through its MCP tools; treat its output as third-party and unversioned.\n" : "";
-  ctx.out(versionNote + formatReport(report) + context7);
+  const context7Note = cfg.docs.providers.includes("context7") ? "\nContext7: not queried by this command. The jpe-researcher agent queries it through its MCP tools; treat its output as third-party and unversioned.\n" : "";
+  return { report, versionNote, context7Note };
+}
+
+/** `jpe research <library> [--topic t] [--version v] [--offline]`: version-aware documentation research. */
+export async function researchCommand(args: ParsedArgs, ctx: CliContext): Promise<number> {
+  const { report, versionNote, context7Note } = await runResearch(args, ctx);
+  ctx.out(versionNote + formatReport(report) + context7Note);
   return 0;
 }
