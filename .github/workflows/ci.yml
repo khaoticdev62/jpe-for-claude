@@ -1,12 +1,15 @@
 # Cross-platform quality gate: lint, typecheck, tests, packaging, committed-build check and a production dependency
-# audit on Linux, macOS and Windows. It runs on every push to master and on every pull request, and can still be
-# started by hand from the Actions tab or with `gh workflow run ci.yml`.
+# audit on Linux, macOS and Windows.
+#
+# MANUAL ONLY for now. GitHub currently refuses to start any job for this account ("The job was not started because
+# your account is locked due to a billing issue"), so push and pull_request triggers would only add a failing run
+# to every push without testing anything. Once that is resolved, add these under `on:` so it runs by itself:
+#   push: { branches: [master] }
+#   pull_request:
+# Until then start it from the Actions tab ("Run workflow") or with `gh workflow run ci.yml`.
 name: ci
 
 on:
-  push:
-    branches: [master]
-  pull_request:
   workflow_dispatch:
 
 permissions:
