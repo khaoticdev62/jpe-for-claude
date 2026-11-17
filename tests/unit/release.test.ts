@@ -139,7 +139,7 @@ describe.skipIf(!built)("release package", () => {
     // The only TypeScript file that ships is the types contract the engine requires beside the interface module.
     expect(files.some((f) => f.includes("node_modules") || f.includes("/src/") || (f.endsWith(".ts") && f !== `${plugin}types/index.d.ts`) || f.includes(".env"))).toBe(false);
     expect(files.filter((f) => f.startsWith(`${plugin}hooks/`)).sort()).toEqual([`${plugin}hooks/center.js`, `${plugin}hooks/hooks.json`]);
-    expect(files.filter((f) => f.startsWith(`${plugin}skills/`))).toHaveLength(11);
+    expect(files.filter((f) => f.startsWith(`${plugin}skills/`))).toHaveLength(12);
     expect(files.filter((f) => f.startsWith(`${plugin}agents/`))).toHaveLength(7);
 
     // Every listed checksum is true, and the packaged marketplace points at the packaged plugin.

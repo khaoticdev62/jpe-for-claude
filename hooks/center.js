@@ -20,6 +20,7 @@ var CENTER_COMMANDS = [
   command("verify", "Verify", "Run the project's real tests, type checks and build, and report evidence", "Check", false, ["test", "build", "lint", "typecheck", "does it work", "check"]),
   command("status", "Status", "Show the latest verification status and what backs it", "Check", false, ["result", "last run", "evidence", "passed", "failed"]),
   command("audit", "Audit", "Review the project for risky patterns and exposed credentials", "Check", false, ["security", "secrets", "vulnerabilities", "safe", "review"]),
+  command("review", "Review", "Review the uncommitted changes: what changed, possible risks, and what to confirm", "Check", false, ["changes", "diff", "pull request", "approve", "reject", "look over", "before commit"], "<path>"),
   command("fix", "Fix", "Investigate a failure and repair it in small, checked steps with a backup", "Change", true, ["repair", "bug", "broken", "error", "failing", "debug"]),
   command("setup", "Setup", "Check JPE's health and set up language servers", "Manage", true, ["doctor", "install", "health", "language server", "diagnose"]),
   command("config", "Config", "View or change JPE's settings", "Manage", true, ["settings", "preferences", "theme", "options", "configure"])
@@ -594,6 +595,13 @@ function suggest(hud) {
   if (hud.languageServersMissing.length > 0) {
     out.push({ id: "language-servers-missing", commandId: "setup", title: "Set up language servers", why: `Not installed: ${hud.languageServersMissing.join(", ")}. Without one, nothing is checked by the language server.`, basis: "confirmed", level: "warning" });
   }
+  const r = hud.review;
+  if (r !== void 0 && r.changedFiles > 0) {
+    const files = `${r.changedFiles} uncommitted ${r.changedFiles === 1 ? "file" : "files"}`;
+    if (r.state === "none") out.push({ id: "review-pending", commandId: "review", title: "Review the uncommitted changes", why: `${files}, and no review decision has been recorded for them.`, basis: "confirmed", level: "info" });
+    else if (r.state === "stale") out.push({ id: "review-stale", commandId: "review", title: "Review again: files changed since the last decision", why: `The last decision (${r.decision ?? "recorded"}) was about different changes than the current ${files}.`, basis: "confirmed", level: "info" });
+    else if (r.decision === "rejected") out.push({ id: "review-rejected", commandId: "review", title: "The current changes were rejected in review", why: `The recorded decision about the current ${files} is "rejected".`, basis: "confirmed", level: "warning" });
+  }
   const alreadyVerifying = out.some((s) => s.commandId === "verify");
   if (hud.git.state === "dirty" && v.checksAvailable.length > 0 && v.status !== "FAILED" && !alreadyVerifying) {
     const n = hud.git.changedFiles;
@@ -653,6 +661,12 @@ function gitText(hud) {
       return `branch ${hud.git.branch}, ${hud.git.changedFiles} uncommitted ${hud.git.changedFiles === 1 ? "file" : "files"}`;
   }
 }
+function reviewText(review, now) {
+  const when = review.at === void 0 ? "" : formatAge(review.at, now);
+  if (review.state === "none") return "no decision recorded for these changes";
+  if (review.state === "stale") return `last decision (${review.decision ?? "recorded"} ${when}) is stale: files changed since`;
+  return `${review.decision ?? "decided"} ${when}, and the changes are unchanged since`;
+}
 function hudLines(hud, profile, now) {
   const label = (text) => [span(text, { role: "muted" })];
   const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(" \xB7 ");
@@ -663,6 +677,7 @@ function hudLines(hud, profile, now) {
   const rows = [
     ["Project", project],
     ["Git", gitText(hud)],
+    ...hud.review === void 0 || hud.review.changedFiles === 0 ? [] : [["Review", reviewText(hud.review, now)]],
     ["Language servers", servers],
     ["Mode", mode]
   ];
@@ -738,6 +753,13 @@ function parseHud(raw) {
   if (verification["problem"] !== void 0 && typeof verification["problem"] !== "string") return void 0;
   if (!isStringArray(raw["languageServersMissing"])) return void 0;
   if (!isRecord2(runtime) || typeof runtime["offline"] !== "boolean" || !["risk-based", "always", "off"].includes(String(runtime["approval"]))) return void 0;
+  const review = raw["review"];
+  if (review !== void 0) {
+    if (!isRecord2(review) || typeof review["changedFiles"] !== "number" || !Number.isInteger(review["changedFiles"]) || review["changedFiles"] < 0) return void 0;
+    if (!["none", "current", "stale"].includes(String(review["state"]))) return void 0;
+    if (review["decision"] !== void 0 && !["approved", "rejected"].includes(String(review["decision"]))) return void 0;
+    if (review["at"] !== void 0 && typeof review["at"] !== "string") return void 0;
+  }
   return raw;
 }
 

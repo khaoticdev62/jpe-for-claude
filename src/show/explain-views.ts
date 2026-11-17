@@ -11,11 +11,12 @@ import type { Analysis, CodeSymbol, RiskFinding } from "../explain/analyze.js";
 import type { ChangeSummary } from "../explain/diff.js";
 import { lookupTerm } from "../explain/glossary.js";
 import { type Annotation, callout, codeBlock, section, sideBySide } from "../ui/code.js";
-import { blank, bulletList, heading, keyValues, table, textLines } from "../ui/components.js";
+import { blank, bulletList, heading, keyValues, statusBadge, table, textLines } from "../ui/components.js";
 import { type Line, fitLine, span } from "../ui/doc.js";
 import { languageFor } from "../ui/highlight.js";
 import type { RenderProfile } from "../ui/profile.js";
 import { inline } from "../ui/text.js";
+import type { ReviewDecisionState } from "./review-data.js";
 
 const withWidth = (profile: RenderProfile, width: number): RenderProfile => ({ ...profile, width });
 
@@ -155,6 +156,16 @@ export interface ReviewViewOptions {
   maxHunkLines: number;
   /** Files that were not analysed, with the reason (too large, unreadable). */
   skipped: readonly string[];
+  /** Where the recorded review decision stands for these changes; shown when known. */
+  decision?: ReviewDecisionState;
+}
+
+/** The recorded decision as a status line. A stale decision is shown as stale, never as if it still applied. */
+export function decisionLines(decision: ReviewDecisionState, profile: RenderProfile): Line[] {
+  const note = decision.note === undefined ? [] : textLines(`Note: ${decision.note}`, profile.width, { role: "muted" });
+  if (decision.state === "none") return statusBadge("inactive", "No review decision recorded for these changes", profile);
+  if (decision.state === "stale") return [...statusBadge("warning", `Stale: the last decision (${decision.decision ?? "recorded"}) was about different changes than these`, profile), ...note];
+  return [...statusBadge(decision.decision === "rejected" ? "error" : "success", `${decision.decision === "rejected" ? "Rejected" : "Approved"}, and these changes are unchanged since`, profile), ...note];
 }
 
 /** A review of every changed file: overview table, notes with their basis, a checklist, and each file's diff. */
@@ -168,6 +179,7 @@ export function reviewView(files: readonly ReviewFile[], profile: RenderProfile,
     return [...out, ...textLines("There are uncommitted changes, but none of the changed files could be analysed.", profile.width), blank(), ...callout({ level: "info", title: `${options.skipped.length} ${options.skipped.length === 1 ? "file was" : "files were"} not analysed`, body: options.skipped.join("; ") }, profile)];
   }
 
+  if (options.decision !== undefined) out.push(...decisionLines(options.decision, profile), blank());
   out.push(
     ...textLines(`${files.length} ${files.length === 1 ? "file" : "files"} changed. ${introduced === 0 ? "No possible risks were introduced by pattern matching (that does not prove the change is correct)." : `${introduced} possible ${introduced === 1 ? "risk" : "risks"} introduced (pattern matches, not proof).`}`, profile.width),
     blank(),

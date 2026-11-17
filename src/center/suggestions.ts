@@ -48,6 +48,14 @@ export function suggest(hud: HudData): Suggestion[] {
     out.push({ id: "language-servers-missing", commandId: "setup", title: "Set up language servers", why: `Not installed: ${hud.languageServersMissing.join(", ")}. Without one, nothing is checked by the language server.`, basis: "confirmed", level: "warning" });
   }
 
+  const r = hud.review;
+  if (r !== undefined && r.changedFiles > 0) {
+    const files = `${r.changedFiles} uncommitted ${r.changedFiles === 1 ? "file" : "files"}`;
+    if (r.state === "none") out.push({ id: "review-pending", commandId: "review", title: "Review the uncommitted changes", why: `${files}, and no review decision has been recorded for them.`, basis: "confirmed", level: "info" });
+    else if (r.state === "stale") out.push({ id: "review-stale", commandId: "review", title: "Review again: files changed since the last decision", why: `The last decision (${r.decision ?? "recorded"}) was about different changes than the current ${files}.`, basis: "confirmed", level: "info" });
+    else if (r.decision === "rejected") out.push({ id: "review-rejected", commandId: "review", title: "The current changes were rejected in review", why: `The recorded decision about the current ${files} is "rejected".`, basis: "confirmed", level: "warning" });
+  }
+
   const alreadyVerifying = out.some((s) => s.commandId === "verify");
   if (hud.git.state === "dirty" && v.checksAvailable.length > 0 && v.status !== "FAILED" && !alreadyVerifying) {
     const n = hud.git.changedFiles;

@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path27) {
-      let input2 = path27;
+    function removeDotSegments(path30) {
+      let input2 = path30;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3337,11 +3337,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path27) {
-      if (path27 === "" || path27[0] === "/") {
-        return removeDotSegments(path27);
+    function removeDotSegmentsRelative(path30) {
+      if (path30 === "" || path30[0] === "/") {
+        return removeDotSegments(path30);
       }
-      const segments = path27.split("/");
+      const segments = path30.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -3704,8 +3704,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path27 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path27 && path27 !== "/" ? path27 : void 0;
+        const path30 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path30 && path30 !== "/" ? path30 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -8075,10 +8075,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path27) {
-  if (!path27)
+function getElementAtPath(obj, path30) {
+  if (!path30)
     return obj;
-  return path27.reduce((acc, key) => acc?.[key], obj);
+  return path30.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8418,11 +8418,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path27, issues) {
+function prefixIssues(path30, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path27);
+    iss.path.unshift(path30);
     return iss;
   });
 }
@@ -8884,16 +8884,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path27 = []) => {
+  const processError = (error63, path30 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path27, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path30, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
       } else {
-        const fullpath = [...path27, ...issue2.path];
+        const fullpath = [...path30, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8932,17 +8932,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path27 = []) => {
+  const processError = (error63, path30 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path27, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path30, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path27, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
       } else {
-        const fullpath = [...path27, ...issue2.path];
+        const fullpath = [...path30, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8981,8 +8981,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path27 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path27) {
+  const path30 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path30) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -17969,8 +17969,8 @@ var error43 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -18114,8 +18114,8 @@ var error44 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -23911,8 +23911,8 @@ function rewriteKeyNames(ctx) {
       bySchema.set(entry.schema, entry);
   }
   const rewrites = /* @__PURE__ */ new Map();
-  for (const record2 of pendingRecords.get(ctx) ?? []) {
-    const seen = ctx.seen.get(record2);
+  for (const record3 of pendingRecords.get(ctx) ?? []) {
+    const seen = ctx.seen.get(record3);
     const names = (seen?.def ?? seen?.schema)?.propertyNames;
     if (!names || names === true || rewrites.has(names))
       continue;
@@ -26120,13 +26120,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path27 = ref.slice(1).split("/").filter(Boolean);
-  if (path27.length === 0) {
+  const path30 = ref.slice(1).split("/").filter(Boolean);
+  if (path30.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path27[0] === defsKey) {
-    const key = path27[1] === void 0 ? void 0 : decodeJSONPointerSegment(path27[1]);
+  if (path30[0] === defsKey) {
+    const key = path30[1] === void 0 ? void 0 : decodeJSONPointerSegment(path30[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -28984,8 +28984,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path27, errorMaps, issueData } = params;
-  const fullPath = [...path27, ...issueData.path || []];
+  const { data, path: path30, errorMaps, issueData } = params;
+  const fullPath = [...path30, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -29100,11 +29100,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path27, key) {
+  constructor(parent, value, path30, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path27;
+    this._path = path30;
     this._key = key;
   }
   get path() {
@@ -32655,11 +32655,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path27) {
-  if (path27.length === 0) {
+function getDotPath(path30) {
+  if (path30.length === 0) {
     return "object root";
   }
-  return path27.reduce((acc, seg, index) => {
+  return path30.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -39073,7 +39073,7 @@ async function briefCommand(args, ctx) {
 }
 
 // src/center/hud.ts
-import path14 from "path";
+import path16 from "path";
 
 // src/project/checks.ts
 var SAFE_SCRIPT_NAME = /^[A-Za-z0-9:_-]+$/;
@@ -39492,6 +39492,82 @@ async function readLastStatus(ctx) {
   return { report: deriveStatus(parseEvidenceLines(ledgerText), meta3.required), at: meta3.at };
 }
 
+// src/review/status.ts
+import path15 from "path";
+
+// src/review/changes.ts
+import { createHash as createHash3 } from "crypto";
+import path14 from "path";
+async function listChanges(ctx) {
+  const state = await readGitState(ctx.git);
+  if (!state.available) throw new JpeError("TOOL_UNAVAILABLE", "Git is not installed, so there is nothing to compare against.");
+  if (!state.isRepo) throw new JpeError("INVALID_INPUT", "This folder is not a git repository, so there is no committed version to compare against.");
+  const top = await ctx.git(["rev-parse", "--show-toplevel"]);
+  const root = top.exitCode === 0 && top.stdout.trim() !== "" ? top.stdout.trim() : ctx.cwd;
+  return { root, files: state.changedFiles, truncated: state.truncated };
+}
+var sha2562 = (text2) => createHash3("sha256").update(text2).digest("hex");
+async function reviewFingerprint(ctx) {
+  const { root, files } = await listChanges(ctx);
+  const lines = [];
+  for (const file2 of files) {
+    const content = file2.status.includes("D") ? "" : await ctx.fs.readText(path14.resolve(root, file2.path)) ?? "";
+    lines.push(`${file2.status}	${file2.path}	${sha2562(content)}`);
+  }
+  lines.sort();
+  return { fingerprint: sha2562(lines.join("\n")), fileCount: files.length };
+}
+
+// src/review/decisions.ts
+var DECISIONS = ["approved", "rejected"];
+var MAX_NOTE_CHARS = 500;
+var MAX_RECORDS = 200;
+var FINGERPRINT = /^[0-9a-f]{64}$/;
+var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function parseDecision(line) {
+  let raw;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    return void 0;
+  }
+  if (!isRecord(raw)) return void 0;
+  const { id, at, decision, fingerprint, fileCount, note } = raw;
+  if (typeof id !== "string" || id.length === 0 || id.length > 64) return void 0;
+  if (typeof at !== "string" || Number.isNaN(Date.parse(at))) return void 0;
+  if (!DECISIONS.includes(decision)) return void 0;
+  if (typeof fingerprint !== "string" || !FINGERPRINT.test(fingerprint)) return void 0;
+  if (typeof fileCount !== "number" || !Number.isInteger(fileCount) || fileCount < 0) return void 0;
+  if (note !== void 0 && typeof note !== "string") return void 0;
+  return { id, at, decision, fingerprint, fileCount, ...note === void 0 || note === "" ? {} : { note: note.slice(0, MAX_NOTE_CHARS) } };
+}
+function parseDecisions(text2) {
+  return text2.split(/\r?\n/).flatMap((line) => line.trim() === "" ? [] : [parseDecision(line) ?? []].flat());
+}
+function appendDecision(existing, added) {
+  return `${[...existing, added].slice(-MAX_RECORDS).map((d) => JSON.stringify(d)).join("\n")}
+`;
+}
+function cleanNote(raw) {
+  return raw.replace(/[\u0000-\u001f\u007f-\u009f‪-‮⁦-⁩]/g, " ").replace(/\s+/g, " ").trim().slice(0, MAX_NOTE_CHARS);
+}
+function decisionState(decisions, currentFingerprint, changedFiles) {
+  const latest = decisions.at(-1);
+  if (latest === void 0) return { kind: "none" };
+  return changedFiles > 0 && latest.fingerprint === currentFingerprint ? { kind: "current", decision: latest } : { kind: "stale", decision: latest };
+}
+
+// src/review/status.ts
+var DECISIONS_FILE = "reviews.jsonl";
+async function loadDecisions(ctx) {
+  const text2 = await ctx.readText(path15.join(ctx.stateDir(), DECISIONS_FILE)).catch(() => void 0);
+  return text2 === void 0 ? [] : parseDecisions(text2);
+}
+async function currentReviewStatus(ctx) {
+  const { fingerprint, fileCount } = await reviewFingerprint(ctx);
+  return { state: decisionState(await loadDecisions(ctx), fingerprint, fileCount), fileCount, fingerprint };
+}
+
 // src/center/hud-data.ts
 var HUD_VERSION = 1;
 
@@ -39505,6 +39581,14 @@ async function readVerification(ctx, checksAvailable) {
     return { status: last.report.status, at: last.at, reasons: last.report.reasons.slice(0, MAX_REASONS), checksAvailable };
   } catch {
     return { status: "NOT_TESTED", reasons: [], checksAvailable, problem: "The saved verification record is damaged. Run /jpe:verify again to replace it." };
+  }
+}
+async function readReview(ctx) {
+  try {
+    const { state, fileCount } = await currentReviewStatus(ctx);
+    return state.kind === "none" ? { changedFiles: fileCount, state: "none" } : { changedFiles: fileCount, state: state.kind, decision: state.decision.decision, at: state.decision.at };
+  } catch {
+    return void 0;
   }
 }
 async function collectHud(ctx) {
@@ -39521,14 +39605,16 @@ async function collectHud(ctx) {
     const label = `${language.name} (${language.server.binary})`;
     if (!await findOnPath(language.server.binary, lookup2) && !missing.includes(label)) missing.push(label);
   }
+  const review = await readReview(ctx);
   return {
     hudVersion: HUD_VERSION,
     generatedAt: ctx.now().toISOString(),
-    project: { name: path14.basename(ctx.cwd) || ctx.cwd, ecosystems: project.ecosystems, ...project.packageManager === void 0 ? {} : { packageManager: project.packageManager } },
+    project: { name: path16.basename(ctx.cwd) || ctx.cwd, ecosystems: project.ecosystems, ...project.packageManager === void 0 ? {} : { packageManager: project.packageManager } },
     git,
     verification: await readVerification(ctx, checksAvailable),
     languageServersMissing: missing,
-    runtime: { offline: config2.runtime.offline, approval: config2.engineering.approval }
+    runtime: { offline: config2.runtime.offline, approval: config2.engineering.approval },
+    ...review === void 0 ? {} : { review }
   };
 }
 
@@ -39904,6 +39990,7 @@ var CENTER_COMMANDS = [
   command("verify", "Verify", "Run the project's real tests, type checks and build, and report evidence", "Check", false, ["test", "build", "lint", "typecheck", "does it work", "check"]),
   command("status", "Status", "Show the latest verification status and what backs it", "Check", false, ["result", "last run", "evidence", "passed", "failed"]),
   command("audit", "Audit", "Review the project for risky patterns and exposed credentials", "Check", false, ["security", "secrets", "vulnerabilities", "safe", "review"]),
+  command("review", "Review", "Review the uncommitted changes: what changed, possible risks, and what to confirm", "Check", false, ["changes", "diff", "pull request", "approve", "reject", "look over", "before commit"], "<path>"),
   command("fix", "Fix", "Investigate a failure and repair it in small, checked steps with a backup", "Change", true, ["repair", "bug", "broken", "error", "failing", "debug"]),
   command("setup", "Setup", "Check JPE's health and set up language servers", "Manage", true, ["doctor", "install", "health", "language server", "diagnose"]),
   command("config", "Config", "View or change JPE's settings", "Manage", true, ["settings", "preferences", "theme", "options", "configure"])
@@ -40064,6 +40151,13 @@ function suggest(hud) {
   if (hud.languageServersMissing.length > 0) {
     out.push({ id: "language-servers-missing", commandId: "setup", title: "Set up language servers", why: `Not installed: ${hud.languageServersMissing.join(", ")}. Without one, nothing is checked by the language server.`, basis: "confirmed", level: "warning" });
   }
+  const r = hud.review;
+  if (r !== void 0 && r.changedFiles > 0) {
+    const files = `${r.changedFiles} uncommitted ${r.changedFiles === 1 ? "file" : "files"}`;
+    if (r.state === "none") out.push({ id: "review-pending", commandId: "review", title: "Review the uncommitted changes", why: `${files}, and no review decision has been recorded for them.`, basis: "confirmed", level: "info" });
+    else if (r.state === "stale") out.push({ id: "review-stale", commandId: "review", title: "Review again: files changed since the last decision", why: `The last decision (${r.decision ?? "recorded"}) was about different changes than the current ${files}.`, basis: "confirmed", level: "info" });
+    else if (r.decision === "rejected") out.push({ id: "review-rejected", commandId: "review", title: "The current changes were rejected in review", why: `The recorded decision about the current ${files} is "rejected".`, basis: "confirmed", level: "warning" });
+  }
   const alreadyVerifying = out.some((s) => s.commandId === "verify");
   if (hud.git.state === "dirty" && v.checksAvailable.length > 0 && v.status !== "FAILED" && !alreadyVerifying) {
     const n = hud.git.changedFiles;
@@ -40122,6 +40216,12 @@ function gitText(hud) {
       return `branch ${hud.git.branch}, ${hud.git.changedFiles} uncommitted ${hud.git.changedFiles === 1 ? "file" : "files"}`;
   }
 }
+function reviewText(review, now) {
+  const when = review.at === void 0 ? "" : formatAge(review.at, now);
+  if (review.state === "none") return "no decision recorded for these changes";
+  if (review.state === "stale") return `last decision (${review.decision ?? "recorded"} ${when}) is stale: files changed since`;
+  return `${review.decision ?? "decided"} ${when}, and the changes are unchanged since`;
+}
 function hudLines(hud, profile, now) {
   const label = (text2) => [span(text2, { role: "muted" })];
   const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(" \xB7 ");
@@ -40132,6 +40232,7 @@ function hudLines(hud, profile, now) {
   const rows = [
     ["Project", project],
     ["Git", gitText(hud)],
+    ...hud.review === void 0 || hud.review.changedFiles === 0 ? [] : [["Review", reviewText(hud.review, now)]],
     ["Language servers", servers],
     ["Mode", mode]
   ];
@@ -40498,13 +40599,13 @@ import os2 from "os";
 
 // src/doctor/env-checks.ts
 import { mkdir as mkdir4, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
-import path18 from "path";
+import path20 from "path";
 
 // src/docs/cache.ts
-import { createHash as createHash3 } from "crypto";
+import { createHash as createHash4 } from "crypto";
 import { mkdir as mkdir3, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path15 from "path";
-var sha256Hex = (text2) => createHash3("sha256").update(text2).digest("hex");
+import path17 from "path";
+var sha256Hex = (text2) => createHash4("sha256").update(text2).digest("hex");
 var MAX_CONTENT_CHARS = 2e5;
 var entrySchema = external_exports.strictObject({
   key: external_exports.string().regex(/^[a-f0-9]{64}$/),
@@ -40533,7 +40634,7 @@ var DocCache = class {
     return sha256Hex([provider, library, version2 ?? "", topic.trim().toLowerCase()].join("\0"));
   }
   file(key) {
-    return path15.join(this.deps.dir, `${key}.json`);
+    return path17.join(this.deps.dir, `${key}.json`);
   }
   async put(key, drafts) {
     const stored = drafts.map((d) => ({ ...d, content: redactSecrets(d.content).slice(0, MAX_CONTENT_CHARS) }));
@@ -40581,21 +40682,21 @@ var DocCache = class {
       throw error62;
     }
     const files = await Promise.all(
-      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path15.join(this.deps.dir, n))).mtimeMs }))
+      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path17.join(this.deps.dir, n))).mtimeMs }))
     );
     files.sort((a, b) => b.mtime - a.mtime);
     const doomed = files.slice(Math.max(0, maxEntries));
-    await Promise.all(doomed.map((f3) => unlink2(path15.join(this.deps.dir, f3.n))));
+    await Promise.all(doomed.map((f3) => unlink2(path17.join(this.deps.dir, f3.n))));
     return doomed.length;
   }
 };
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path16 from "path";
+import path18 from "path";
 
 // src/hooks/payload.ts
-import { createHash as createHash4 } from "crypto";
+import { createHash as createHash5 } from "crypto";
 var base2 = {
   session_id: external_exports.string().min(1).max(200),
   cwd: external_exports.string().min(1),
@@ -40628,7 +40729,7 @@ var stateSchema = external_exports.strictObject({
 });
 var STALE_MS = 7 * 24 * 36e5;
 async function pruneStaleStates(ctx) {
-  const dir = path16.join(ctx.stateDir(), "sessions");
+  const dir = path18.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -40638,7 +40739,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path16.join(dir, name);
+    const file2 = path18.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -40648,14 +40749,14 @@ async function pruneStaleStates(ctx) {
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path17 from "path";
+import path19 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path17.normalize(file2).toLowerCase() : path17.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path19.normalize(file2).toLowerCase() : path19.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path17.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path19.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -40694,7 +40795,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path17.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path19.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -40908,7 +41009,7 @@ var LspClient = class _LspClient {
 // src/doctor/env-checks.ts
 var f = (id, area, status, title, extra = {}) => ({ id, area, status, title, ...extra });
 var lookupFor = (env) => ({ platform: env.ctx.pathEnv.platform, env: env.ctx.pathEnv.env, exists: (p) => env.ctx.fs.exists(p) });
-var cacheDir = (env) => path18.join(dataDir(env.ctx.pathEnv), "docs-cache");
+var cacheDir = (env) => path20.join(dataDir(env.ctx.pathEnv), "docs-cache");
 async function runClaude(env, args, timeoutMs) {
   const exe = await findOnPath("claude", lookupFor(env));
   if (!exe) return { ok: false, text: "" };
@@ -40955,7 +41056,7 @@ async function checkStorage(env) {
   const out = [];
   try {
     await mkdir4(dir, { recursive: true });
-    const probe = path18.join(dir, `.doctor-${process.pid}`);
+    const probe = path20.join(dir, `.doctor-${process.pid}`);
     await writeFile4(probe, "x");
     await unlink4(probe);
     out.push(f("storage", "Storage", "ok", "The local data folder is writable.", { detail: dir }));
@@ -41076,7 +41177,7 @@ async function repair(env, id) {
   const { ctx } = env;
   switch (id) {
     case "create-data-dirs":
-      await mkdir4(path18.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
+      await mkdir4(path20.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
       await mkdir4(ctx.stateDir(), { recursive: true });
       return "Created the data folders.";
     case "remove-corrupt-cache": {
@@ -41088,7 +41189,7 @@ async function repair(env, id) {
         const isTemp = name.includes(".tmp-");
         if (!isTemp && (!name.endsWith(".json") || !/^[a-f0-9]{64}$/.test(key))) continue;
         if (isTemp || !await cache.get(key)) {
-          await rm2(path18.join(dir, name), { force: true });
+          await rm2(path20.join(dir, name), { force: true });
           removed++;
         }
       }
@@ -41109,7 +41210,7 @@ async function repair(env, id) {
 
 // src/doctor/plugin-checks.ts
 import { createInterface } from "readline";
-import path19 from "path";
+import path21 from "path";
 
 // src/doctor/frontmatter.ts
 function parseFrontmatter(text2) {
@@ -41124,13 +41225,13 @@ function parseFrontmatter(text2) {
 }
 
 // src/doctor/plugin-checks.ts
-var EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "setup", "config"];
+var EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "setup", "config"];
 var EXPECTED_AGENTS = ["jpe-researcher", "jpe-explainer", "jpe-lsp", "jpe-verifier", "jpe-security", "jpe-architect", "jpe-debugger"];
 var EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop"];
 var MCP_PREFIX = "mcp__plugin_jpe_jpe__";
 var f2 = (id, status, title, extra = {}) => ({ id, area: "Plugin", status, title, ...extra });
 async function readJson(env, ...parts) {
-  const file2 = path19.join(env.pluginRoot ?? "", ...parts);
+  const file2 = path21.join(env.pluginRoot ?? "", ...parts);
   const text2 = await env.ctx.fs.readText(file2);
   if (text2 === void 0) return { error: `${parts.join("/")} is missing` };
   try {
@@ -41199,20 +41300,20 @@ async function checkPlugin(env) {
   const name = manifest.value?.name;
   out.push(manifest.error ? f2("manifest", "fail", `Plugin manifest problem: ${manifest.error}.`, { fix: "Reinstall the plugin." }) : name === "jpe" ? f2("manifest", "ok", "Plugin manifest is valid (name: jpe).") : f2("manifest", "fail", `Plugin manifest has an unexpected name (${String(name)}).`));
   for (const bundle of ["cli.js", "hook.js", "mcp.js", "package.json"]) {
-    const present = await ctx.fs.exists(path19.join(pluginRoot, "dist", bundle));
+    const present = await ctx.fs.exists(path21.join(pluginRoot, "dist", bundle));
     if (present) out.push(f2(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`));
     else if (bundle === "package.json") out.push(f2(`bundle-${bundle}`, "warn", "dist/package.json is missing, so Node re-parses the bundles on every start and prints warnings.", { fix: "Reinstall a release build of the plugin." }));
     else out.push(f2(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
   }
   const skillProblems = [];
   for (const s of EXPECTED_SKILLS) {
-    const text2 = await ctx.fs.readText(path19.join(pluginRoot, "skills", s, "SKILL.md"));
+    const text2 = await ctx.fs.readText(path21.join(pluginRoot, "skills", s, "SKILL.md"));
     const parsed = text2 === void 0 ? void 0 : parseFrontmatter(text2);
     if (!parsed) skillProblems.push(`${s}: missing or no front matter`);
     else if (!parsed.front["description"]) skillProblems.push(`${s}: no description`);
     else if (s === "jpe" && parsed.front["name"] !== "jpe") skillProblems.push("jpe: the entry skill must be named jpe so bare /jpe works");
   }
-  out.push(skillProblems.length === 0 ? f2("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ten sub-commands).`) : f2("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
+  out.push(skillProblems.length === 0 ? f2("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and eleven sub-commands).`) : f2("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
   const server = manifest.value?.mcpServers?.jpe;
   let serverTools;
   if (manifest.error || !server) {
@@ -41220,7 +41321,7 @@ async function checkPlugin(env) {
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f2("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));
   } else {
-    const hs = await ctx.fs.exists(path19.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path19.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
+    const hs = await ctx.fs.exists(path21.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path21.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
     if (!hs) out.push(f2("mcp-start", "fail", "The MCP server bundle is missing, so it could not be started."));
     else if (!hs.ok) out.push(f2("mcp-start", "fail", `The JPE MCP server did not answer a real handshake (${hs.detail}).`, { fix: "Run `node dist/mcp.js` manually to see the error." }));
     else {
@@ -41230,7 +41331,7 @@ async function checkPlugin(env) {
   }
   const agentProblems = [];
   for (const a of EXPECTED_AGENTS) {
-    const text2 = await ctx.fs.readText(path19.join(pluginRoot, "agents", `${a}.md`));
+    const text2 = await ctx.fs.readText(path21.join(pluginRoot, "agents", `${a}.md`));
     const parsed = text2 === void 0 ? void 0 : parseFrontmatter(text2);
     if (!parsed) {
       agentProblems.push(`${a}: missing or no front matter`);
@@ -41256,10 +41357,10 @@ async function checkPlugin(env) {
   const modules = hooksJson.value?.modules;
   const moduleRegistered = Array.isArray(modules) && modules.includes("./center.js");
   if (!moduleRegistered) out.push(f2("interface-module", "warn", "The command center interface is not registered in hooks/hooks.json, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall the plugin." }));
-  else if (!await ctx.fs.exists(path19.join(pluginRoot, "hooks", "center.js"))) out.push(f2("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
-  else if (!await ctx.fs.exists(path19.join(pluginRoot, "types", "index.d.ts"))) out.push(f2("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else if (!await ctx.fs.exists(path21.join(pluginRoot, "hooks", "center.js"))) out.push(f2("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
+  else if (!await ctx.fs.exists(path21.join(pluginRoot, "types", "index.d.ts"))) out.push(f2("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
   else out.push(f2("interface-module", "ok", "The command center interface module is installed.", { area: "Interface" }));
-  const hookJs = path19.join(pluginRoot, "dist", "hook.js");
+  const hookJs = path21.join(pluginRoot, "dist", "hook.js");
   if (await ctx.fs.exists(hookJs)) {
     try {
       const payload = JSON.stringify({ session_id: "doctor-check", cwd: ctx.cwd, hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "rm -rf doctor-smoke-test" } });
@@ -41375,14 +41476,14 @@ Report exported to ${exportTo} (home folder replaced by ~, credentials redacted)
 
 // src/cli/commands/lsp.ts
 import { appendFile, mkdir as mkdir5, readFile as readFile6 } from "fs/promises";
-import path21 from "path";
+import path23 from "path";
 
 // src/lsp/diagnostics.ts
-import path20 from "path";
+import path22 from "path";
 var count = (list, severity) => list.filter((d) => d.severity === severity).length;
 function parseCompilerOutput(output2, cwd) {
   const found = [];
-  const abs = (f3) => path20.resolve(cwd, f3.trim());
+  const abs = (f3) => path22.resolve(cwd, f3.trim());
   const lines = output2.split(/\r?\n/);
   lines.forEach((line, i) => {
     let m = /^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s+([A-Za-z]+\d+)?:?\s*(.*)$/.exec(line);
@@ -41453,7 +41554,7 @@ function recordLspEvidence(ledger, report) {
 function lookupFor2(ctx) {
   return { platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f3) => ctx.fs.exists(f3) };
 }
-var rel = (ctx, file2) => path21.relative(ctx.cwd, file2).split(path21.sep).join("/") || file2;
+var rel = (ctx, file2) => path23.relative(ctx.cwd, file2).split(path23.sep).join("/") || file2;
 function formatDiagnostics(ctx, report) {
   return [
     `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} \u2014 ${report.server}`,
@@ -41499,8 +41600,8 @@ async function collectDiagnostics(inputs, ctx) {
   const report = binary ? await collectLspDiagnostics(language, { command: binary, args: language.server.args, rootDir: ctx.cwd, files, readFile: (f3) => readFile6(f3, "utf8"), startupTimeoutMs: cfg.lsp.diagnosticsTimeoutMs, maxWaitMs: cfg.lsp.diagnosticsTimeoutMs }) : await collectCliDiagnostics(language, { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs });
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   recordLspEvidence(ledger, report);
-  const ledgerFile = path21.join(ctx.stateDir(), "ledger.jsonl");
-  await mkdir5(path21.dirname(ledgerFile), { recursive: true });
+  const ledgerFile = path23.join(ctx.stateDir(), "ledger.jsonl");
+  await mkdir5(path23.dirname(ledgerFile), { recursive: true });
   await appendFile(ledgerFile, `${ledger.toJsonLines()}
 `);
   const notes = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
@@ -41580,7 +41681,7 @@ async function installPlanCommand(args, ctx) {
 }
 
 // src/cli/commands/research.ts
-import path24 from "path";
+import path26 from "path";
 
 // src/security/untrusted.ts
 var INJECTION_PATTERNS = [
@@ -41710,7 +41811,7 @@ function formatReport(report) {
 }
 
 // src/docs/providers/local-package.ts
-import path22 from "path";
+import path24 from "path";
 var pkgSchema = external_exports.looseObject({
   name: external_exports.string().optional(),
   version: external_exports.string().optional(),
@@ -41750,8 +41851,8 @@ var localPackageProvider = {
   async fetch(request, ctx) {
     if (request.ecosystem !== "node") return { results: [], notes: ["Local package inspection currently supports npm packages only."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const dir = path22.join(ctx.projectRoot, "node_modules", request.library);
-    const pkgText = await ctx.fs.readText(path22.join(dir, "package.json"));
+    const dir = path24.join(ctx.projectRoot, "node_modules", request.library);
+    const pkgText = await ctx.fs.readText(path24.join(dir, "package.json"));
     const parsed = pkgText === void 0 ? void 0 : pkgSchema.safeParse(safeJson(pkgText));
     if (!parsed?.success) return { results: [], notes: [`${request.library} is not installed in node_modules, so it could not be inspected locally.`] };
     const pkg = parsed.data;
@@ -41767,7 +41868,7 @@ var localPackageProvider = {
     ].filter(Boolean).join("\n");
     results.push({ ...base3, kind: "metadata", title: `${request.library}@${version2 ?? "?"} (installed package)`, content: meta3 });
     for (const name of ["README.md", "readme.md", "Readme.md"]) {
-      const readme = await ctx.fs.readText(path22.join(dir, name));
+      const readme = await ctx.fs.readText(path24.join(dir, name));
       if (readme !== void 0) {
         results.push({ ...base3, kind: "reference", title: `${request.library} README (installed copy)`, content: focusOnTopic(readme, request.topic, MAX_README_CHARS) });
         break;
@@ -41803,15 +41904,15 @@ function topicWords(topic) {
   return topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
 }
 function declarationCandidates(fromFile, spec) {
-  const base3 = path22.resolve(path22.dirname(fromFile), spec);
+  const base3 = path24.resolve(path24.dirname(fromFile), spec);
   const mapped = base3.replace(/\.(c|m)?js$/, (_m, k) => `.d.${k ?? ""}ts`);
-  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path22.join(base3, "index.d.ts"), path22.join(base3, "index.d.cts")])];
+  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path24.join(base3, "index.d.ts"), path24.join(base3, "index.d.cts")])];
 }
 async function collectDeclarations(packageDir, entry, entryText, topic, read) {
   const words2 = topicWords(topic);
   const mentions2 = (text2) => words2.some((w) => text2.toLowerCase().includes(w));
   if (words2.length === 0 || mentions2(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words2.length > 0, files: 1 };
-  const seen = /* @__PURE__ */ new Set([path22.normalize(entry)]);
+  const seen = /* @__PURE__ */ new Set([path24.normalize(entry)]);
   const queue = [{ file: entry, text: entryText }];
   const excerpts = [];
   let used = 0;
@@ -41819,10 +41920,10 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
     const current = queue.shift();
     for (const m of current.text.matchAll(REEXPORT)) {
       for (const candidate of declarationCandidates(current.file, m[1] ?? "")) {
-        const normal = path22.normalize(candidate);
+        const normal = path24.normalize(candidate);
         if (seen.has(normal)) continue;
         try {
-          resolveInside(packageDir, path22.relative(packageDir, normal));
+          resolveInside(packageDir, path24.relative(packageDir, normal));
         } catch {
           continue;
         }
@@ -41831,7 +41932,7 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
         seen.add(normal);
         queue.push({ file: normal, text: text2 });
         if (mentions2(text2) && used < MAX_TYPES_CHARS) {
-          const excerpt2 = `// ${path22.relative(packageDir, normal).split(path22.sep).join("/")}
+          const excerpt2 = `// ${path24.relative(packageDir, normal).split(path24.sep).join("/")}
 ${focusOnTopic(text2, topic, Math.min(8e3, MAX_TYPES_CHARS - used))}`;
           excerpts.push(excerpt2);
           used += excerpt2.length;
@@ -41961,7 +42062,7 @@ var osvProvider = {
 };
 
 // src/docs/providers/repo-release.ts
-import path23 from "path";
+import path25 from "path";
 var MAX_NOTES_CHARS = 8e3;
 var pkgSchema2 = external_exports.looseObject({ repository: external_exports.union([external_exports.string(), external_exports.looseObject({ url: external_exports.string().optional() })]).optional() });
 var releaseSchema = external_exports.looseObject({ name: external_exports.string().nullable().optional(), tag_name: external_exports.string().optional(), body: external_exports.string().nullable().optional(), html_url: external_exports.string().optional() });
@@ -41976,7 +42077,7 @@ var repoReleaseProvider = {
     if (request.ecosystem !== "node") return { results: [], notes: ["Release-note lookup currently supports npm packages only."] };
     if (!request.version) return { results: [], notes: ["An exact version is needed to find its release notes."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const pkgText = await ctx.fs.readText(path23.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
+    const pkgText = await ctx.fs.readText(path25.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
     let repoField;
     if (pkgText !== void 0) {
       try {
@@ -42039,7 +42140,7 @@ async function runResearch(args, ctx) {
     { library, ...exact ? { version: exact } : {}, topic: flagString(args, "topic") ?? library, ecosystem: dep?.ecosystem ?? project.ecosystems[0] ?? "node" },
     {
       providers,
-      cache: new DocCache({ dir: path24.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
+      cache: new DocCache({ dir: path26.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
       context: { fs: ctx.fs, projectRoot: ctx.cwd, net: ctx.net, extraHosts, requestTimeoutMs: cfg.docs.requestTimeoutMs },
       offline: cfg.runtime.offline || flagBool(args, "offline"),
       now: ctx.now
@@ -42054,8 +42155,77 @@ async function researchCommand(args, ctx) {
   return 0;
 }
 
+// src/cli/commands/review.ts
+import { mkdir as mkdir6 } from "fs/promises";
+import path27 from "path";
+var HISTORY_SHOWN = 20;
+var SHORT = 8;
+var decisionsFile = (ctx) => path27.join(ctx.stateDir(), DECISIONS_FILE);
+async function record2(ctx, decision, note) {
+  const { fingerprint, fileCount } = await reviewFingerprint(ctx);
+  if (fileCount === 0) throw new JpeError("INVALID_INPUT", "There are no uncommitted changes to review, so there is nothing to approve or reject.");
+  const entry = { id: ctx.newId(), at: ctx.now().toISOString(), decision, fingerprint, fileCount, ...note === "" ? {} : { note } };
+  await mkdir6(path27.dirname(decisionsFile(ctx)), { recursive: true });
+  await ctx.writeText(decisionsFile(ctx), appendDecision(await loadDecisions(ctx), entry));
+  return entry;
+}
+var plural2 = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+async function reviewCommand(args, ctx) {
+  const sub = args.positionals[0];
+  const json2 = flagBool(args, "json");
+  const { profile } = await renderContext(args, ctx);
+  const show = (lines) => ctx.out(paint(lines, profile));
+  if (sub === "approve" || sub === "reject") {
+    const decision = sub === "approve" ? "approved" : "rejected";
+    const entry = await record2(ctx, decision, cleanNote(flagString(args, "note") ?? ""));
+    if (json2) ctx.out(JSON.stringify(entry, null, 2));
+    else
+      show([
+        ...statusBadge(decision === "approved" ? "success" : "error", `Recorded: ${decision} (${plural2(entry.fileCount, "file", "files")})`, profile),
+        ...textLines(`Review fingerprint ${entry.fingerprint.slice(0, SHORT)}. This only records your decision: nothing was committed, staged or changed. If any of these files change, the decision is shown as stale.`, profile.width)
+      ]);
+    return 0;
+  }
+  if (sub === "status") {
+    const status = await currentReviewStatus(ctx);
+    if (json2) {
+      ctx.out(JSON.stringify({ state: status.state.kind, fileCount: status.fileCount, ...status.state.kind === "none" ? {} : { decision: status.state.decision } }, null, 2));
+      return 0;
+    }
+    const s = status.state;
+    const when = s.kind === "none" ? "" : formatAge(s.decision.at, ctx.now());
+    const badge = s.kind === "none" ? statusBadge("inactive", `No decision recorded for ${plural2(status.fileCount, "uncommitted file", "uncommitted files")}`, profile) : s.kind === "current" ? statusBadge(s.decision.decision === "approved" ? "success" : "error", `${s.decision.decision === "approved" ? "Approved" : "Rejected"} ${when}, and the changes are unchanged since`, profile) : statusBadge("warning", `Stale: the last decision (${s.decision.decision} ${when}) is about changes that are no longer the current ones`, profile);
+    show([
+      ...badge,
+      ...s.kind === "none" || s.decision.note === void 0 ? [] : textLines(`Note: ${s.decision.note}`, profile.width, { role: "muted" }),
+      ...s.kind === "stale" ? textLines("Files have changed since you decided. Run `jpe show review`, then decide again.", profile.width) : []
+    ]);
+    return 0;
+  }
+  if (sub === "history") {
+    const decisions = (await loadDecisions(ctx)).slice(-HISTORY_SHOWN).reverse();
+    if (json2) {
+      ctx.out(JSON.stringify(decisions, null, 2));
+      return 0;
+    }
+    if (decisions.length === 0) {
+      show([...heading("Review decisions", profile), ...textLines("No review decisions have been recorded for this project.", profile.width)]);
+      return 0;
+    }
+    show([
+      ...heading("Review decisions (newest first)", profile),
+      ...table({ columns: [{ header: "When", min: 10 }, { header: "Decision", min: 8 }, { header: "Files", align: "right", min: 3 }, { header: "Note", min: 10 }], rows: decisions.map((d) => [formatAge(d.at, ctx.now()), d.decision, String(d.fileCount), d.note ?? ""]) }, profile),
+      blank(),
+      ...bulletList(["A decision is tied to the exact files that were changed at the time. It does not say whether later changes are fine."], profile)
+    ]);
+    return 0;
+  }
+  throw new JpeError("INVALID_INPUT", `Usage: jpe review <${["approve", "reject", "status", "history"].join("|")}> [--note text] [--json]
+  decisions: ${DECISIONS.join(", ")}`);
+}
+
 // src/cli/commands/show.ts
-import path25 from "path";
+import path28 from "path";
 
 // src/ui/highlight.ts
 var EXTENSIONS = {
@@ -42406,6 +42576,12 @@ var riskCounts = (summary) => {
   const parts = [`${by("high")} high`, `${by("medium")} medium`, `${by("low")} low`].filter((p) => !p.startsWith("0 "));
   return parts.length === 0 ? "none found" : parts.join(", ");
 };
+function decisionLines(decision, profile) {
+  const note = decision.note === void 0 ? [] : textLines(`Note: ${decision.note}`, profile.width, { role: "muted" });
+  if (decision.state === "none") return statusBadge("inactive", "No review decision recorded for these changes", profile);
+  if (decision.state === "stale") return [...statusBadge("warning", `Stale: the last decision (${decision.decision ?? "recorded"}) was about different changes than these`, profile), ...note];
+  return [...statusBadge(decision.decision === "rejected" ? "error" : "success", `${decision.decision === "rejected" ? "Rejected" : "Approved"}, and these changes are unchanged since`, profile), ...note];
+}
 function reviewView(files, profile, options) {
   const notes = reviewNotes(files);
   const introduced = files.reduce((n, f3) => n + f3.summary.risksIntroduced.length, 0);
@@ -42414,6 +42590,7 @@ function reviewView(files, profile, options) {
     if (options.skipped.length === 0) return [...out, ...textLines("There are no uncommitted changes to review.", profile.width)];
     return [...out, ...textLines("There are uncommitted changes, but none of the changed files could be analysed.", profile.width), blank(), ...callout({ level: "info", title: `${options.skipped.length} ${options.skipped.length === 1 ? "file was" : "files were"} not analysed`, body: options.skipped.join("; ") }, profile)];
   }
+  if (options.decision !== void 0) out.push(...decisionLines(options.decision, profile), blank());
   out.push(
     ...textLines(`${files.length} ${files.length === 1 ? "file" : "files"} changed. ${introduced === 0 ? "No possible risks were introduced by pattern matching (that does not prove the change is correct)." : `${introduced} possible ${introduced === 1 ? "risk" : "risks"} introduced (pattern matches, not proof).`}`, profile.width),
     blank(),
@@ -42598,23 +42775,27 @@ var MAX_HUNK_LINES = 40;
 var MAX_REVIEW_FILES = 40;
 var MAX_REVIEW_BYTES = 4e5;
 var TEST_PATH = /(^|\/)(tests?|__tests__|spec|specs)\/|\.(test|spec)\.[a-z0-9]+$/i;
+async function decisionStateFor(ctx) {
+  try {
+    const { state, fileCount } = await currentReviewStatus(ctx);
+    return state.kind === "none" ? { state: "none", fileCount } : { state: state.kind, fileCount, decision: state.decision.decision, at: state.decision.at, ...state.decision.note === void 0 ? {} : { note: state.decision.note } };
+  } catch {
+    return void 0;
+  }
+}
 async function beforeText(ctx, rel2) {
   const result = await ctx.git(["show", `HEAD:${rel2}`]);
   return result.exitCode === 0 ? result.stdout : void 0;
 }
 async function reviewFiles(ctx) {
-  const state = await readGitState(ctx.git);
-  if (!state.available) throw new JpeError("TOOL_UNAVAILABLE", "Git is not installed, so there is nothing to compare against.");
-  if (!state.isRepo) throw new JpeError("INVALID_INPUT", "This folder is not a git repository, so there is no committed version to compare against.");
-  const top = await ctx.git(["rev-parse", "--show-toplevel"]);
-  const root = top.exitCode === 0 && top.stdout.trim() !== "" ? top.stdout.trim() : ctx.cwd;
+  const { root, files: changedFiles } = await listChanges(ctx);
   const files = [];
   const skipped = [];
-  for (const changed of state.changedFiles.slice(0, MAX_REVIEW_FILES)) {
+  for (const changed of changedFiles.slice(0, MAX_REVIEW_FILES)) {
     const rel2 = changed.path;
     const deleted = changed.status.includes("D");
     const added = changed.status.includes("?") || changed.status.includes("A");
-    const after = deleted ? "" : await ctx.fs.readText(path25.resolve(root, rel2));
+    const after = deleted ? "" : await ctx.fs.readText(path28.resolve(root, rel2));
     if (after === void 0) {
       skipped.push(`${rel2} (not readable as text)`);
       continue;
@@ -42626,7 +42807,7 @@ async function reviewFiles(ctx) {
     }
     files.push({ summary: summarizeChange(rel2, before, after), status: deleted ? "deleted" : added ? "added" : "modified", isTest: TEST_PATH.test(rel2) });
   }
-  if (state.changedFiles.length > MAX_REVIEW_FILES) skipped.push(`${state.changedFiles.length - MAX_REVIEW_FILES} more changed files beyond the first ${MAX_REVIEW_FILES}`);
+  if (changedFiles.length > MAX_REVIEW_FILES) skipped.push(`${changedFiles.length - MAX_REVIEW_FILES} more changed files beyond the first ${MAX_REVIEW_FILES}`);
   return { files, skipped };
 }
 async function showCommand(args, ctx) {
@@ -42656,14 +42837,15 @@ async function showCommand(args, ctx) {
   }
   if (view === "review") {
     const { files, skipped } = await reviewFiles(ctx);
+    const decision = await decisionStateFor(ctx);
     return emit(
-      { files: files.map((f3) => ({ status: f3.status, isTest: f3.isTest, summary: f3.summary })), notes: reviewNotes(files), checklist: checklist(files), skipped },
-      () => reviewView(files, profile, { expanded, maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES, skipped })
+      { files: files.map((f3) => ({ status: f3.status, isTest: f3.isTest, summary: f3.summary })), notes: reviewNotes(files), checklist: checklist(files), skipped, ...decision === void 0 ? {} : { decision } },
+      () => reviewView(files, profile, { expanded, maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES, skipped, ...decision === void 0 ? {} : { decision } })
     );
   }
   if (view === "impact") {
     const run2 = await computeImpact(rest[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
-    const rel3 = (file2) => path25.relative(ctx.cwd, file2).split(path25.sep).join("/") || file2;
+    const rel3 = (file2) => path28.relative(ctx.cwd, file2).split(path28.sep).join("/") || file2;
     return emit({ report: run2.report, notes: run2.notes }, () => impactView(run2.report, rel3(run2.abs), run2.notes, rel3, profile));
   }
   if (view === "docs") {
@@ -42672,7 +42854,7 @@ async function showCommand(args, ctx) {
     return emit({ versionNote, report: { ...report, results: report.results.map((r) => ({ ...r, content: r.content.slice(0, 4e3) })) } }, () => docsView(report, versionNote, profile, { expanded, ...find === void 0 ? {} : { find } }));
   }
   const run = await collectDiagnostics(rest, ctx);
-  const rel2 = (file2) => path25.relative(ctx.cwd, file2).split(path25.sep).join("/") || file2;
+  const rel2 = (file2) => path28.relative(ctx.cwd, file2).split(path28.sep).join("/") || file2;
   return emit(run, () => diagnosticsView(run.report, run.notes, rel2, profile, { expanded }));
 }
 
@@ -42790,14 +42972,14 @@ async function uiCommand(args, ctx) {
 }
 
 // src/cli/commands/verify.ts
-import path26 from "path";
+import path29 from "path";
 
 // src/verification/runner.ts
-import { createHash as createHash5 } from "crypto";
+import { createHash as createHash6 } from "crypto";
 var MAX_SIGNATURE_INPUT = 64 * 1024;
 function failureSignature(output2) {
   const normalized = output2.replace(/\u001b\[[0-9;]*m/g, "").replace(/\d+(\.\d+)?/g, "#").replace(/\s+/g, " ").trim().slice(-MAX_SIGNATURE_INPUT);
-  return createHash5("sha256").update(normalized).digest("hex").slice(0, 32);
+  return createHash6("sha256").update(normalized).digest("hex").slice(0, 32);
 }
 function combinedOutput(result) {
   return [result.stdout, result.stderr].filter((s) => s !== "").join("\n");
@@ -42924,12 +43106,12 @@ async function verifyCommand(args, ctx) {
   const deps = { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs };
   if (flagBool(args, "baseline")) {
     const baseline2 = await captureBaseline(checks, deps);
-    await ctx.writeText(path26.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
+    await ctx.writeText(path29.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
     ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline2].map(([cmd2, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd2}`)].join("\n"));
     return 0;
   }
   let baseline;
-  const saved = await ctx.readText(path26.join(dir, "baseline.json"));
+  const saved = await ctx.readText(path29.join(dir, "baseline.json"));
   if (saved) {
     const parsed = baselineSchema.safeParse(JSON.parse(saved));
     if (parsed.success) baseline = new Map(Object.entries(parsed.data));
@@ -42937,9 +43119,9 @@ async function verifyCommand(args, ctx) {
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   const outcomes = await runChecks(checks, { ...deps, ledger }, baseline);
   const required2 = [...new Set(checks.map((c) => c.check))];
-  await ctx.writeText(path26.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
+  await ctx.writeText(path29.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
 `);
-  await ctx.writeText(path26.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
+  await ctx.writeText(path29.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
   const report = deriveStatus(ledger.entries, required2);
   const extra = [
     ...warnings.map((w) => `WARNING: ${w}`),
@@ -42974,6 +43156,7 @@ var COMMANDS = {
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
   center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
+  review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },
   ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },
   doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" }

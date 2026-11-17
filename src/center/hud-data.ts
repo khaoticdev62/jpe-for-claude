@@ -25,6 +25,16 @@ export interface VerificationSummary {
   problem?: string;
 }
 
+/** Whether the uncommitted changes have been reviewed, and whether the recorded decision still applies to them. */
+export interface ReviewSummary {
+  changedFiles: number;
+  /** none = no decision recorded; current = a decision about exactly these changes; stale = a decision about different changes. */
+  state: "none" | "current" | "stale";
+  decision?: "approved" | "rejected";
+  /** ISO time of the latest decision. */
+  at?: string;
+}
+
 export interface HudData {
   hudVersion: typeof HUD_VERSION;
   generatedAt: string;
@@ -34,6 +44,8 @@ export interface HudData {
   /** Language servers the project would use but that are not installed, as "Language (binary)". */
   languageServersMissing: string[];
   runtime: { offline: boolean; approval: "risk-based" | "always" | "off" };
+  /** Absent when there is no git repository to compare against. */
+  review?: ReviewSummary;
 }
 
 const STATUSES: ReadonlySet<string> = new Set(["VERIFIED", "FUNCTIONAL_WITH_WARNINGS", "PARTIALLY_VERIFIED", "FAILED", "BLOCKED", "NOT_TESTED"]);
@@ -57,5 +69,12 @@ export function parseHud(raw: unknown): HudData | undefined {
   if (verification["problem"] !== undefined && typeof verification["problem"] !== "string") return undefined;
   if (!isStringArray(raw["languageServersMissing"])) return undefined;
   if (!isRecord(runtime) || typeof runtime["offline"] !== "boolean" || !["risk-based", "always", "off"].includes(String(runtime["approval"]))) return undefined;
+  const review = raw["review"];
+  if (review !== undefined) {
+    if (!isRecord(review) || typeof review["changedFiles"] !== "number" || !Number.isInteger(review["changedFiles"]) || review["changedFiles"] < 0) return undefined;
+    if (!["none", "current", "stale"].includes(String(review["state"]))) return undefined;
+    if (review["decision"] !== undefined && !["approved", "rejected"].includes(String(review["decision"]))) return undefined;
+    if (review["at"] !== undefined && typeof review["at"] !== "string") return undefined;
+  }
   return raw as unknown as HudData;
 }

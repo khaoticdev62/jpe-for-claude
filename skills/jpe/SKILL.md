@@ -1,7 +1,7 @@
 ---
 name: jpe
-description: JPE For Claude (Just Plain English). Entry point that routes to explain, research, verify, fix, impact, learn, status, audit, setup and config. Use when the user types /jpe, optionally followed by one of those words.
-argument-hint: "[explain|research|verify|fix|impact|learn|status|audit|setup|config] [arguments]"
+description: JPE For Claude (Just Plain English). Entry point that routes to explain, research, verify, fix, impact, learn, status, audit, review, setup and config. Use when the user types /jpe, optionally followed by one of those words.
+argument-hint: "[explain|research|verify|fix|impact|learn|status|audit|review|setup|config] [arguments]"
 disable-model-invocation: true
 ---
 
@@ -12,7 +12,7 @@ You are running the `/jpe` entry point of the JPE For Claude plugin. User input:
 ## Routing
 
 1. Take the first word of the input as the sub-command.
-   - If it is `explain`, `research`, `verify`, `impact`, `learn`, `status` or `audit`, invoke the matching skill with the Skill tool: skill `jpe:<sub-command>`, passing the rest of the input as its arguments. Then follow that skill exactly.
+   - If it is `explain`, `research`, `verify`, `impact`, `learn`, `status`, `audit` or `review`, invoke the matching skill with the Skill tool: skill `jpe:<sub-command>`, passing the rest of the input as its arguments. Then follow that skill exactly.
    - If it is `fix`, `setup` or `config`, these skills change things, so Claude may not start them on its own and the Skill tool will refuse them. Because the user typed this command, read the file `${CLAUDE_PLUGIN_ROOT}/skills/<sub-command>/SKILL.md` with the Read tool and follow it exactly. Treat the rest of the user's input as that skill's arguments (its `$ARGUMENTS`). In that file the folder is written as the placeholder dollar-brace CLAUDE_PLUGIN_ROOT; the real folder is `${CLAUDE_PLUGIN_ROOT}`. Use it wherever the placeholder appears, and ignore the file's front matter.
 2. If the input is empty, do not guess. Run the project overview command below and show the menu.
 3. If the first word is not a sub-command, treat the whole input as a question for `jpe:explain`.
@@ -39,6 +39,7 @@ Then present, in plain English:
 | `/jpe learn <concept>` | Teaches a programming concept using this project's own code |
 | `/jpe status` | Shows the latest verified/not-verified status |
 | `/jpe audit` | Reviews the project for security and quality leads |
+| `/jpe review` | Reviews the uncommitted changes: what changed, possible risks, what to confirm |
 | `/jpe setup` | Checks the installation and language servers |
 | `/jpe config` | Shows or changes JPE settings |
 

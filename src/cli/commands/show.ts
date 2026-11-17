@@ -2,7 +2,9 @@ import path from "node:path";
 import { JpeError } from "../../core/errors.js";
 import { analyzeCode } from "../../explain/analyze.js";
 import { summarizeChange } from "../../explain/diff.js";
-import { readGitState } from "../../project/git.js";
+import { listChanges } from "../../review/changes.js";
+import { currentReviewStatus } from "../../review/status.js";
+import type { ReviewDecisionState } from "../../show/review-data.js";
 import { changeView, checklist, fileView, reviewNotes, reviewView, type ReviewFile } from "../../show/explain-views.js";
 import { diagnosticsView, docsView, impactView } from "../../show/intel-views.js";
 import { paint } from "../../ui/paint.js";
@@ -30,6 +32,16 @@ const MAX_REVIEW_FILES = 40;
 const MAX_REVIEW_BYTES = 400_000;
 const TEST_PATH = /(^|\/)(tests?|__tests__|spec|specs)\/|\.(test|spec)\.[a-z0-9]+$/i;
 
+/** Where the review decision stands for the current changes, or undefined when that cannot be determined. */
+async function decisionStateFor(ctx: CliContext): Promise<ReviewDecisionState | undefined> {
+  try {
+    const { state, fileCount } = await currentReviewStatus(ctx);
+    return state.kind === "none" ? { state: "none", fileCount } : { state: state.kind, fileCount, decision: state.decision.decision, at: state.decision.at, ...(state.decision.note === undefined ? {} : { note: state.decision.note }) };
+  } catch {
+    return undefined;
+  }
+}
+
 async function beforeText(ctx: CliContext, rel: string): Promise<string | undefined> {
   const result = await ctx.git(["show", `HEAD:${rel}`]);
   return result.exitCode === 0 ? result.stdout : undefined;
@@ -37,15 +49,11 @@ async function beforeText(ctx: CliContext, rel: string): Promise<string | undefi
 
 /** Every uncommitted file as a change summary, with the ones that could not be analysed listed with the reason. */
 async function reviewFiles(ctx: CliContext): Promise<{ files: ReviewFile[]; skipped: string[] }> {
-  const state = await readGitState(ctx.git);
-  if (!state.available) throw new JpeError("TOOL_UNAVAILABLE", "Git is not installed, so there is nothing to compare against.");
-  if (!state.isRepo) throw new JpeError("INVALID_INPUT", "This folder is not a git repository, so there is no committed version to compare against.");
-  const top = await ctx.git(["rev-parse", "--show-toplevel"]);
-  const root = top.exitCode === 0 && top.stdout.trim() !== "" ? top.stdout.trim() : ctx.cwd;
+  const { root, files: changedFiles } = await listChanges(ctx);
 
   const files: ReviewFile[] = [];
   const skipped: string[] = [];
-  for (const changed of state.changedFiles.slice(0, MAX_REVIEW_FILES)) {
+  for (const changed of changedFiles.slice(0, MAX_REVIEW_FILES)) {
     const rel = changed.path;
     const deleted = changed.status.includes("D");
     const added = changed.status.includes("?") || changed.status.includes("A");
@@ -61,7 +69,7 @@ async function reviewFiles(ctx: CliContext): Promise<{ files: ReviewFile[]; skip
     }
     files.push({ summary: summarizeChange(rel, before, after), status: deleted ? "deleted" : added ? "added" : "modified", isTest: TEST_PATH.test(rel) });
   }
-  if (state.changedFiles.length > MAX_REVIEW_FILES) skipped.push(`${state.changedFiles.length - MAX_REVIEW_FILES} more changed files beyond the first ${MAX_REVIEW_FILES}`);
+  if (changedFiles.length > MAX_REVIEW_FILES) skipped.push(`${changedFiles.length - MAX_REVIEW_FILES} more changed files beyond the first ${MAX_REVIEW_FILES}`);
   return { files, skipped };
 }
 
@@ -100,8 +108,9 @@ export async function showCommand(args: ParsedArgs, ctx: CliContext): Promise<nu
 
   if (view === "review") {
     const { files, skipped } = await reviewFiles(ctx);
-    return emit({ files: files.map((f) => ({ status: f.status, isTest: f.isTest, summary: f.summary })), notes: reviewNotes(files), checklist: checklist(files), skipped }, () =>
-      reviewView(files, profile, { expanded, maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES, skipped }),
+    const decision = await decisionStateFor(ctx);
+    return emit({ files: files.map((f) => ({ status: f.status, isTest: f.isTest, summary: f.summary })), notes: reviewNotes(files), checklist: checklist(files), skipped, ...(decision === undefined ? {} : { decision }) }, () =>
+      reviewView(files, profile, { expanded, maxHunkLines: all ? Number.MAX_SAFE_INTEGER : MAX_HUNK_LINES, skipped, ...(decision === undefined ? {} : { decision }) }),
     );
   }
 

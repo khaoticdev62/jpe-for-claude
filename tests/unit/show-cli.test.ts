@@ -182,7 +182,8 @@ describe("jpe show review", () => {
     const ctx = await setupReview();
     await run(["show", "review", "--json"], ctx);
     const json = JSON.parse(stdout());
-    expect(Object.keys(json).sort()).toEqual(["checklist", "files", "notes", "skipped"]);
+    expect(Object.keys(json).sort()).toEqual(["checklist", "decision", "files", "notes", "skipped"]);
+    expect(json.decision).toEqual({ state: "none", fileCount: 4 });
     expect(json.files).toHaveLength(4);
     expect(json.notes.some((n: { basis: string }) => n.basis === "confirmed")).toBe(true);
   });

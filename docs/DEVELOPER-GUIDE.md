@@ -4,7 +4,7 @@
 
 ```
 .claude-plugin/       plugin.json, marketplace.json, icon.png
-skills/<name>/        11 skills (the commands). Plain markdown that tells Claude what to run.
+skills/<name>/        12 skills (the commands). Plain markdown that tells Claude what to run.
 agents/               7 subagents. Explicit read-only tool allow-lists; no Write/Edit/Bash/PowerShell.
 hooks/hooks.json      6 hooks, all running dist/hook.js (shell hooks cover Bash and PowerShell)
 ```

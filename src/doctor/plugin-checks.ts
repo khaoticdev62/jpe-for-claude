@@ -5,7 +5,7 @@ import { runCommand, spawnSafely, killTree } from "../security/run.js";
 import { parseFrontmatter } from "./frontmatter.js";
 import type { DoctorEnv, Finding } from "./types.js";
 
-export const EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "setup", "config"] as const;
+export const EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "setup", "config"] as const;
 export const EXPECTED_AGENTS = ["jpe-researcher", "jpe-explainer", "jpe-lsp", "jpe-verifier", "jpe-security", "jpe-architect", "jpe-debugger"] as const;
 const EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop"] as const;
 const MCP_PREFIX = "mcp__plugin_jpe_jpe__";
@@ -107,7 +107,7 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
     else if (!parsed.front["description"]) skillProblems.push(`${s}: no description`);
     else if (s === "jpe" && parsed.front["name"] !== "jpe") skillProblems.push("jpe: the entry skill must be named jpe so bare /jpe works");
   }
-  out.push(skillProblems.length === 0 ? f("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ten sub-commands).`) : f("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
+  out.push(skillProblems.length === 0 ? f("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and eleven sub-commands).`) : f("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
 
   // MCP server first, so agent tool lists can be cross-checked against what it really offers.
   // The server is declared inline in plugin.json. A root .mcp.json is not used: Claude Code would also load it as a

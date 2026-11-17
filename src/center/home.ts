@@ -10,7 +10,7 @@ import { type Line, plain, span } from "../ui/doc.js";
 import type { RenderProfile } from "../ui/profile.js";
 import { displayWidth, inline, pad } from "../ui/text.js";
 import { CENTER_COMMANDS, type CenterCommand, findCommand } from "./commands.js";
-import type { HudData } from "./hud-data.js";
+import type { HudData, ReviewSummary } from "./hud-data.js";
 import { type CenterMemory, recentIds } from "./memory.js";
 import { rankCommands } from "./palette.js";
 import { type Basis, type Level, suggest } from "./suggestions.js";
@@ -96,6 +96,14 @@ function gitText(hud: HudData): string {
   }
 }
 
+/** Where the review of the uncommitted changes stands, in words. A stale decision is never described as current. */
+function reviewText(review: ReviewSummary, now: Date): string {
+  const when = review.at === undefined ? "" : formatAge(review.at, now);
+  if (review.state === "none") return "no decision recorded for these changes";
+  if (review.state === "stale") return `last decision (${review.decision ?? "recorded"} ${when}) is stale: files changed since`;
+  return `${review.decision ?? "decided"} ${when}, and the changes are unchanged since`;
+}
+
 /** The HUD facts as lines. The verification status is never cut: it wraps instead (see verificationBadge). */
 export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[] {
   const label = (text: string): Line => [span(text, { role: "muted" })];
@@ -108,6 +116,7 @@ export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[
   const rows: Array<[string, string]> = [
     ["Project", project],
     ["Git", gitText(hud)],
+    ...(hud.review === undefined || hud.review.changedFiles === 0 ? [] : ([["Review", reviewText(hud.review, now)]] as Array<[string, string]>)),
     ["Language servers", servers],
     ["Mode", mode],
   ];
