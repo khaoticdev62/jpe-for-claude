@@ -51,7 +51,6 @@ Windows 11: Tested. Linux, macOS: not run on real machines; code paths for them 
 - Deep documentation support is npm-centric; other ecosystems get advisories and Context7.
 - Context7 is only reachable through the researcher agent's MCP access.
 - Duplicate diagnostics if Claude Code's own LSP plugin is also installed (setting to turn JPE's off).
-- DNS rebinding is not fully prevented by the network guard.
 - No lint step (strict TypeScript only).
 
 ## Remaining work

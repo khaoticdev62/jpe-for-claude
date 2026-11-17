@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DocCache } from "../../src/docs/cache.js";
 import { formatReport, researchDocs, type DocsEngineDeps } from "../../src/docs/engine.js";
-import { htmlToText, isPrivateAddress, safeRequest, type NetDeps } from "../../src/docs/net.js";
+import { htmlToText, isPrivateAddress, pinnedFetch, pinnedLookup, safeRequest, type NetDeps } from "../../src/docs/net.js";
 import { createContext7Provider, discoverContext7Tools, extractLibraryId, type McpToolCaller } from "../../src/docs/providers/context7.js";
 import { localPackageProvider } from "../../src/docs/providers/local-package.js";
 import { officialProvider } from "../../src/docs/providers/official.js";
@@ -102,6 +102,65 @@ describe("network safety", () => {
       fetch: ((_u: unknown, init?: RequestInit) => new Promise((_res, rej) => init?.signal?.addEventListener("abort", () => rej(Object.assign(new Error("aborted"), { name: "AbortError" }))))) as typeof fetch,
     };
     await expect(safeRequest({ url: "https://slow.test/", timeoutMs: 50 }, slow)).rejects.toMatchObject({ code: "TIMEOUT" });
+  });
+
+  describe("DNS rebinding", () => {
+    /** Answers with a public address the first time and a private one on every later lookup. */
+    function rebindingNet(): NetDeps & { pinned: (string | undefined)[]; lookups: number } {
+      const state = { pinned: [] as (string | undefined)[], lookups: 0 };
+      return Object.assign(state, {
+        resolve: async () => (++state.lookups === 1 ? ["93.184.216.34"] : ["127.0.0.1"]),
+        fetch: async (_url: URL, init?: { pinnedAddress?: string }) => {
+          state.pinned.push(init?.pinnedAddress);
+          return new Response("ok", { status: 200 });
+        },
+      });
+    }
+
+    it("resolves once per request and connects to the address that passed the check", async () => {
+      const net = rebindingNet();
+      const result = await safeRequest({ url: "https://rebind.test/", ...opts }, net);
+      expect(result.text).toBe("ok");
+      expect(net.lookups).toBe(1);
+      expect(net.pinned).toEqual(["93.184.216.34"]);
+    });
+
+    it("pins every redirect hop to its own validated address", async () => {
+      const answers: Record<string, string> = { "a.test": "93.184.216.34", "b.test": "8.8.8.8" };
+      const pinned: (string | undefined)[] = [];
+      const net: NetDeps = {
+        resolve: async (host) => [answers[host] ?? "10.0.0.1"],
+        fetch: async (url, init) => {
+          pinned.push(init?.pinnedAddress);
+          return url.hostname === "a.test"
+            ? new Response(null, { status: 302, headers: { location: "https://b.test/next" } })
+            : new Response("done", { status: 200 });
+        },
+      };
+      expect((await safeRequest({ url: "https://a.test/", ...opts }, net)).text).toBe("done");
+      expect(pinned).toEqual(["93.184.216.34", "8.8.8.8"]);
+    });
+
+    it("pinnedLookup ignores the host name and always answers with the pinned address", () => {
+      const lookup = pinnedLookup("93.184.216.34");
+      lookup("anything.test", {}, (error, address, family) => {
+        expect([error, address, family]).toEqual([null, "93.184.216.34", 4]);
+      });
+      lookup("anything.test", { all: true }, (error, address) => {
+        expect([error, address]).toEqual([null, [{ address: "93.184.216.34", family: 4 }]]);
+      });
+      pinnedLookup("2606:4700:4700::1111")("x.test", { all: true }, (_error, address) => {
+        expect(address).toEqual([{ address: "2606:4700:4700::1111", family: 6 }]);
+      });
+    });
+
+    it("the real connection layer refuses a missing or non-public pinned address without touching the network", async () => {
+      const url = new URL("https://example.com/");
+      await expect(pinnedFetch(url)).rejects.toMatchObject({ code: "NOT_PERMITTED" });
+      for (const pinnedAddress of ["127.0.0.1", "10.0.0.1", "169.254.169.254", "::1", "fd00::1"]) {
+        await expect(pinnedFetch(url, { pinnedAddress }), pinnedAddress).rejects.toMatchObject({ code: "NOT_PERMITTED" });
+      }
+    });
   });
 
   it("htmlToText strips scripts, styles and tags", () => {

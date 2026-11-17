@@ -19929,10 +19929,49 @@ async function loadConfig(opts) {
 
 // src/docs/net.ts
 import { lookup } from "dns/promises";
+import { request as httpsRequest } from "https";
 import { isIP } from "net";
+import { Readable } from "stream";
+function pinnedLookup(address) {
+  const family = isIP(address);
+  return (_hostname, options, callback) => {
+    if (options.all) callback(null, [{ address, family }]);
+    else callback(null, address, family);
+  };
+}
+var NULL_BODY_STATUSES = /* @__PURE__ */ new Set([101, 204, 205, 304]);
+function pinnedFetch(url2, init = {}) {
+  const address = init.pinnedAddress;
+  if (!address || isPrivateAddress(address)) {
+    return Promise.reject(new JpeError("NOT_PERMITTED", "No validated public address was supplied for this request."));
+  }
+  const headers = {};
+  new Headers(init.headers).forEach((value, key) => {
+    headers[key] = value;
+  });
+  return new Promise((resolve, reject2) => {
+    const req = httpsRequest(
+      url2,
+      { method: init.method ?? "GET", headers, lookup: pinnedLookup(address), ...init.signal ? { signal: init.signal } : {} },
+      (res) => {
+        const responseHeaders = new Headers();
+        for (const [key, value] of Object.entries(res.headers)) {
+          if (Array.isArray(value)) value.forEach((v) => responseHeaders.append(key, v));
+          else if (value !== void 0) responseHeaders.set(key, value);
+        }
+        const status = res.statusCode ?? 0;
+        const body = NULL_BODY_STATUSES.has(status) ? null : Readable.toWeb(res);
+        resolve(new Response(body, { status, headers: responseHeaders }));
+      }
+    );
+    req.on("error", reject2);
+    if (typeof init.body === "string") req.write(init.body);
+    req.end();
+  });
+}
 function defaultNetDeps() {
   return {
-    fetch: (input2, init) => fetch(input2, init),
+    fetch: pinnedFetch,
     resolve: async (host) => (await lookup(host, { all: true })).map((a) => a.address)
   };
 }
@@ -19973,7 +20012,7 @@ async function assertSafeUrl(raw, options, deps) {
   if (addresses.length === 0 || addresses.some(isPrivateAddress)) {
     throw new JpeError("NOT_PERMITTED", `"${host}" resolves to a non-public address, so it will not be fetched.`);
   }
-  return url2;
+  return { url: url2, address: addresses[0] };
 }
 async function readCapped(response, maxBytes) {
   const reader = response.body?.getReader();
@@ -19999,13 +20038,14 @@ async function safeRequest(options, deps) {
   try {
     let current = options.url;
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-      const url2 = await assertSafeUrl(current, options, deps);
+      const { url: url2, address } = await assertSafeUrl(current, options, deps);
       const headers = { "user-agent": "jpe-for-claude", accept: options.accept ?? "text/html,text/plain,application/json" };
       if (options.body !== void 0) headers["content-type"] = "application/json";
       const response = await deps.fetch(url2, {
         method: options.method ?? "GET",
         redirect: "manual",
         signal: controller.signal,
+        pinnedAddress: address,
         headers,
         ...options.body !== void 0 ? { body: options.body } : {}
       });

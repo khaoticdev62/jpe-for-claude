@@ -4,6 +4,11 @@ All notable changes to JPE For Claude are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+- Closed the DNS-rebinding gap in the network guard: the validated IP address is now the one the connection uses, instead of the host name being resolved a second time.
+
 ## [1.0.0] - 2026-11-13
 
 First release.

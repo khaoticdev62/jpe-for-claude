@@ -19929,12 +19929,64 @@ async function loadConfig(opts) {
 
 // src/docs/net.ts
 import { lookup } from "dns/promises";
+import { request as httpsRequest } from "https";
 import { isIP } from "net";
+import { Readable } from "stream";
+function pinnedLookup(address) {
+  const family = isIP(address);
+  return (_hostname, options, callback) => {
+    if (options.all) callback(null, [{ address, family }]);
+    else callback(null, address, family);
+  };
+}
+var NULL_BODY_STATUSES = /* @__PURE__ */ new Set([101, 204, 205, 304]);
+function pinnedFetch(url2, init = {}) {
+  const address = init.pinnedAddress;
+  if (!address || isPrivateAddress(address)) {
+    return Promise.reject(new JpeError("NOT_PERMITTED", "No validated public address was supplied for this request."));
+  }
+  const headers = {};
+  new Headers(init.headers).forEach((value, key) => {
+    headers[key] = value;
+  });
+  return new Promise((resolve, reject2) => {
+    const req = httpsRequest(
+      url2,
+      { method: init.method ?? "GET", headers, lookup: pinnedLookup(address), ...init.signal ? { signal: init.signal } : {} },
+      (res) => {
+        const responseHeaders = new Headers();
+        for (const [key, value] of Object.entries(res.headers)) {
+          if (Array.isArray(value)) value.forEach((v) => responseHeaders.append(key, v));
+          else if (value !== void 0) responseHeaders.set(key, value);
+        }
+        const status = res.statusCode ?? 0;
+        const body = NULL_BODY_STATUSES.has(status) ? null : Readable.toWeb(res);
+        resolve(new Response(body, { status, headers: responseHeaders }));
+      }
+    );
+    req.on("error", reject2);
+    if (typeof init.body === "string") req.write(init.body);
+    req.end();
+  });
+}
 function defaultNetDeps() {
   return {
-    fetch: (input2, init) => fetch(input2, init),
+    fetch: pinnedFetch,
     resolve: async (host) => (await lookup(host, { all: true })).map((a) => a.address)
   };
+}
+function isPrivateAddress(address) {
+  const lower = address.toLowerCase();
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(lower);
+  if (mapped?.[1]) return isPrivateAddress(mapped[1]);
+  if (isIP(lower) === 4) {
+    const [a = 0, b = 0] = lower.split(".").map(Number);
+    return a === 0 || a === 10 || a === 127 || a >= 224 || a === 100 && b >= 64 && b <= 127 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 || a === 192 && b === 168 || a === 192 && b === 0;
+  }
+  if (isIP(lower) === 6) {
+    return lower === "::" || lower === "::1" || /^f[cd]/.test(lower) || /^fe[89ab]/.test(lower) || lower.startsWith("ff");
+  }
+  return true;
 }
 
 // src/project/fs.ts

@@ -1,16 +1,71 @@
 import { lookup } from "node:dns/promises";
+import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
+import { Readable } from "node:stream";
 import { JpeError } from "../core/errors.js";
 
+/** Extra option carried to the connection layer: the one address the guard already validated. */
+export type PinnedInit = RequestInit & { pinnedAddress?: string };
+
 export interface NetDeps {
-  fetch: typeof fetch;
+  /** Must connect to init.pinnedAddress (never re-resolve the host name) when it is provided. */
+  fetch: (input: URL, init?: PinnedInit) => Promise<Response>;
   /** Resolves a host name to its IP addresses. Injected so tests never touch DNS. */
   resolve: (host: string) => Promise<string[]>;
 }
 
+type LookupAnswer = string | { address: string; family: number }[];
+type LookupCallback = (error: NodeJS.ErrnoException | null, address: LookupAnswer, family?: number) => void;
+
+/** A DNS lookup that ignores the host name and always answers with one pre-validated address. */
+export function pinnedLookup(address: string): (hostname: string, options: { all?: boolean | undefined }, callback: LookupCallback) => void {
+  const family = isIP(address);
+  return (_hostname, options, callback) => {
+    if (options.all) callback(null, [{ address, family }]);
+    else callback(null, address, family);
+  };
+}
+
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
+
+/**
+ * HTTPS request that connects to a pinned IP address. The URL still carries the real host name, so TLS
+ * certificate checks and SNI use it; only the address lookup is replaced. This closes the window in which
+ * a hostile DNS server could answer differently for the safety check and for the connection (DNS rebinding).
+ */
+export function pinnedFetch(url: URL, init: PinnedInit = {}): Promise<Response> {
+  const address = init.pinnedAddress;
+  if (!address || isPrivateAddress(address)) {
+    return Promise.reject(new JpeError("NOT_PERMITTED", "No validated public address was supplied for this request."));
+  }
+  const headers: Record<string, string> = {};
+  new Headers(init.headers).forEach((value, key) => {
+    headers[key] = value;
+  });
+  return new Promise<Response>((resolve, reject) => {
+    const req = httpsRequest(
+      url,
+      { method: init.method ?? "GET", headers, lookup: pinnedLookup(address), ...(init.signal ? { signal: init.signal } : {}) },
+      (res) => {
+        const responseHeaders = new Headers();
+        for (const [key, value] of Object.entries(res.headers)) {
+          if (Array.isArray(value)) value.forEach((v) => responseHeaders.append(key, v));
+          else if (value !== undefined) responseHeaders.set(key, value);
+        }
+        const status = res.statusCode ?? 0;
+        const body = NULL_BODY_STATUSES.has(status) ? null : (Readable.toWeb(res) as ReadableStream<Uint8Array>);
+        resolve(new Response(body, { status, headers: responseHeaders }));
+      },
+    );
+    req.on("error", reject);
+    if (typeof init.body === "string") req.write(init.body);
+    req.end();
+  });
+}
+
 export function defaultNetDeps(): NetDeps {
   return {
-    fetch: (input, init) => fetch(input, init),
+    fetch: pinnedFetch,
     resolve: async (host) => (await lookup(host, { all: true })).map((a) => a.address),
   };
 }
@@ -62,7 +117,13 @@ function hostAllowed(host: string, allowed: readonly string[] | undefined): bool
   return allowed.some((a) => host === a || host.endsWith(`.${a}`));
 }
 
-async function assertSafeUrl(raw: string, options: RequestOptions, deps: NetDeps): Promise<URL> {
+interface SafeTarget {
+  url: URL;
+  /** The single public address the connection must use. */
+  address: string;
+}
+
+async function assertSafeUrl(raw: string, options: RequestOptions, deps: NetDeps): Promise<SafeTarget> {
   let url: URL;
   try {
     url = new URL(raw);
@@ -81,7 +142,7 @@ async function assertSafeUrl(raw: string, options: RequestOptions, deps: NetDeps
   if (addresses.length === 0 || addresses.some(isPrivateAddress)) {
     throw new JpeError("NOT_PERMITTED", `"${host}" resolves to a non-public address, so it will not be fetched.`);
   }
-  return url;
+  return { url, address: addresses[0] as string };
 }
 
 async function readCapped(response: Response, maxBytes: number): Promise<string> {
@@ -104,8 +165,9 @@ async function readCapped(response: Response, maxBytes: number): Promise<string>
 
 /**
  * Guarded HTTPS request: https only, no credentials in the URL, standard port, host allow-list,
- * every redirect re-checked, public IPs only, hard timeout and size cap. Known limit: a hostile
- * DNS server could change its answer between this check and the connection (DNS rebinding).
+ * every redirect re-checked, public IPs only, hard timeout and size cap. The host is resolved once per
+ * hop and the connection is pinned to the address that passed the check, so DNS rebinding cannot swap
+ * in a private address between the check and the connection.
  */
 export async function safeRequest(options: RequestOptions, deps: NetDeps): Promise<HttpText> {
   const maxBytes = options.maxBytes ?? 1024 * 1024;
@@ -114,13 +176,14 @@ export async function safeRequest(options: RequestOptions, deps: NetDeps): Promi
   try {
     let current = options.url;
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-      const url = await assertSafeUrl(current, options, deps);
+      const { url, address } = await assertSafeUrl(current, options, deps);
       const headers: Record<string, string> = { "user-agent": "jpe-for-claude", accept: options.accept ?? "text/html,text/plain,application/json" };
       if (options.body !== undefined) headers["content-type"] = "application/json";
       const response = await deps.fetch(url, {
         method: options.method ?? "GET",
         redirect: "manual",
         signal: controller.signal,
+        pinnedAddress: address,
         headers,
         ...(options.body !== undefined ? { body: options.body } : {}),
       });
