@@ -56,9 +56,12 @@ Windows 11: Tested. Linux, macOS: not run on real machines; code paths for them 
 
 ## Remaining work
 
-1. Publish: create the GitHub repository, push `main` and tag `v1.0.0`, attach `release/jpe-1.0.0.zip` and `.sha256` to a release.
-2. Run the manual CI workflow once to get real Linux and macOS evidence.
-3. Live-test the remaining agents and the alias forwarding to an installed plugin.
+Done after 1.0.0: repository published (public), tag v1.0.0 and release assets attached, `claude plugin validate .` passes, `jpe doctor` is clean.
+
+1. Run the manual CI workflow for Linux and macOS evidence. A first dispatch was refused by GitHub (account billing lock), so no job started.
+2. Live-test the remaining agents and the alias forwarding to an installed plugin.
+3. Add a lint step to the checks.
+4. `npm audit` reports 7 high findings, all in dev build tools (picomatch ReDoS via vitest, tsup, vite). `npm audit --omit=dev` reports 0, so nothing in the shipped bundle is affected. The suggested fixes are major-version downgrades; revisit when upstream releases a patched picomatch.
 
 ## Installation
 
