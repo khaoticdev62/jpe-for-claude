@@ -11,7 +11,7 @@
       "name": "jpe",
       "source": "./",
       "description": "Just Plain English: explains what Claude Code does and why, verifies against real docs, diagnostics and tests, and reports honest evidence.",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "category": "development",
       "tags": [
         "explain",

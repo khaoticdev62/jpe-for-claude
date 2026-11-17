@@ -193,10 +193,15 @@ describe.skipIf(!existsSync(path.join(ROOT, "dist", "mcp.js")))("built server ov
   }, 60_000);
 });
 
-describe(".mcp.json", () => {
+describe("plugin.json MCP declaration", () => {
   it("launches the bundled server with the plugin root variable", async () => {
     const { readFile } = await import("node:fs/promises");
-    const cfg = JSON.parse(await readFile(path.join(ROOT, ".mcp.json"), "utf8")) as { mcpServers: Record<string, { command: string; args: string[] }> };
+    const cfg = JSON.parse(await readFile(path.join(ROOT, ".claude-plugin", "plugin.json"), "utf8")) as { mcpServers: Record<string, { command: string; args: string[] }> };
     expect(cfg.mcpServers["jpe"]).toEqual({ command: "node", args: ["${CLAUDE_PLUGIN_ROOT}/dist/mcp.js"] });
+  });
+
+  it("has no root .mcp.json, which Claude Code would also load as a failing project-scope server", async () => {
+    const { access } = await import("node:fs/promises");
+    await expect(access(path.join(ROOT, ".mcp.json"))).rejects.toThrow();
   });
 });

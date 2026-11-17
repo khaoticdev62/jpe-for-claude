@@ -22714,10 +22714,9 @@ async function checkPlugin(env) {
     else if (s === "jpe" && parsed.front["name"] !== "jpe") skillProblems.push("jpe: the entry skill must be named jpe so bare /jpe works");
   }
   out.push(skillProblems.length === 0 ? f2("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ten sub-commands).`) : f2("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
-  const mcpConfig = await readJson(env, ".mcp.json");
-  const server = mcpConfig.value?.mcpServers?.jpe;
+  const server = manifest.value?.mcpServers?.jpe;
   let serverTools;
-  if (mcpConfig.error || !server) {
+  if (manifest.error || !server) {
     out.push(f2("mcp-config", "fail", "The plugin's MCP configuration is missing or has no jpe server.", { fix: "Reinstall the plugin." }));
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f2("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));

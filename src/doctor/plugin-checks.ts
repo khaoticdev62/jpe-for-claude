@@ -110,10 +110,12 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
   out.push(skillProblems.length === 0 ? f("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ten sub-commands).`) : f("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
 
   // MCP server first, so agent tool lists can be cross-checked against what it really offers.
-  const mcpConfig = await readJson(env, ".mcp.json");
-  const server = (mcpConfig.value as { mcpServers?: { jpe?: { command?: string; args?: string[] } } } | undefined)?.mcpServers?.jpe;
+  // The server is declared inline in plugin.json. A root .mcp.json is not used: Claude Code would also load it as a
+  // project-scope server when the plugin folder is opened as a project, where ${CLAUDE_PLUGIN_ROOT} is undefined.
+  type McpDeclaration = { mcpServers?: { jpe?: { command?: string; args?: string[] } } };
+  const server = (manifest.value as McpDeclaration | undefined)?.mcpServers?.jpe;
   let serverTools: string[] | undefined;
-  if (mcpConfig.error || !server) {
+  if (manifest.error || !server) {
     out.push(f("mcp-config", "fail", "The plugin's MCP configuration is missing or has no jpe server.", { fix: "Reinstall the plugin." }));
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));

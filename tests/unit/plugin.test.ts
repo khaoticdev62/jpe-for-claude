@@ -32,7 +32,7 @@ describe("plugin manifest", () => {
   it("names the plugin jpe and declares only documented fields", async () => {
     const manifest = JSON.parse(await readFile(path.join(root, ".claude-plugin", "plugin.json"), "utf8")) as Record<string, unknown>;
     expect(manifest["name"]).toBe("jpe");
-    const allowed = new Set(["name", "displayName", "version", "description", "license", "keywords", "author", "homepage", "repository", "icon"]);
+    const allowed = new Set(["name", "displayName", "version", "description", "license", "keywords", "author", "homepage", "repository", "icon", "mcpServers"]);
     for (const key of Object.keys(manifest)) expect(allowed.has(key), key).toBe(true);
   });
 });
@@ -81,17 +81,23 @@ describe("agents", () => {
     for (const forbidden of ["hooks", "mcpServers", "permissionMode"]) expect(doc.front[forbidden], forbidden).toBeUndefined();
   });
 
-  it("no agent can write, edit, run shell commands or spawn agents; MCP tools named in tool lists really exist", async () => {
+  it("every agent uses an explicit read-only allow-list: no write, edit, shell or agent tools, and MCP tools named really exist", async () => {
     const realTools = new Set(TOOLS.map((t) => `mcp__plugin_jpe_jpe__${t.name}`));
+    // Read-only external sources the researcher may use. A deny-list would also inherit every other MCP server's write tools.
+    const readOnlyExternal = new Set([
+      "WebFetch",
+      "WebSearch",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "mcp__claude_ai_Context7__query-docs",
+    ]);
     for (const name of AGENTS) {
       const doc = await load(path.join(root, "agents", `${name}.md`));
-      if (doc.front["tools"]) {
-        for (const t of doc.front["tools"].split(",").map((x) => x.trim())) {
-          expect(["Read", "Grep", "Glob", "LSP"].includes(t) || realTools.has(t), `${name} lists ${t}`).toBe(true);
-        }
-      } else {
-        const denied = (doc.front["disallowedTools"] ?? "").split(",").map((t) => t.trim());
-        expect(denied, name).toEqual(expect.arrayContaining(["Write", "Edit", "Agent", "Bash"]));
+      expect(doc.front["disallowedTools"], `${name} must use an allow-list, not a deny-list`).toBeUndefined();
+      expect(doc.front["tools"], `${name} has no tools list`).toBeTruthy();
+      for (const t of (doc.front["tools"] ?? "").split(",").map((x) => x.trim())) {
+        expect(["Read", "Grep", "Glob", "LSP"].includes(t) || realTools.has(t) || readOnlyExternal.has(t), `${name} lists ${t}`).toBe(true);
       }
     }
   });

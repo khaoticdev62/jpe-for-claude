@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { JpeError } from "../../src/core/errors.js";
 import { resolveInside, resolveInsideReal } from "../../src/security/paths.js";
-import { assessCommand } from "../../src/security/risk.js";
+import { assessCommand, tokenizeCommandLine } from "../../src/security/risk.js";
 import { runCommand } from "../../src/security/run.js";
 import { isSensitiveFileName, scanText } from "../../src/security/scan.js";
 import { wrapUntrusted } from "../../src/security/untrusted.js";
@@ -147,5 +147,55 @@ describe("assessCommand", () => {
     ["tsc --noEmit", "safe"],
   ])("%s -> %s", (cmd, level) => {
     expect(assessCommand(cmd).level).toBe(level);
+  });
+
+  describe("evasions of the simple patterns", () => {
+    it.each([
+      ["rm -f -r build", "split flags"],
+      ["rm -fr build", "reordered flags"],
+      ["rm --recursive --force build", "long flags"],
+      ["Remove-Item build -Force -Recurse", "PowerShell flags in any order"],
+      ["Remove-Item build -r", "PowerShell parameter abbreviation"],
+      ["ri build -rec -fo", "PowerShell alias with abbreviation"],
+      ["del /q /s build", "cmd.exe switches"],
+      ["rd /s /q build", "cmd.exe folder delete"],
+      ["git push origin +main", "forced refspec"],
+      ["git -C ../other push -f", "global option before push"],
+      ["git push -uf origin main", "clustered short flags"],
+      ["git push --force-with-lease origin main", "lease force"],
+      ["echo done && rm -f -r build", "after a separator"],
+      ["bash -c 'rm -f -r build'", "inside bash -c"],
+      ["powershell -NoProfile -Command \"Remove-Item x -Recurse\"", "inside powershell -Command"],
+      ["cmd /c rd /s /q build", "inside cmd /c"],
+      ["C:\\Windows\\System32\\cmd.exe /c rd /s /q build", "full program path"],
+      ["sudo rm -f -r build", "behind a prefix word"],
+    ])("treats %s as destructive (%s)", (cmd) => {
+      expect(assessCommand(cmd).level).toBe("destructive");
+    });
+
+    it("asks before running a PowerShell encoded command", () => {
+      expect(assessCommand("powershell -EncodedCommand SQBFAFgA").level).toBe("needs-approval");
+      expect(assessCommand("pwsh -enc SQBFAFgA").level).toBe("needs-approval");
+    });
+  });
+
+  describe("does not cry wolf", () => {
+    it.each([
+      "rm -v old.log",
+      "rm build/output.txt",
+      "Remove-Item build/output.txt -Force",
+      "del /q old.log",
+      "git push -u origin main --follow-tags",
+      "bash -e script.sh",
+      "grep -r 'rm -rf' docs",
+      "echo 'Remove-Item -Recurse'",
+      "git status && git diff --stat",
+    ])("%s", (cmd) => {
+      expect(assessCommand(cmd).level).not.toBe("destructive");
+    });
+  });
+
+  it("tokenizes quoted separators as part of one word", () => {
+    expect(tokenizeCommandLine("echo 'a; b' && rm -r x")).toEqual([["echo", "a; b"], ["rm", "-r", "x"]]);
   });
 });

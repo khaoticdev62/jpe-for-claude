@@ -54,6 +54,8 @@ export function safeSessionId(id: string): string {
 export interface HookOutput {
   decision?: "block";
   reason?: string;
+  /** A short notice shown to the user (not added to Claude's context). */
+  systemMessage?: string;
   hookSpecificOutput?: {
     hookEventName: string;
     additionalContext?: string;

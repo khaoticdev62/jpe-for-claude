@@ -36678,6 +36678,43 @@ function redactSecrets(text2) {
   return out;
 }
 
+// package.json
+var package_default = {
+  name: "jpe-for-claude",
+  version: "1.1.0",
+  description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
+  private: true,
+  type: "module",
+  engines: {
+    node: ">=20"
+  },
+  scripts: {
+    build: "tsup",
+    lint: "biome lint",
+    typecheck: "tsc --noEmit",
+    test: "vitest run",
+    "validate:plugin": "claude plugin validate .",
+    version: "node scripts/sync-version.mjs && git add .claude-plugin",
+    package: "npm run build && node scripts/package.mjs"
+  },
+  devDependencies: {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "^26.6.6",
+    tsup: "^9.0.0",
+    typescript: "^7.0.2",
+    vitest: "^5.1.0"
+  },
+  dependencies: {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    zod: "^4.6.7"
+  },
+  repository: {
+    type: "git",
+    url: "https://github.com/khaoticdev62/jpe-for-claude.git"
+  },
+  license: "MIT"
+};
+
 // src/cli/context.ts
 import { createHash, randomUUID } from "crypto";
 import { mkdir, readFile as readFile2, rename, writeFile } from "fs/promises";
@@ -39646,10 +39683,9 @@ async function checkPlugin(env) {
     else if (s === "jpe" && parsed.front["name"] !== "jpe") skillProblems.push("jpe: the entry skill must be named jpe so bare /jpe works");
   }
   out.push(skillProblems.length === 0 ? f2("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ten sub-commands).`) : f2("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
-  const mcpConfig = await readJson(env, ".mcp.json");
-  const server = mcpConfig.value?.mcpServers?.jpe;
+  const server = manifest.value?.mcpServers?.jpe;
   let serverTools;
-  if (mcpConfig.error || !server) {
+  if (manifest.error || !server) {
     out.push(f2("mcp-config", "fail", "The plugin's MCP configuration is missing or has no jpe server.", { fix: "Reinstall the plugin." }));
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f2("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));
@@ -41122,7 +41158,7 @@ async function callTool(spec, input2, makeContext = (c) => createContext(c)) {
 
 // src/mcp/server.ts
 var SERVER_NAME = "jpe";
-var SERVER_VERSION = "1.0.1";
+var SERVER_VERSION = package_default.version;
 var INSTRUCTIONS = [
   "JPE For Claude tools: plain-English explanation briefings, version-aware documentation research, evidence-based verification, language-server diagnostics and impact analysis.",
   "Status words (VERIFIED, FUNCTIONAL_WITH_WARNINGS, PARTIALLY_VERIFIED, FAILED, BLOCKED, NOT_TESTED) come only from commands that actually ran; never upgrade them.",

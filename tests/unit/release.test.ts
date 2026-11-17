@@ -17,7 +17,7 @@ describe("version consistency", () => {
     const pkg = JSON.parse(await read("package.json")).version as string;
     expect(JSON.parse(await read(".claude-plugin/plugin.json")).version).toBe(pkg);
     expect(JSON.parse(await read(".claude-plugin/marketplace.json")).plugins[0].version).toBe(pkg);
-    expect(await read("src/mcp/server.ts")).toContain(`SERVER_VERSION = "${pkg}"`);
+    expect((await import("../../src/mcp/server.js")).SERVER_VERSION).toBe(pkg);
     expect(await read("CHANGELOG.md")).toContain(`## [${pkg}]`);
   });
 
@@ -115,7 +115,6 @@ describe.skipIf(!built)("release package", () => {
     for (const needed of [
       "jpe-marketplace/.claude-plugin/marketplace.json",
       `${plugin}.claude-plugin/plugin.json`,
-      `${plugin}.mcp.json`,
       `${plugin}hooks/hooks.json`,
       `${plugin}dist/cli.js`,
       `${plugin}dist/hook.js`,

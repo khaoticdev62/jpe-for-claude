@@ -78,6 +78,7 @@ Language-server support: TypeScript, JavaScript, Python, Go, Rust, C, C++, C#, J
 npm install
 npm run lint && npm run typecheck && npm test && npm run build
 claude --plugin-dir .          # try the plugin from a checkout
+npm version patch|minor        # bump package.json, then sync plugin.json and marketplace.json (scripts/sync-version.mjs)
 npm run package                # build the release folder, zip and checksums into release/
 ```
 

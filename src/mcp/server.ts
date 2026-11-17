@@ -1,10 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CliContext } from "../cli/context.js";
 import { redactSecrets } from "../core/redact.js";
+import pkg from "../../package.json" with { type: "json" };
 import { TOOLS, callTool } from "./tools.js";
 
 export const SERVER_NAME = "jpe";
-export const SERVER_VERSION = "1.0.1";
+/** Read from package.json, the single source of truth; the build bundles it into dist/mcp.js. */
+export const SERVER_VERSION: string = pkg.version;
 
 const INSTRUCTIONS = [
   "JPE For Claude tools: plain-English explanation briefings, version-aware documentation research, evidence-based verification, language-server diagnostics and impact analysis.",

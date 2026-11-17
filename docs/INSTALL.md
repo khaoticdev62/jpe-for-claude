@@ -46,7 +46,17 @@ claude plugin install jpe@jpe-marketplace --scope user
 claude --plugin-dir ./path/to/plugin-folder
 ```
 
-From a source checkout run `npm install && npm run build` first. The plugin is active for that session only.
+From a source checkout run `npm install && npm run build` first. The plugin is active for that session only. It keeps its saved data (backups, run records) in a separate `jpe-inline` data folder, so it does not mix with an installed copy.
+
+## It starts by itself
+
+Once installed and enabled, nothing needs launching. Every time Claude Code opens:
+
+- the `jpe` MCP server (14 tools) is started by Claude Code from the plugin's own `plugin.json`;
+- the SessionStart hook adds a short project summary (language, git state, which checks exist) to Claude's context. On `/clear` it does the same with fresh session state, on `/compact` it adds only a short reminder and keeps the session's edit history, and on `resume` it stays quiet;
+- the first time JPE starts in a project you also see a one-line welcome.
+
+Check that it is running with `/mcp` (look for `plugin:jpe:jpe`) and `/jpe:setup` (Doctor). If you open the plugin's own folder as a project, no extra `jpe` server is started: the server is declared only inside the plugin manifest, not in a root `.mcp.json`.
 
 ## Scopes
 
@@ -63,7 +73,7 @@ The installer never overwrites a different skill named `jpe`: it reports it and 
 
 ## Updating
 
-Unzip the new release and run the installer with `-Update` / `--update`. It shows the release notes, backs up your JPE configuration (`config.json.bak-<time>`), verifies checksums, updates through Claude Code, and runs Doctor. If Doctor reports a problem, restore the backup and reinstall the previous release folder with the installer. Updates are always manual.
+Unzip the new release and run the installer with `-Update` / `--update`. It shows the release notes, backs up your JPE configuration (`config.json.bak-<time>`), verifies checksums, updates through Claude Code, and runs Doctor. If Doctor reports a problem, restore the backup and reinstall the previous release folder with the installer. Updates are always manual. An installed plugin runs a cached copy of the release, so editing a source checkout changes nothing until you publish a new version and update the installed plugin (or run with `--plugin-dir`).
 
 ## Uninstalling
 

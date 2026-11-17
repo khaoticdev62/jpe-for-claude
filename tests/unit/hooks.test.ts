@@ -93,6 +93,41 @@ describe("SessionStart", () => {
     const out = await onSessionStart(parsePayload("SessionStart", JSON.stringify(common("SessionStart", { source: "startup" }))), makeCtx());
     expect(out?.hookSpecificOutput?.additionalContext).toContain("NOT_TESTED");
   });
+  const start = (source: string, ctx = makeCtx()) => onSessionStart(parsePayload("SessionStart", JSON.stringify(common("SessionStart", { source }))), ctx);
+
+  it("shows the welcome notice once per project, on startup only", async () => {
+    const first = await start("startup");
+    expect(first?.systemMessage).toContain("/jpe:verify");
+    expect((await start("startup"))?.systemMessage).toBeUndefined();
+    expect((await start("clear"))?.systemMessage).toBeUndefined();
+  });
+  it("never shows the welcome notice on clear, compact or resume", async () => {
+    expect((await start("clear"))?.systemMessage).toBeUndefined();
+    expect((await start("compact"))?.systemMessage).toBeUndefined();
+    expect(await start("resume")).toBeUndefined();
+  });
+  it("gives a short reminder on compact and keeps the session's edit history", async () => {
+    const ctx = makeCtx();
+    await start("startup", ctx);
+    const target = await write("src/a.ts", "export const a = 1;\n");
+    await onPostToolUse(parsePayload("PostToolUse", JSON.stringify(common("PostToolUse", { tool_name: "Edit", tool_input: { file_path: target } }))), ctx);
+    const before = Object.keys((await loadState(ctx, "sess-1234567890")).edits);
+    expect(before).toHaveLength(1);
+
+    const out = await start("compact", ctx);
+    const text = out?.hookSpecificOutput?.additionalContext ?? "";
+    expect(text).toContain("still active");
+    expect(text).toContain("never claim zero errors");
+    expect(text).not.toContain("Project:");
+    expect(Object.keys((await loadState(ctx, "sess-1234567890")).edits)).toEqual(before);
+  });
+  it("starts a fresh session state on clear", async () => {
+    const ctx = makeCtx();
+    const target = await write("src/a.ts", "export const a = 1;\n");
+    await onPostToolUse(parsePayload("PostToolUse", JSON.stringify(common("PostToolUse", { tool_name: "Edit", tool_input: { file_path: target } }))), ctx);
+    await start("clear", ctx);
+    expect((await loadState(ctx, "sess-1234567890")).edits).toEqual({});
+  });
 });
 
 describe("UserPromptSubmit", () => {
@@ -119,6 +154,21 @@ describe("PreToolUse", () => {
     expect(await pre("Write", { file_path: path.join(project, "src/a.ts"), content: "x" })).toBeUndefined();
     const decisions = [await pre("Bash", { command: "rm -rf /" }), await pre("Write", { file_path: path.join(project, ".env"), content: "" })];
     for (const d of decisions) expect(JSON.stringify(d)).not.toContain('"allow"');
+  });
+
+  it("applies the same policy to the PowerShell tool", async () => {
+    expect((await pre("PowerShell", { command: "Remove-Item -Recurse -Force build" }))?.hookSpecificOutput).toMatchObject({ permissionDecision: "ask" });
+    expect((await pre("PowerShell", { command: "Remove-Item build -r" }))?.hookSpecificOutput?.permissionDecisionReason).toContain("recursive delete");
+    expect((await pre("PowerShell", { command: "git push origin +main" }))?.hookSpecificOutput?.permissionDecisionReason).toContain("rewrites remote history");
+    expect(await pre("PowerShell", { command: "Get-ChildItem src" })).toBeUndefined();
+  });
+
+  it("registers the shell hooks for both Bash and PowerShell", async () => {
+    const hooks = JSON.parse(await readFile(path.join(ROOT, "hooks", "hooks.json"), "utf8")) as { hooks: Record<string, Array<{ matcher?: string }>> };
+    for (const event of ["PreToolUse", "PostToolUseFailure"]) {
+      const matcher = hooks.hooks[event]?.[0]?.matcher ?? "";
+      expect(matcher.split("|"), event).toEqual(expect.arrayContaining(["Bash", "PowerShell"]));
+    }
   });
 
   it("respects the approval setting", async () => {
@@ -209,6 +259,12 @@ describe("PostToolUseFailure", () => {
     expect((await fail("TypeError: Cannot read properties of undefined (reading 'x')"))?.hookSpecificOutput?.additionalContext).toContain("Usual fix");
     expect(await fail("something unrecognisable")).toBeUndefined();
     expect(await fail("EADDRINUSE", { is_interrupt: true })).toBeUndefined();
+  });
+  it("also explains failures from the PowerShell tool, and ignores other tools", async () => {
+    const run = (tool: string) =>
+      onToolFailure(parsePayload("PostToolUseFailure", JSON.stringify(common("PostToolUseFailure", { tool_name: tool, tool_input: {}, error: "TypeError: Cannot read properties of undefined (reading 'x')" }))), makeCtx());
+    expect((await run("PowerShell"))?.hookSpecificOutput?.additionalContext).toContain("Usual fix");
+    expect(await run("Read")).toBeUndefined();
   });
 });
 

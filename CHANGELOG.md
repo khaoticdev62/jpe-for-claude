@@ -6,8 +6,20 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-17
+
 ### Added
+- Welcome notice the first time JPE starts in a project (a one-line `systemMessage`).
+- SessionStart now tells apart `startup`, `clear`, `compact` and `resume`: `compact` gets a short reminder and keeps the session's edit history, instead of resetting it.
+- The risk policy and the failure explainer now cover the PowerShell tool (hook matchers include `PowerShell`).
+- `scripts/sync-version.mjs`, run by `npm version`, keeps `plugin.json` and `marketplace.json` in step with `package.json`. The MCP server reads its version from `package.json` at build time.
+- CI step that fails when the committed `dist/` differs from what `src/` builds to.
 - Lint step (Biome, `npm run lint`) in the local checks and the CI workflow. The CI dependency audit now covers production dependencies only (`--omit=dev`), because the remaining findings are in build tools.
+
+### Changed
+- The MCP server is declared inline in `.claude-plugin/plugin.json`; the root `.mcp.json` is gone. Opening the plugin's own folder as a project no longer starts a second, failing `jpe` server (`Cannot find module '${CLAUDE_PLUGIN_ROOT}/dist/mcp.js'`, shown as CONNECTION_CLOSED).
+- Risk assessment tokenizes the command line (quote-aware, every word position, `bash -c` / `powershell -Command` / `cmd /c` wrappers) instead of relying on one regex per case. It now catches split flags (`rm -f -r`), PowerShell abbreviations and aliases (`Remove-Item -r`, `ri`), `del /s`, `git push` with `+refspec` or clustered flags, and encoded PowerShell commands, and no longer flags quoted text such as `grep -r 'rm -rf'`.
+- `jpe-researcher` uses an explicit read-only tool allow-list (it previously used a deny-list that inherited every other MCP server's tools, including file writers). Every agent now has an allow-list.
 
 ### Fixed
 - A doctor test meant to cover Windows-style paths had lost its backslash to a string escape; it now tests what it says.

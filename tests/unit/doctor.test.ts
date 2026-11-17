@@ -82,24 +82,22 @@ describe("a damaged installation is reported precisely", () => {
   beforeEach(async () => {
     plugin = path.join(base, "plugin");
     for (const dir of ["skills", "agents", "hooks", ".claude-plugin"]) await cp(path.join(ROOT, dir), path.join(plugin, dir), { recursive: true });
-    await cp(path.join(ROOT, ".mcp.json"), path.join(plugin, ".mcp.json"));
     await mkdir(path.join(plugin, "dist"));
     for (const f of ["cli.js", "hook.js"]) await writeFile(path.join(plugin, "dist", f), "process.exit(0);\n");
     await writeFile(path.join(plugin, "dist", "mcp.js"), "process.exit(0);\n"); // exits without answering
   });
 
-  it("flags a server that exits, a missing skill, bad agent tool lists, a broken manifest and hooks", async () => {
+  it("flags a server that exits, a missing skill, bad agent tool lists and hooks", async () => {
     await rm(path.join(plugin, "skills", "fix"), { recursive: true });
     const debuggerFile = path.join(plugin, "agents", "jpe-debugger.md");
     await writeFile(debuggerFile, (await readFile(debuggerFile, "utf8")).replace(/^tools: .*$/m, "tools: Read, Bash, Edit, mcp__plugin_jpe_jpe__no_such_tool"));
     await writeFile(path.join(plugin, "agents", "jpe-lsp.md"), "no front matter at all");
-    await writeFile(path.join(plugin, ".claude-plugin", "plugin.json"), "{ nope");
     await writeFile(path.join(plugin, "hooks", "hooks.json"), JSON.stringify({ hooks: { SessionStart: [] } }));
     await rm(path.join(plugin, "dist", "cli.js"));
 
     const report = await runDoctor(envFor(plugin));
     expect(report.overall).toBe("fail");
-    expect(byId(report, "manifest").title).toContain("not valid JSON");
+    expect(byId(report, "manifest").status).toBe("ok");
     expect(byId(report, "bundle-cli.js").status).toBe("fail");
     expect(byId(report, "skills").detail).toContain("fix: missing");
     expect(byId(report, "mcp-start").status).toBe("fail");
@@ -112,6 +110,13 @@ describe("a damaged installation is reported precisely", () => {
     const formatted = formatDoctor(report);
     expect(formatted).toContain("problems found");
     expect(formatted).toContain("[FAIL]");
+  });
+
+  it("flags a broken manifest, which also hides the MCP declaration", async () => {
+    await writeFile(path.join(plugin, ".claude-plugin", "plugin.json"), "{ nope");
+    const report = await runDoctor(envFor(plugin));
+    expect(byId(report, "manifest").title).toContain("not valid JSON");
+    expect(byId(report, "mcp-config").status).toBe("fail");
   });
 
   it("reports a missing plugin folder instead of crashing", async () => {

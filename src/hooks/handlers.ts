@@ -15,6 +15,8 @@ import { context, type HookOutput, type PayloadOf } from "./payload.js";
 import { fileKey, freshState, loadState, pruneStaleStates, saveState } from "./state.js";
 
 const EDIT_TOOLS: ReadonlySet<string> = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
+/** Tools that run a command line; PowerShell is the primary shell on Windows when Claude Code's PowerShell tool is enabled. */
+const SHELL_TOOLS: ReadonlySet<string> = new Set(["Bash", "PowerShell"]);
 const CODING_INTENT = /\b(implement|add|build|create|write|fix|refactor|rename|change|update|migrate|delete|remove|debug|optimi[sz]e|make|port|rewrite|edit|modify|replace|adjust|tweak|install|upgrade|bump|patch)\b/i;
 const MAX_ADDITIONAL_CONTEXT = 1800;
 
@@ -34,18 +36,39 @@ const insideProject = (root: string, file: string): boolean => {
 
 const lookupFor = (ctx: CliContext): PathLookup => ({ platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f) => ctx.fs.exists(f) });
 
-/** SessionStart: a short, factual summary of the project and the rules JPE works by. */
+const WORKING_RULES = "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.";
+const WELCOME_MESSAGE = "JPE For Claude is active. Try /jpe:verify to run this project's real checks, or /jpe:explain to get a plain-English walkthrough.";
+
+/** True the first time JPE starts in a project: records a marker so the welcome shows once. */
+async function isFirstRun(ctx: CliContext): Promise<boolean> {
+  const marker = path.join(ctx.stateDir(), "welcomed");
+  if ((await ctx.readText(marker).catch(() => undefined)) !== undefined) return false;
+  await ctx.writeText(marker, ctx.now().toISOString()).catch(() => undefined);
+  return true;
+}
+
+/**
+ * SessionStart: a short, factual summary of the project and the rules JPE works by.
+ * startup: full summary, fresh state, one-time welcome. clear: full summary, fresh state.
+ * compact: short reminder only; the session continues, so its state is kept. resume: nothing.
+ */
 export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: CliContext): Promise<HookOutput | undefined> {
   if (payload.source === "resume") return undefined;
   const cfg = await ctx.loadConfig();
+  const project = await detectProject(ctx.cwd, ctx.fs);
+  const checks = await discoverChecks(project, ctx.fs);
+  const checkLine =
+    checks.length > 0
+      ? `Verification commands that exist: ${[...new Set(checks.map((c) => c.check))].join(", ")} (run /jpe:verify).`
+      : "No verification commands were found: if asked whether something works, say it is NOT_TESTED rather than inventing tests.";
+
+  if (payload.source === "compact") return context("SessionStart", clip(["JPE For Claude is still active in this project.", checkLine, WORKING_RULES].join("\n")));
+
   await pruneStaleStates(ctx);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
 
-  const project = await detectProject(ctx.cwd, ctx.fs);
-  const checks = await discoverChecks(project, ctx.fs);
   const git = await readGitState(ctx.git).catch(() => undefined);
-
   const files = await listProjectFiles(ctx.cwd, ctx.git).catch(() => []);
   const lookup = lookupFor(ctx);
   const missing: string[] = [];
@@ -56,14 +79,13 @@ export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: Cl
   const lines = [
     "JPE For Claude is active in this project.",
     `Project: ${project.ecosystems.join(", ") || "no recognised language"}${project.packageManager ? ` (${project.packageManager})` : ""}. Git: ${!git?.available ? "git unavailable" : !git.isRepo ? "not a repository" : `branch ${git.branch}, ${git.dirty ? `${git.changedFiles.length} uncommitted file(s)` : "clean"}`}.`,
-    checks.length > 0
-      ? `Verification commands that exist: ${[...new Set(checks.map((c) => c.check))].join(", ")} (run /jpe:verify).`
-      : "No verification commands were found: if asked whether something works, say it is NOT_TESTED rather than inventing tests.",
+    checkLine,
     ...(project.instructionFiles.length > 0 ? [`Project instruction files to follow: ${project.instructionFiles.join(", ")}.`] : []),
     ...(missing.length > 0 ? [`Language servers not installed: ${missing.join(", ")} (see /jpe:setup). Without one, nothing is verified by LSP.`] : []),
-    "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.",
+    WORKING_RULES,
   ];
-  return context("SessionStart", clip(lines.join("\n")));
+  const output = context("SessionStart", clip(lines.join("\n")));
+  return payload.source === "startup" && (await isFirstRun(ctx)) ? { ...output, systemMessage: WELCOME_MESSAGE } : output;
 }
 
 /** UserPromptSubmit: a one-time workflow reminder, only when the prompt looks like a coding task. */
@@ -89,7 +111,7 @@ export async function onPreToolUse(payload: PayloadOf<"PreToolUse">, ctx: CliCon
   const mode = cfg.engineering.approval;
   const { tool_name: tool, tool_input: input } = payload;
 
-  if (tool === "Bash") {
+  if (SHELL_TOOLS.has(tool)) {
     const command = typeof input["command"] === "string" ? input["command"] : "";
     if (mode === "off" || command === "") return undefined;
     const risk = assessCommand(command);
@@ -184,7 +206,7 @@ export async function onPostToolUse(payload: PayloadOf<"PostToolUse">, ctx: CliC
 
 /** PostToolUseFailure: plain-English meaning of a failed command's error, when a known pattern matches. */
 export async function onToolFailure(payload: PayloadOf<"PostToolUseFailure">, _ctx: CliContext): Promise<HookOutput | undefined> {
-  if (payload.tool_name !== "Bash" || payload.is_interrupt || !payload.error) return undefined;
+  if (!SHELL_TOOLS.has(payload.tool_name) || payload.is_interrupt || !payload.error) return undefined;
   const hit = explainError(payload.error.slice(0, 4000))[0];
   if (!hit) return undefined;
   return context("PostToolUseFailure", clip(`JPE: ${hit.title}. ${hit.plain} Usual causes: ${hit.causes} Usual fix: ${hit.usualFix} (general guidance; confirm against the actual code).`));

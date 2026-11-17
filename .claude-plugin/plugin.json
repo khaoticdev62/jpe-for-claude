@@ -1,7 +1,7 @@
 {
   "name": "jpe",
   "displayName": "JPE For Claude",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Just Plain English: explains what Claude Code does and why, verifies against real docs, diagnostics and tests, and reports honest evidence.",
   "license": "MIT",
   "keywords": [
@@ -15,5 +15,13 @@
     "name": "khaoticdev62"
   },
   "homepage": "https://github.com/khaoticdev62/jpe-for-claude",
-  "repository": "https://github.com/khaoticdev62/jpe-for-claude"
+  "repository": "https://github.com/khaoticdev62/jpe-for-claude",
+  "mcpServers": {
+    "jpe": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js"
+      ]
+    }
+  }
 }

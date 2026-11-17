@@ -21366,13 +21366,8 @@ async function detectProject(root, fs) {
 
 // src/security/risk.ts
 var DESTRUCTIVE = [
-  { pattern: /\brm\s+(-[a-z]*r[a-z]*|--recursive)\b/i, reason: "recursive delete" },
-  { pattern: /\b(rd|rmdir)\s+\/s\b/i, reason: "recursive folder delete" },
-  { pattern: /\bdel\s+(\/[a-z]\s+)*\/s\b/i, reason: "recursive file delete" },
-  { pattern: /\bremove-item\b[^|;\n]*-recurse\b/i, reason: "recursive delete" },
   { pattern: /\bgit\s+reset\s+--hard\b/i, reason: "discards uncommitted work" },
   { pattern: /\bgit\s+clean\b[^|;\n]*-[a-z]*f/i, reason: "deletes untracked files" },
-  { pattern: /\bgit\s+push\b[^|;\n]*(--force\b|--force-with-lease\b|\s-f\b)/i, reason: "rewrites remote history" },
   { pattern: /\bgit\s+(checkout|restore)\s+(--\s|\.)/i, reason: "discards uncommitted changes" },
   { pattern: /\bgit\s+branch\s+-D\b/i, reason: "force-deletes a branch" },
   { pattern: /\bdrop\s+(table|database|schema)\b/i, reason: "drops database objects" },
@@ -21388,10 +21383,98 @@ var NEEDS_APPROVAL = [
   { pattern: /\bsudo\b/i, reason: "runs with elevated privileges" },
   { pattern: /\.claude[\\/](settings|settings\.local)\.json/i, reason: "touches Claude Code settings" }
 ];
+var DELETE_COMMANDS = /* @__PURE__ */ new Set(["rm", "ri", "del", "erase", "rd", "rmdir", "remove-item"]);
+var SHELL_WRAPPERS = /* @__PURE__ */ new Set(["bash", "sh", "zsh", "cmd", "powershell", "pwsh"]);
+var MAX_WRAPPER_DEPTH = 2;
+var MAX_SHORT_FLAG_LETTERS = 4;
+function tokenizeCommandLine(commandLine) {
+  const commands = [];
+  let words = [];
+  let word = "";
+  let quote;
+  const endWord = () => {
+    if (word !== "") words.push(word.toLowerCase());
+    word = "";
+  };
+  const endCommand = () => {
+    endWord();
+    if (words.length > 0) commands.push(words);
+    words = [];
+  };
+  for (const ch of commandLine) {
+    if (quote) {
+      if (ch === quote) quote = void 0;
+      else word += ch;
+    } else if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === ";" || ch === "|" || ch === "&" || ch === "\n" || ch === "\r") endCommand();
+    else if (ch === " " || ch === "	") endWord();
+    else word += ch;
+  }
+  endCommand();
+  return commands;
+}
+var programName = (word) => (word.split(/[\\/]/).at(-1) ?? word).replace(/\.(exe|cmd|bat|com)$/, "");
+function isRecursiveFlag(word) {
+  if (word === "--recursive") return true;
+  if (!word.startsWith("-") || word.startsWith("--")) return false;
+  const letters = word.slice(1);
+  if (letters !== "" && "recurse".startsWith(letters)) return true;
+  return /^[a-z]+$/.test(letters) && letters.length <= MAX_SHORT_FLAG_LETTERS && letters.includes("r");
+}
+function isForcePushWord(word) {
+  if (word.startsWith("--force") || word === "--mirror") return true;
+  if (word.startsWith("+") && word.length > 1) return true;
+  return /^-[a-z]+$/.test(word) && word.length <= MAX_SHORT_FLAG_LETTERS + 1 && word.includes("f");
+}
+function gitSubcommandIndex(args) {
+  for (let i = 0; i < args.length; i++) {
+    const w = args[i] ?? "";
+    if (w === "-c") i++;
+    else if (!w.startsWith("-")) return i;
+  }
+  return -1;
+}
+function assessWords(words, depth) {
+  let found;
+  for (let i = 0; i < words.length; i++) {
+    const program = programName(words[i] ?? "");
+    const args = words.slice(i + 1);
+    let verdict;
+    if (DELETE_COMMANDS.has(program)) {
+      if (args.some((a) => isRecursiveFlag(a) || a === "/s")) verdict = { level: "destructive", reason: "recursive delete" };
+    } else if (program === "git") {
+      const sub = gitSubcommandIndex(args);
+      if (sub >= 0 && args[sub] === "push" && args.slice(sub + 1).some(isForcePushWord)) verdict = { level: "destructive", reason: "rewrites remote history" };
+    } else if (SHELL_WRAPPERS.has(program)) {
+      const isPowerShell = program === "powershell" || program === "pwsh";
+      if (isPowerShell && args.some((a) => a === "-encodedcommand" || a === "-enc" || a === "-ec" || a === "-e")) {
+        verdict = { level: "needs-approval", reason: "runs an encoded command that cannot be inspected" };
+      } else if (depth < MAX_WRAPPER_DEPTH) {
+        const flag = args.findIndex((a) => a === "-c" || a === "-command" || a === "/c" || a === "-lc");
+        const innerText = flag >= 0 ? args.slice(flag + 1).join(" ") : "";
+        if (innerText !== "") verdict = assessInner(innerText, depth + 1);
+      }
+    }
+    if (verdict?.level === "destructive") return verdict;
+    found ??= verdict;
+  }
+  return found;
+}
+function assessInner(commandLine, depth) {
+  let found;
+  for (const words of tokenizeCommandLine(commandLine)) {
+    const verdict = assessWords(words, depth);
+    if (verdict?.level === "destructive") return verdict;
+    found ??= verdict;
+  }
+  return found;
+}
 function assessCommand(commandLine) {
   for (const { pattern, reason } of DESTRUCTIVE) if (pattern.test(commandLine)) return { level: "destructive", reason };
+  const structured = assessInner(commandLine, 0);
+  if (structured?.level === "destructive") return structured;
   for (const { pattern, reason } of NEEDS_APPROVAL) if (pattern.test(commandLine)) return { level: "needs-approval", reason };
-  return { level: "safe", reason: "no risky pattern recognised" };
+  return structured ?? { level: "safe", reason: "no risky pattern recognised" };
 }
 
 // src/hooks/payload.ts
@@ -21491,6 +21574,7 @@ async function pruneStaleStates(ctx) {
 
 // src/hooks/handlers.ts
 var EDIT_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
+var SHELL_TOOLS = /* @__PURE__ */ new Set(["Bash", "PowerShell"]);
 var CODING_INTENT = /\b(implement|add|build|create|write|fix|refactor|rename|change|update|migrate|delete|remove|debug|optimi[sz]e|make|port|rewrite|edit|modify|replace|adjust|tweak|install|upgrade|bump|patch)\b/i;
 var MAX_ADDITIONAL_CONTEXT = 1800;
 var clip = (text) => text.length > MAX_ADDITIONAL_CONTEXT ? `${text.slice(0, MAX_ADDITIONAL_CONTEXT)}...` : text;
@@ -21504,14 +21588,24 @@ var insideProject = (root, file2) => {
   return rel !== "" && rel !== ".." && !rel.startsWith(`..${path15.sep}`) && !path15.isAbsolute(rel);
 };
 var lookupFor = (ctx) => ({ platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f) => ctx.fs.exists(f) });
+var WORKING_RULES = "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.";
+var WELCOME_MESSAGE = "JPE For Claude is active. Try /jpe:verify to run this project's real checks, or /jpe:explain to get a plain-English walkthrough.";
+async function isFirstRun(ctx) {
+  const marker = path15.join(ctx.stateDir(), "welcomed");
+  if (await ctx.readText(marker).catch(() => void 0) !== void 0) return false;
+  await ctx.writeText(marker, ctx.now().toISOString()).catch(() => void 0);
+  return true;
+}
 async function onSessionStart(payload, ctx) {
   if (payload.source === "resume") return void 0;
   const cfg = await ctx.loadConfig();
+  const project = await detectProject(ctx.cwd, ctx.fs);
+  const checks = await discoverChecks(project, ctx.fs);
+  const checkLine = checks.length > 0 ? `Verification commands that exist: ${[...new Set(checks.map((c) => c.check))].join(", ")} (run /jpe:verify).` : "No verification commands were found: if asked whether something works, say it is NOT_TESTED rather than inventing tests.";
+  if (payload.source === "compact") return context("SessionStart", clip(["JPE For Claude is still active in this project.", checkLine, WORKING_RULES].join("\n")));
   await pruneStaleStates(ctx);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
-  const project = await detectProject(ctx.cwd, ctx.fs);
-  const checks = await discoverChecks(project, ctx.fs);
   const git = await readGitState(ctx.git).catch(() => void 0);
   const files = await listProjectFiles(ctx.cwd, ctx.git).catch(() => []);
   const lookup2 = lookupFor(ctx);
@@ -21522,12 +21616,13 @@ async function onSessionStart(payload, ctx) {
   const lines = [
     "JPE For Claude is active in this project.",
     `Project: ${project.ecosystems.join(", ") || "no recognised language"}${project.packageManager ? ` (${project.packageManager})` : ""}. Git: ${!git?.available ? "git unavailable" : !git.isRepo ? "not a repository" : `branch ${git.branch}, ${git.dirty ? `${git.changedFiles.length} uncommitted file(s)` : "clean"}`}.`,
-    checks.length > 0 ? `Verification commands that exist: ${[...new Set(checks.map((c) => c.check))].join(", ")} (run /jpe:verify).` : "No verification commands were found: if asked whether something works, say it is NOT_TESTED rather than inventing tests.",
+    checkLine,
     ...project.instructionFiles.length > 0 ? [`Project instruction files to follow: ${project.instructionFiles.join(", ")}.`] : [],
     ...missing.length > 0 ? [`Language servers not installed: ${missing.join(", ")} (see /jpe:setup). Without one, nothing is verified by LSP.`] : [],
-    "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors."
+    WORKING_RULES
   ];
-  return context("SessionStart", clip(lines.join("\n")));
+  const output2 = context("SessionStart", clip(lines.join("\n")));
+  return payload.source === "startup" && await isFirstRun(ctx) ? { ...output2, systemMessage: WELCOME_MESSAGE } : output2;
 }
 async function onUserPrompt(payload, ctx) {
   if (!CODING_INTENT.test(payload.prompt.slice(0, 2e3))) return void 0;
@@ -21544,7 +21639,7 @@ async function onPreToolUse(payload, ctx) {
   const cfg = await ctx.loadConfig();
   const mode = cfg.engineering.approval;
   const { tool_name: tool, tool_input: input2 } = payload;
-  if (tool === "Bash") {
+  if (SHELL_TOOLS.has(tool)) {
     const command = typeof input2["command"] === "string" ? input2["command"] : "";
     if (mode === "off" || command === "") return void 0;
     const risk = assessCommand(command);
@@ -21625,7 +21720,7 @@ async function onPostToolUse(payload, ctx) {
   return notes.length > 0 ? context("PostToolUse", clip(notes.join("\n"))) : void 0;
 }
 async function onToolFailure(payload, _ctx) {
-  if (payload.tool_name !== "Bash" || payload.is_interrupt || !payload.error) return void 0;
+  if (!SHELL_TOOLS.has(payload.tool_name) || payload.is_interrupt || !payload.error) return void 0;
   const hit = explainError(payload.error.slice(0, 4e3))[0];
   if (!hit) return void 0;
   return context("PostToolUseFailure", clip(`JPE: ${hit.title}. ${hit.plain} Usual causes: ${hit.causes} Usual fix: ${hit.usualFix} (general guidance; confirm against the actual code).`));

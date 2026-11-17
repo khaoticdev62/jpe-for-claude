@@ -5,9 +5,13 @@
 ```
 .claude-plugin/       plugin.json, marketplace.json, icon.png
 skills/<name>/        11 skills (the commands). Plain markdown that tells Claude what to run.
-agents/               7 subagents. Restricted tool lists; no Write/Edit/Bash.
-hooks/hooks.json      6 hooks, all running dist/hook.js
-.mcp.json             the jpe MCP server (dist/mcp.js)
+agents/               7 subagents. Explicit read-only tool allow-lists; no Write/Edit/Bash/PowerShell.
+hooks/hooks.json      6 hooks, all running dist/hook.js (shell hooks cover Bash and PowerShell)
+```
+
+The `jpe` MCP server (`dist/mcp.js`) is declared inline in `.claude-plugin/plugin.json`. There is deliberately no root `.mcp.json`: Claude Code would also load it as a project-scope server when this folder is opened, where `${CLAUDE_PLUGIN_ROOT}` is undefined and the server fails to start.
+
+```
 src/
   core/               errors, redaction, logger, evidence ledger, status rules
   config/             schema (zod), defaults, layering, migrations, import/export, paths

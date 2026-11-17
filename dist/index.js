@@ -20177,13 +20177,8 @@ ${body}
 
 // src/security/risk.ts
 var DESTRUCTIVE = [
-  { pattern: /\brm\s+(-[a-z]*r[a-z]*|--recursive)\b/i, reason: "recursive delete" },
-  { pattern: /\b(rd|rmdir)\s+\/s\b/i, reason: "recursive folder delete" },
-  { pattern: /\bdel\s+(\/[a-z]\s+)*\/s\b/i, reason: "recursive file delete" },
-  { pattern: /\bremove-item\b[^|;\n]*-recurse\b/i, reason: "recursive delete" },
   { pattern: /\bgit\s+reset\s+--hard\b/i, reason: "discards uncommitted work" },
   { pattern: /\bgit\s+clean\b[^|;\n]*-[a-z]*f/i, reason: "deletes untracked files" },
-  { pattern: /\bgit\s+push\b[^|;\n]*(--force\b|--force-with-lease\b|\s-f\b)/i, reason: "rewrites remote history" },
   { pattern: /\bgit\s+(checkout|restore)\s+(--\s|\.)/i, reason: "discards uncommitted changes" },
   { pattern: /\bgit\s+branch\s+-D\b/i, reason: "force-deletes a branch" },
   { pattern: /\bdrop\s+(table|database|schema)\b/i, reason: "drops database objects" },
@@ -20199,10 +20194,98 @@ var NEEDS_APPROVAL = [
   { pattern: /\bsudo\b/i, reason: "runs with elevated privileges" },
   { pattern: /\.claude[\\/](settings|settings\.local)\.json/i, reason: "touches Claude Code settings" }
 ];
+var DELETE_COMMANDS = /* @__PURE__ */ new Set(["rm", "ri", "del", "erase", "rd", "rmdir", "remove-item"]);
+var SHELL_WRAPPERS = /* @__PURE__ */ new Set(["bash", "sh", "zsh", "cmd", "powershell", "pwsh"]);
+var MAX_WRAPPER_DEPTH = 2;
+var MAX_SHORT_FLAG_LETTERS = 4;
+function tokenizeCommandLine(commandLine) {
+  const commands = [];
+  let words = [];
+  let word = "";
+  let quote;
+  const endWord = () => {
+    if (word !== "") words.push(word.toLowerCase());
+    word = "";
+  };
+  const endCommand = () => {
+    endWord();
+    if (words.length > 0) commands.push(words);
+    words = [];
+  };
+  for (const ch of commandLine) {
+    if (quote) {
+      if (ch === quote) quote = void 0;
+      else word += ch;
+    } else if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === ";" || ch === "|" || ch === "&" || ch === "\n" || ch === "\r") endCommand();
+    else if (ch === " " || ch === "	") endWord();
+    else word += ch;
+  }
+  endCommand();
+  return commands;
+}
+var programName = (word) => (word.split(/[\\/]/).at(-1) ?? word).replace(/\.(exe|cmd|bat|com)$/, "");
+function isRecursiveFlag(word) {
+  if (word === "--recursive") return true;
+  if (!word.startsWith("-") || word.startsWith("--")) return false;
+  const letters = word.slice(1);
+  if (letters !== "" && "recurse".startsWith(letters)) return true;
+  return /^[a-z]+$/.test(letters) && letters.length <= MAX_SHORT_FLAG_LETTERS && letters.includes("r");
+}
+function isForcePushWord(word) {
+  if (word.startsWith("--force") || word === "--mirror") return true;
+  if (word.startsWith("+") && word.length > 1) return true;
+  return /^-[a-z]+$/.test(word) && word.length <= MAX_SHORT_FLAG_LETTERS + 1 && word.includes("f");
+}
+function gitSubcommandIndex(args) {
+  for (let i = 0; i < args.length; i++) {
+    const w = args[i] ?? "";
+    if (w === "-c") i++;
+    else if (!w.startsWith("-")) return i;
+  }
+  return -1;
+}
+function assessWords(words, depth) {
+  let found;
+  for (let i = 0; i < words.length; i++) {
+    const program = programName(words[i] ?? "");
+    const args = words.slice(i + 1);
+    let verdict;
+    if (DELETE_COMMANDS.has(program)) {
+      if (args.some((a) => isRecursiveFlag(a) || a === "/s")) verdict = { level: "destructive", reason: "recursive delete" };
+    } else if (program === "git") {
+      const sub = gitSubcommandIndex(args);
+      if (sub >= 0 && args[sub] === "push" && args.slice(sub + 1).some(isForcePushWord)) verdict = { level: "destructive", reason: "rewrites remote history" };
+    } else if (SHELL_WRAPPERS.has(program)) {
+      const isPowerShell = program === "powershell" || program === "pwsh";
+      if (isPowerShell && args.some((a) => a === "-encodedcommand" || a === "-enc" || a === "-ec" || a === "-e")) {
+        verdict = { level: "needs-approval", reason: "runs an encoded command that cannot be inspected" };
+      } else if (depth < MAX_WRAPPER_DEPTH) {
+        const flag = args.findIndex((a) => a === "-c" || a === "-command" || a === "/c" || a === "-lc");
+        const innerText = flag >= 0 ? args.slice(flag + 1).join(" ") : "";
+        if (innerText !== "") verdict = assessInner(innerText, depth + 1);
+      }
+    }
+    if (verdict?.level === "destructive") return verdict;
+    found ??= verdict;
+  }
+  return found;
+}
+function assessInner(commandLine, depth) {
+  let found;
+  for (const words of tokenizeCommandLine(commandLine)) {
+    const verdict = assessWords(words, depth);
+    if (verdict?.level === "destructive") return verdict;
+    found ??= verdict;
+  }
+  return found;
+}
 function assessCommand(commandLine) {
   for (const { pattern, reason } of DESTRUCTIVE) if (pattern.test(commandLine)) return { level: "destructive", reason };
+  const structured = assessInner(commandLine, 0);
+  if (structured?.level === "destructive") return structured;
   for (const { pattern, reason } of NEEDS_APPROVAL) if (pattern.test(commandLine)) return { level: "needs-approval", reason };
-  return { level: "safe", reason: "no risky pattern recognised" };
+  return structured ?? { level: "safe", reason: "no risky pattern recognised" };
 }
 
 // src/project/fs.ts
