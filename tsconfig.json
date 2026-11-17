@@ -16,15 +16,20 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true
   },
   "include": [
     "src",
-    "tests"
+    "tests",
+    "types"
   ],
   "exclude": [
-    "tests/fixtures"
+    "tests/fixtures",
+    "tests/mod"
   ]
 }

@@ -21,6 +21,12 @@ export interface UiSettings {
   shortcuts: Parameters<typeof buildKeymap>[1];
 }
 
+/**
+ * The defaults for the `ui` settings, for code that cannot load the configuration schema (the in-Claude-Code module
+ * is bundled without it). A test asserts these equal the schema's own defaults, so there is still one truth.
+ */
+export const DEFAULT_UI_SETTINGS: UiSettings = { theme: "jpe", color: "auto", unicode: "auto", density: "auto", motion: "auto", screenReader: false, navigation: "both", shortcuts: {} };
+
 export type Density = "compact" | "comfortable";
 export type Breakpoint = "narrow" | "medium" | "wide";
 

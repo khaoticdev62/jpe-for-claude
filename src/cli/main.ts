@@ -2,6 +2,7 @@ import { isJpeError } from "../core/errors.js";
 import { redactSecrets } from "../core/redact.js";
 import { auditCommand, backupCommand, configCommand, scanCommand } from "./commands/admin.js";
 import { briefCommand } from "./commands/brief.js";
+import { centerCommand } from "./commands/center.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { impactCommand, installPlanCommand, lspCommand } from "./commands/lsp.js";
 import { researchCommand } from "./commands/research.js";
@@ -25,6 +26,7 @@ const COMMANDS: Readonly<Record<string, { run: Handler; help: string }>> = {
   backup: { run: backupCommand, help: "backup create <files...> | seal <id> | verify <id> | rollback <id> [--force] | list | prune   Backups and rollback" },
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
+  center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
   ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },
   doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" },
 };

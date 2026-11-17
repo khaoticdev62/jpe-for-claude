@@ -1,5 +1,5 @@
 {
-  "description": "JPE For Claude: project context at session start, risk-aware approvals, automatic backups, post-edit checks, and a verification reminder. Every hook fails open.",
+  "description": "JPE For Claude: project context at session start, risk-aware approvals, automatic backups, post-edit checks, and a verification reminder. Every hook fails open. The command center interface is the module listed under modules.",
   "hooks": {
     "SessionStart": [
       {
@@ -46,5 +46,6 @@
         ]
       }
     ]
-  }
+  },
+  "modules": ["./center.js"]
 }

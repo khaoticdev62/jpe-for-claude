@@ -119,6 +119,24 @@ describe("a damaged installation is reported precisely", () => {
     expect(byId(report, "mcp-config").status).toBe("fail");
   });
 
+  it("warns, in plain words, when the command center interface is not registered, its file is missing, or its types contract is missing", async () => {
+    await cp(path.join(ROOT, "types"), path.join(plugin, "types"), { recursive: true });
+    const status = async (): Promise<string | undefined> => byId(await runDoctor(envFor(plugin)), "interface-module").status;
+    expect(await status()).toBe("ok");
+
+    await rm(path.join(plugin, "types"), { recursive: true });
+    expect(await status()).toBe("warn");
+    await cp(path.join(ROOT, "types"), path.join(plugin, "types"), { recursive: true });
+
+    await rm(path.join(plugin, "hooks", "center.js"));
+    const missing = byId(await runDoctor(envFor(plugin)), "interface-module");
+    expect(missing.status).toBe("warn");
+    expect(missing.title).toContain("text menu");
+
+    await writeFile(path.join(plugin, "hooks", "hooks.json"), JSON.stringify({ hooks: {} }));
+    expect(byId(await runDoctor(envFor(plugin)), "interface-module").title).toContain("not registered");
+  });
+
   it("reports a missing plugin folder instead of crashing", async () => {
     const report = await runDoctor(envFor(undefined));
     expect(byId(report, "plugin-root").status).toBe("fail");

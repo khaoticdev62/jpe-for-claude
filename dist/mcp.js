@@ -2235,8 +2235,8 @@ var require_resolve = __commonJS({
       }
       return count2;
     }
-    function getFullPath(resolver, id = "", normalize) {
-      if (normalize !== false)
+    function getFullPath(resolver, id = "", normalize2) {
+      if (normalize2 !== false)
         id = normalizeId(id);
       const p = resolver.parse(id);
       return _getFullPath(resolver, p);
@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path24) {
-      let input2 = path24;
+    function removeDotSegments(path26) {
+      let input2 = path26;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3337,11 +3337,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path24) {
-      if (path24 === "" || path24[0] === "/") {
-        return removeDotSegments(path24);
+    function removeDotSegmentsRelative(path26) {
+      if (path26 === "" || path26[0] === "/") {
+        return removeDotSegments(path26);
       }
-      const segments = path24.split("/");
+      const segments = path26.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -3704,8 +3704,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path24 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path24 && path24 !== "/" ? path24 : void 0;
+        const path26 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path26 && path26 !== "/" ? path26 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -3865,7 +3865,7 @@ var require_fast_uri = __commonJS({
       }
       return stringScheme;
     }
-    function normalize(uri, options) {
+    function normalize2(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
         normalizeString(uri, options);
@@ -4265,7 +4265,7 @@ var require_fast_uri = __commonJS({
     }
     var fastUri = {
       SCHEMES,
-      normalize,
+      normalize: normalize2,
       resolve,
       resolveComponent,
       equal,
@@ -8075,10 +8075,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path24) {
-  if (!path24)
+function getElementAtPath(obj, path26) {
+  if (!path26)
     return obj;
-  return path24.reduce((acc, key) => acc?.[key], obj);
+  return path26.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8418,11 +8418,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path24, issues) {
+function prefixIssues(path26, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path24);
+    iss.path.unshift(path26);
     return iss;
   });
 }
@@ -8884,16 +8884,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path24 = []) => {
+  const processError = (error63, path26 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path24, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path26, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path24, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path24, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
       } else {
-        const fullpath = [...path24, ...issue2.path];
+        const fullpath = [...path26, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8932,17 +8932,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path24 = []) => {
+  const processError = (error63, path26 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path24, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path26, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path24, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path24, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path26, ...issue2.path]);
       } else {
-        const fullpath = [...path24, ...issue2.path];
+        const fullpath = [...path26, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8981,8 +8981,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path24 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path24) {
+  const path26 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path26) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -26120,13 +26120,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path24 = ref.slice(1).split("/").filter(Boolean);
-  if (path24.length === 0) {
+  const path26 = ref.slice(1).split("/").filter(Boolean);
+  if (path26.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path24[0] === defsKey) {
-    const key = path24[1] === void 0 ? void 0 : decodeJSONPointerSegment(path24[1]);
+  if (path26[0] === defsKey) {
+    const key = path26[1] === void 0 ? void 0 : decodeJSONPointerSegment(path26[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -28984,8 +28984,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path24, errorMaps, issueData } = params;
-  const fullPath = [...path24, ...issueData.path || []];
+  const { data, path: path26, errorMaps, issueData } = params;
+  const fullPath = [...path26, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -29100,11 +29100,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path24, key) {
+  constructor(parent, value, path26, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path24;
+    this._path = path26;
     this._key = key;
   }
   get path() {
@@ -32655,11 +32655,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path24) {
-  if (path24.length === 0) {
+function getDotPath(path26) {
+  if (path26.length === 0) {
     return "object root";
   }
-  return path24.reduce((acc, seg, index) => {
+  return path26.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -36681,7 +36681,7 @@ function redactSecrets(text2) {
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.1.0",
+  version: "1.2.0",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",
@@ -36694,6 +36694,7 @@ var package_default = {
     typecheck: "tsc --noEmit",
     test: "vitest run",
     "validate:plugin": "claude plugin validate .",
+    "test:mod": "node scripts/test-mod.mjs",
     version: "node scripts/sync-version.mjs && git add .claude-plugin",
     package: "npm run build && node scripts/package.mjs"
   },
@@ -39051,17 +39052,1438 @@ async function briefCommand(args, ctx) {
   throw new JpeError("INVALID_INPUT", "Usage: jpe brief file <path> [--dependents] [--phase before|after] | change <path> | error <message>|--stdin");
 }
 
+// src/center/hud.ts
+import path14 from "path";
+
+// src/project/checks.ts
+var SAFE_SCRIPT_NAME = /^[A-Za-z0-9:_-]+$/;
+var PLACEHOLDER_TEST = /no test specified/i;
+var SCRIPT_CANDIDATES = [
+  ["typecheck", ["typecheck", "type-check", "check-types", "tsc"]],
+  ["lint", ["lint"]],
+  ["format", ["format:check", "format-check", "check-format", "prettier:check"]],
+  ["unit-test", ["test", "test:unit"]],
+  ["integration-test", ["test:integration"]],
+  ["e2e-test", ["test:e2e", "e2e"]],
+  ["build", ["build"]]
+];
+function make(check2, file2, args, source) {
+  return { check: check2, file: file2, args, source, display: [file2, ...args].join(" ") };
+}
+function nodeChecks(info) {
+  const manager = info.packageManager ?? "npm";
+  const found = [];
+  for (const [check2, names] of SCRIPT_CANDIDATES) {
+    const name = names.find((n) => {
+      const body = info.scripts[n];
+      return body !== void 0 && SAFE_SCRIPT_NAME.test(n) && !(check2 === "unit-test" && PLACEHOLDER_TEST.test(body));
+    });
+    if (name) found.push(make(check2, manager, ["run", name], "script"));
+  }
+  const hasTypecheck = found.some((c) => c.check === "typecheck");
+  const usesTypescript = info.dependencies.some((d) => d.name === "typescript");
+  if (!hasTypecheck && usesTypescript) found.push(make("typecheck", "npx", ["--no-install", "tsc", "--noEmit"], "inferred"));
+  if (info.hasLockfile) {
+    found.push(make("dependency-audit", manager, manager === "npm" ? ["audit", "--audit-level=high"] : ["audit"], "convention"));
+  }
+  return found;
+}
+async function pythonChecks(info, fs) {
+  const pyproject = await fs.readText(inRoot(info.root, "pyproject.toml")) ?? "";
+  const found = [];
+  if (pyproject.includes("[tool.pytest") || await fs.exists(inRoot(info.root, "pytest.ini"))) {
+    found.push(make("unit-test", "python", ["-m", "pytest"], "convention"));
+  }
+  if (pyproject.includes("[tool.ruff") || await fs.exists(inRoot(info.root, "ruff.toml"))) {
+    found.push(make("lint", "ruff", ["check", "."], "convention"));
+  }
+  if (pyproject.includes("[tool.mypy") || await fs.exists(inRoot(info.root, "mypy.ini"))) {
+    found.push(make("typecheck", "mypy", ["."], "convention"));
+  }
+  return found;
+}
+async function discoverChecks(info, fs) {
+  const found = [];
+  if (info.ecosystems.includes("node")) found.push(...nodeChecks(info));
+  if (info.ecosystems.includes("python")) found.push(...await pythonChecks(info, fs));
+  if (info.ecosystems.includes("go")) {
+    found.push(make("build", "go", ["build", "./..."], "convention"));
+    found.push(make("unit-test", "go", ["test", "./..."], "convention"));
+    found.push(make("static-analysis", "go", ["vet", "./..."], "convention"));
+  }
+  if (info.ecosystems.includes("rust")) {
+    found.push(make("typecheck", "cargo", ["check"], "convention"));
+    found.push(make("unit-test", "cargo", ["test"], "convention"));
+    found.push(make("build", "cargo", ["build"], "convention"));
+    found.push(make("lint", "cargo", ["clippy"], "convention"));
+  }
+  return found;
+}
+
+// src/project/detect.ts
+var NPM_NAME = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
+var stringRecord = external_exports.record(external_exports.string(), external_exports.string());
+var packageJsonSchema = external_exports.looseObject({
+  scripts: stringRecord.optional(),
+  dependencies: stringRecord.optional(),
+  devDependencies: stringRecord.optional(),
+  packageManager: external_exports.string().optional()
+});
+var lockSchema = external_exports.looseObject({ packages: external_exports.record(external_exports.string(), external_exports.looseObject({ version: external_exports.string().optional() })).optional() });
+var versionOnly = external_exports.looseObject({ version: external_exports.string() });
+var NODE_LOCKFILES = [
+  ["bun.lock", "bun"],
+  ["bun.lockb", "bun"],
+  ["pnpm-lock.yaml", "pnpm"],
+  ["yarn.lock", "yarn"],
+  ["package-lock.json", "npm"]
+];
+function tryJson(text2) {
+  try {
+    return JSON.parse(text2);
+  } catch {
+    return void 0;
+  }
+}
+async function detectNode(root, fs, info) {
+  const text2 = await fs.readText(inRoot(root, "package.json"));
+  if (text2 === void 0) return;
+  info.ecosystems.push("node");
+  const parsed = packageJsonSchema.safeParse(tryJson(text2));
+  if (!parsed.success) {
+    info.warnings.push("package.json is not valid JSON or has an unexpected shape; dependency details were skipped.");
+    return;
+  }
+  const pkg = parsed.data;
+  info.scripts = pkg.scripts ?? {};
+  for (const [file2, manager] of NODE_LOCKFILES) {
+    if (await fs.exists(inRoot(root, file2))) {
+      info.packageManager = manager;
+      info.hasLockfile = true;
+      break;
+    }
+  }
+  if (!info.packageManager) {
+    const declared = pkg.packageManager?.split("@")[0];
+    info.packageManager = declared === "pnpm" || declared === "yarn" || declared === "bun" ? declared : "npm";
+  }
+  const lockText = await fs.readText(inRoot(root, "package-lock.json"));
+  const lock = lockText === void 0 ? void 0 : lockSchema.safeParse(tryJson(lockText));
+  const lockPackages = lock?.success ? lock.data.packages : void 0;
+  const groups = [
+    [pkg.dependencies ?? {}, false],
+    [pkg.devDependencies ?? {}, true]
+  ];
+  for (const [deps, dev] of groups) {
+    for (const [name, declared] of Object.entries(deps)) {
+      if (!NPM_NAME.test(name)) {
+        info.warnings.push(`Skipped dependency with an unusual name: ${name.slice(0, 60)}`);
+        continue;
+      }
+      const dep = { name, ecosystem: "node", declared, versionSource: "declared", dev };
+      const installedText = await fs.readText(inRoot(root, "node_modules", name, "package.json"));
+      const installed = installedText === void 0 ? void 0 : versionOnly.safeParse(tryJson(installedText));
+      const locked = lockPackages?.[`node_modules/${name}`]?.version;
+      if (installed?.success) {
+        dep.version = installed.data.version;
+        dep.versionSource = "installed";
+      } else if (locked) {
+        dep.version = locked;
+        dep.versionSource = "lockfile";
+      }
+      info.dependencies.push(dep);
+    }
+  }
+}
+async function detectRust(root, fs, info) {
+  const manifest = await fs.readText(inRoot(root, "Cargo.toml"));
+  if (manifest === void 0) return;
+  info.ecosystems.push("rust");
+  const lock = await fs.readText(inRoot(root, "Cargo.lock")) ?? "";
+  const locked = /* @__PURE__ */ new Map();
+  for (const m of lock.matchAll(/\[\[package\]\]\s*name\s*=\s*"([^"]+)"\s*version\s*=\s*"([^"]+)"/g)) {
+    if (m[1] && m[2]) locked.set(m[1], m[2]);
+  }
+  let section = "";
+  for (const raw of manifest.split(/\r?\n/)) {
+    const line = raw.trim();
+    const header = /^\[([^\]]+)\]$/.exec(line);
+    if (header?.[1]) {
+      section = header[1];
+      continue;
+    }
+    if (section !== "dependencies" && section !== "dev-dependencies") continue;
+    const dep = /^([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]+)"|\{[^}]*version\s*=\s*"([^"]+)")/.exec(line);
+    if (!dep?.[1]) continue;
+    const version2 = locked.get(dep[1]);
+    info.dependencies.push({
+      name: dep[1],
+      ecosystem: "rust",
+      declared: dep[2] ?? dep[3] ?? "",
+      ...version2 ? { version: version2, versionSource: "lockfile" } : { versionSource: "declared" },
+      dev: section === "dev-dependencies"
+    });
+  }
+  if (lock !== "") info.hasLockfile = true;
+}
+async function detectGo(root, fs, info) {
+  const mod = await fs.readText(inRoot(root, "go.mod"));
+  if (mod === void 0) return;
+  info.ecosystems.push("go");
+  info.hasLockfile = true;
+  for (const m of mod.matchAll(/^\s*(?:require\s+)?([A-Za-z0-9._~/-]+\.[A-Za-z0-9._~/-]+)\s+(v[0-9][^\s]*)/gm)) {
+    if (m[1] && m[2]) info.dependencies.push({ name: m[1], ecosystem: "go", declared: m[2], version: m[2], versionSource: "lockfile", dev: false });
+  }
+}
+async function detectPython(root, fs, info) {
+  const requirements = await fs.readText(inRoot(root, "requirements.txt"));
+  const hasPyproject = await fs.exists(inRoot(root, "pyproject.toml"));
+  if (requirements === void 0 && !hasPyproject) return;
+  info.ecosystems.push("python");
+  for (const raw of (requirements ?? "").split(/\r?\n/)) {
+    const m = /^([A-Za-z0-9][A-Za-z0-9._-]*)\s*(==|>=|<=|~=|>|<|!=)\s*([A-Za-z0-9.*+!_-]+)/.exec(raw.trim());
+    if (!m?.[1] || !m[2] || !m[3]) continue;
+    const pinned = m[2] === "==";
+    info.dependencies.push({
+      name: m[1],
+      ecosystem: "python",
+      declared: `${m[2]}${m[3]}`,
+      ...pinned ? { version: m[3] } : {},
+      versionSource: "declared",
+      dev: false
+    });
+  }
+}
+var INSTRUCTION_FILES = ["CLAUDE.md", "AGENTS.md", ".claude/CLAUDE.md"];
+async function detectProject(root, fs) {
+  const info = {
+    root,
+    ecosystems: [],
+    hasLockfile: false,
+    scripts: {},
+    dependencies: [],
+    instructionFiles: [],
+    warnings: []
+  };
+  await detectNode(root, fs, info);
+  await detectRust(root, fs, info);
+  await detectGo(root, fs, info);
+  await detectPython(root, fs, info);
+  for (const file2 of INSTRUCTION_FILES) if (await fs.exists(inRoot(root, file2))) info.instructionFiles.push(file2);
+  return info;
+}
+
+// src/verification/last-status.ts
+import path13 from "path";
+
+// src/core/evidence.ts
+var CHECK_NAMES = [
+  "typecheck",
+  "lint",
+  "format",
+  "unit-test",
+  "integration-test",
+  "e2e-test",
+  "build",
+  "dependency-audit",
+  "static-analysis",
+  "security-scan",
+  "regression"
+];
+var checkNameSchema = external_exports.enum(CHECK_NAMES);
+var base = { id: external_exports.string().min(1), at: external_exports.iso.datetime() };
+var commandEvidence = external_exports.strictObject({
+  ...base,
+  kind: external_exports.literal("command"),
+  check: checkNameSchema,
+  command: external_exports.string().min(1),
+  exitCode: external_exports.number().int(),
+  durationMs: external_exports.number().int().min(0),
+  timedOut: external_exports.boolean(),
+  /** Failure that existed before this change. Reported as a warning, never hidden. */
+  preexisting: external_exports.boolean(),
+  /** Warning count reported by the tool (for example lint warnings). */
+  warnings: external_exports.number().int().min(0),
+  /** Redacted, length-limited tail of the tool output. */
+  outputExcerpt: external_exports.string()
+});
+var lspEvidence = external_exports.strictObject({
+  ...base,
+  kind: external_exports.literal("lsp"),
+  server: external_exports.string().min(1),
+  available: external_exports.boolean(),
+  errors: external_exports.number().int().min(0),
+  warnings: external_exports.number().int().min(0)
+});
+var notRunEvidence = external_exports.strictObject({
+  ...base,
+  kind: external_exports.literal("not-run"),
+  check: checkNameSchema,
+  reason: external_exports.string().min(1)
+});
+var blockerEvidence = external_exports.strictObject({
+  ...base,
+  kind: external_exports.literal("blocker"),
+  reason: external_exports.string().min(1)
+});
+var evidenceSchema = external_exports.discriminatedUnion("kind", [commandEvidence, lspEvidence, notRunEvidence, blockerEvidence]);
+
+// src/core/ledger.ts
+var MAX_EXCERPT_CHARS = 2e3;
+function excerpt(output2) {
+  const safe = redactSecrets(output2);
+  return safe.length <= MAX_EXCERPT_CHARS ? safe : `...${safe.slice(-MAX_EXCERPT_CHARS)}`;
+}
+var EvidenceLedger = class {
+  constructor(deps) {
+    this.deps = deps;
+  }
+  deps;
+  items = [];
+  get entries() {
+    return this.items;
+  }
+  push(candidate) {
+    const parsed = evidenceSchema.safeParse(candidate);
+    if (!parsed.success) {
+      throw new JpeError("INVALID_INPUT", "Refused to record malformed verification evidence.", { cause: parsed.error });
+    }
+    const entry = Object.freeze(parsed.data);
+    this.items.push(entry);
+    return entry;
+  }
+  stamp() {
+    return { id: this.deps.newId(), at: this.deps.now().toISOString() };
+  }
+  recordCommand(input2) {
+    return this.push({
+      ...this.stamp(),
+      kind: "command",
+      check: input2.check,
+      command: redactSecrets(input2.command),
+      exitCode: input2.exitCode,
+      durationMs: input2.durationMs,
+      timedOut: input2.timedOut ?? false,
+      preexisting: input2.preexisting ?? false,
+      warnings: input2.warnings ?? 0,
+      outputExcerpt: excerpt(input2.output ?? "")
+    });
+  }
+  recordLsp(input2) {
+    return this.push({ ...this.stamp(), kind: "lsp", ...input2 });
+  }
+  recordNotRun(check2, reason) {
+    return this.push({ ...this.stamp(), kind: "not-run", check: check2, reason });
+  }
+  recordBlocker(reason) {
+    return this.push({ ...this.stamp(), kind: "blocker", reason: redactSecrets(reason) });
+  }
+  /** One JSON object per line, suitable for appending to a file. */
+  toJsonLines() {
+    return this.items.map((e) => JSON.stringify(e)).join("\n");
+  }
+};
+function parseEvidenceLines(text2) {
+  const out = [];
+  const lines = text2.split(/\r?\n/).filter((l) => l.trim() !== "");
+  lines.forEach((line, index) => {
+    let raw;
+    try {
+      raw = JSON.parse(line);
+    } catch (cause) {
+      throw new JpeError("INVALID_INPUT", `Evidence line ${index + 1} is not valid JSON.`, { cause });
+    }
+    const parsed = evidenceSchema.safeParse(raw);
+    if (!parsed.success) throw new JpeError("INVALID_INPUT", `Evidence line ${index + 1} failed validation.`, { cause: parsed.error });
+    out.push(parsed.data);
+  });
+  return out;
+}
+
+// src/core/status.ts
+var COMPLETION_STATUSES = [
+  "VERIFIED",
+  "FUNCTIONAL_WITH_WARNINGS",
+  "PARTIALLY_VERIFIED",
+  "FAILED",
+  "BLOCKED",
+  "NOT_TESTED"
+];
+function passed(e) {
+  return e.exitCode === 0 && !e.timedOut;
+}
+function deriveStatus(entries, required2) {
+  const reasons = [];
+  const checks = {};
+  const blockers = entries.filter((e) => e.kind === "blocker");
+  if (blockers.length > 0) {
+    for (const b of blockers) reasons.push(`Blocked: ${b.reason}`);
+    return { status: "BLOCKED", reasons, checks };
+  }
+  const latest = /* @__PURE__ */ new Map();
+  for (const e of entries) if (e.kind === "command") latest.set(e.check, e);
+  const warnings = [];
+  const failures = [];
+  const missing = [];
+  for (const check2 of required2) {
+    const run = latest.get(check2);
+    if (!run) {
+      checks[check2] = "not-run";
+      const skipped = entries.find((e) => e.kind === "not-run" && e.check === check2);
+      missing.push(skipped?.kind === "not-run" ? `${check2} was not run (${skipped.reason}).` : `${check2} was not run.`);
+      continue;
+    }
+    if (passed(run)) {
+      checks[check2] = "passed";
+      if (run.warnings > 0) warnings.push(`${check2} passed with ${run.warnings} warning(s).`);
+    } else if (run.preexisting) {
+      checks[check2] = "failed-preexisting";
+      warnings.push(`${check2} fails, but the failure existed before this change.`);
+    } else {
+      checks[check2] = "failed";
+      failures.push(run.timedOut ? `${check2} timed out.` : `${check2} failed with exit code ${run.exitCode}.`);
+    }
+  }
+  for (const e of entries) {
+    if (e.kind !== "lsp") continue;
+    if (!e.available) warnings.push(`Language server "${e.server}" was unavailable, so LSP diagnostics did not verify this change.`);
+    else if (e.errors > 0) failures.push(`Language server "${e.server}" reports ${e.errors} error(s).`);
+    else if (e.warnings > 0) warnings.push(`Language server "${e.server}" reports ${e.warnings} warning(s).`);
+  }
+  if (failures.length > 0) return { status: "FAILED", reasons: [...failures, ...missing, ...warnings], checks };
+  const ranAnything = entries.some((e) => e.kind === "command" || e.kind === "lsp" && e.available);
+  if (required2.length === 0 || !ranAnything) {
+    reasons.push(required2.length === 0 ? "No applicable checks were identified for this project." : "No checks were run.");
+    return { status: "NOT_TESTED", reasons: [...reasons, ...missing, ...warnings], checks };
+  }
+  if (missing.length > 0) return { status: "PARTIALLY_VERIFIED", reasons: [...missing, ...warnings], checks };
+  if (warnings.length > 0) return { status: "FUNCTIONAL_WITH_WARNINGS", reasons: warnings, checks };
+  return { status: "VERIFIED", reasons: ["Every required check passed on its most recent run."], checks };
+}
+
+// src/verification/last-status.ts
+var runMetaSchema = external_exports.strictObject({ at: external_exports.iso.datetime(), required: external_exports.array(checkNameSchema) });
+async function readLastStatus(ctx) {
+  const dir = ctx.stateDir();
+  const ledgerText = await ctx.readText(path13.join(dir, "ledger.jsonl"));
+  const metaText = await ctx.readText(path13.join(dir, "run.json"));
+  if (ledgerText === void 0 || metaText === void 0) return void 0;
+  const meta3 = runMetaSchema.parse(JSON.parse(metaText));
+  return { report: deriveStatus(parseEvidenceLines(ledgerText), meta3.required), at: meta3.at };
+}
+
+// src/center/hud-data.ts
+var HUD_VERSION = 1;
+
+// src/center/hud.ts
+var MAX_REASONS = 3;
+var MAX_SERVER_CHECKS = 4;
+async function readVerification(ctx, checksAvailable) {
+  try {
+    const last = await readLastStatus(ctx);
+    if (last === void 0) return { status: "NOT_TESTED", reasons: ["No verification has been run for this project yet."], checksAvailable };
+    return { status: last.report.status, at: last.at, reasons: last.report.reasons.slice(0, MAX_REASONS), checksAvailable };
+  } catch {
+    return { status: "NOT_TESTED", reasons: [], checksAvailable, problem: "The saved verification record is damaged. Run /jpe:verify again to replace it." };
+  }
+}
+async function collectHud(ctx) {
+  const config2 = await ctx.loadConfig();
+  const project = await detectProject(ctx.cwd, ctx.fs);
+  const checks = await discoverChecks(project, ctx.fs);
+  const checksAvailable = [...new Set(checks.map((c) => c.check))];
+  const gitState = await readGitState(ctx.git).catch(() => void 0);
+  const git = gitState === void 0 || !gitState.available ? { state: "unavailable" } : !gitState.isRepo ? { state: "not-repo" } : gitState.dirty ? { state: "dirty", branch: gitState.branch ?? "(unknown)", changedFiles: gitState.changedFiles.length } : { state: "clean", branch: gitState.branch ?? "(unknown)" };
+  const files = await listProjectFiles(ctx.cwd, ctx.git).catch(() => []);
+  const lookup2 = { platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f3) => ctx.fs.exists(f3) };
+  const missing = [];
+  for (const { language } of detectLanguages(files).slice(0, MAX_SERVER_CHECKS)) {
+    const label = `${language.name} (${language.server.binary})`;
+    if (!await findOnPath(language.server.binary, lookup2) && !missing.includes(label)) missing.push(label);
+  }
+  return {
+    hudVersion: HUD_VERSION,
+    generatedAt: ctx.now().toISOString(),
+    project: { name: path14.basename(ctx.cwd) || ctx.cwd, ecosystems: project.ecosystems, ...project.packageManager === void 0 ? {} : { packageManager: project.packageManager } },
+    git,
+    verification: await readVerification(ctx, checksAvailable),
+    languageServersMissing: missing,
+    runtime: { offline: config2.runtime.offline, approval: config2.engineering.approval }
+  };
+}
+
+// src/ui/text.ts
+var ESC = "\x1B";
+var BEL = "\x07";
+var OSC = new RegExp(`${ESC}\\][^${BEL}${ESC}]*(?:${BEL}|${ESC}\\\\)?`, "g");
+var STRING_SEQUENCE = new RegExp(`${ESC}[P^_X][\\s\\S]*?(?:${ESC}\\\\|$)`, "g");
+var CSI = new RegExp(`${ESC}\\[[0-?]*[ -/]*[@-~]`, "g");
+var SHORT_ESCAPE = new RegExp(`${ESC}[ -/]*[0-~]`, "g");
+var CONTROLS = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f‪-‮⁦-⁩‎‏؜]/g;
+function sanitize(text2) {
+  return text2.replace(OSC, "").replace(STRING_SEQUENCE, "").replace(CSI, "").replace(SHORT_ESCAPE, "").replace(/\r\n?/g, "\n").replace(/\t/g, "  ").replace(CONTROLS, "");
+}
+function inline(text2) {
+  return sanitize(text2).replace(/\s*\n\s*/g, " ");
+}
+function stripAnsi(text2) {
+  return text2.replace(CSI, "");
+}
+var segmenter = new Intl.Segmenter(void 0, { granularity: "grapheme" });
+function graphemes(text2) {
+  return Array.from(segmenter.segment(text2), (s) => s.segment);
+}
+var ZERO_WIDTH = [
+  [768, 879],
+  [1155, 1161],
+  [1425, 1469],
+  [1611, 1631],
+  [8203, 8205],
+  [8400, 8447],
+  [65024, 65039],
+  [65056, 65071],
+  [917760, 917999]
+];
+var WIDE = [
+  [4352, 4447],
+  [11904, 12350],
+  [12353, 13311],
+  [13312, 19903],
+  [19968, 40959],
+  [40960, 42191],
+  [44032, 55203],
+  [63744, 64255],
+  [65072, 65135],
+  [65280, 65376],
+  [65504, 65510],
+  [127462, 127487],
+  [127744, 128591],
+  [128640, 128767],
+  [129280, 129535],
+  [129648, 129791],
+  [131072, 262141]
+];
+var inRanges = (cp, ranges) => ranges.some(([lo, hi]) => cp >= lo && cp <= hi);
+function codePointWidth(cp) {
+  if (cp < 32 || cp >= 127 && cp < 160) return 0;
+  if (inRanges(cp, ZERO_WIDTH)) return 0;
+  return inRanges(cp, WIDE) ? 2 : 1;
+}
+function graphemeWidth(cluster) {
+  if (cluster.includes("\uFE0F")) return 2;
+  for (const ch of cluster) {
+    const width = codePointWidth(ch.codePointAt(0) ?? 0);
+    if (width > 0) return width;
+  }
+  return 0;
+}
+function displayWidth(text2) {
+  let total = 0;
+  for (const cluster of graphemes(stripAnsi(text2))) total += graphemeWidth(cluster);
+  return total;
+}
+function truncate(text2, max, ellipsis = "\u2026") {
+  if (max <= 0) return "";
+  if (displayWidth(text2) <= max) return text2;
+  const room = max - displayWidth(ellipsis);
+  if (room < 0) return graphemes(ellipsis).slice(0, max).join("");
+  let used = 0;
+  let out = "";
+  for (const cluster of graphemes(text2)) {
+    const width = graphemeWidth(cluster);
+    if (used + width > room) break;
+    out += cluster;
+    used += width;
+  }
+  return out + ellipsis;
+}
+function pad(text2, width, align = "left") {
+  const gap = Math.max(0, width - displayWidth(text2));
+  if (align === "right") return " ".repeat(gap) + text2;
+  if (align === "center") {
+    const left = Math.floor(gap / 2);
+    return " ".repeat(left) + text2 + " ".repeat(gap - left);
+  }
+  return text2 + " ".repeat(gap);
+}
+function breakWord(word, width) {
+  const pieces = [];
+  let current = "";
+  let used = 0;
+  for (const cluster of graphemes(word)) {
+    const w = graphemeWidth(cluster);
+    if (used + w > width && current !== "") {
+      pieces.push(current);
+      current = "";
+      used = 0;
+    }
+    current += cluster;
+    used += w;
+  }
+  if (current !== "") pieces.push(current);
+  return pieces;
+}
+function wrapText(text2, width) {
+  const limit = Math.max(1, width);
+  const lines = [];
+  for (const paragraph of text2.split("\n")) {
+    if (paragraph.trim() === "") {
+      lines.push("");
+      continue;
+    }
+    let line = "";
+    for (const word of paragraph.split(/ +/).filter(Boolean)) {
+      for (const piece of displayWidth(word) > limit ? breakWord(word, limit) : [word]) {
+        if (line === "") line = piece;
+        else if (displayWidth(line) + 1 + displayWidth(piece) <= limit) line += ` ${piece}`;
+        else {
+          lines.push(line);
+          line = piece;
+        }
+      }
+    }
+    if (line !== "") lines.push(line);
+  }
+  return lines;
+}
+
+// src/ui/doc.ts
+function span(text2, style = {}) {
+  const out = { text: text2 };
+  if (style.role !== void 0) out.role = style.role;
+  if (style.bold) out.bold = true;
+  if (style.dim) out.dim = true;
+  if (style.underline) out.underline = true;
+  return out;
+}
+var plain = (text2) => [span(text2)];
+var lineText = (line) => line.map((s) => s.text).join("");
+var lineWidth = (line) => displayWidth(lineText(line));
+function padLine(line, width) {
+  const gap = width - lineWidth(line);
+  return gap > 0 ? [...line, span(" ".repeat(gap))] : line;
+}
+function fitLine(line, width, ellipsis = "\u2026") {
+  if (lineWidth(line) <= width) return line;
+  const room = Math.max(0, width - displayWidth(ellipsis));
+  const out = [];
+  let used = 0;
+  for (const part of line) {
+    const w = displayWidth(part.text);
+    if (used + w <= room) {
+      out.push(part);
+      used += w;
+      continue;
+    }
+    const cut = truncate(part.text, room - used, "");
+    if (cut !== "") out.push({ ...part, text: cut });
+    used += displayWidth(cut);
+    break;
+  }
+  out.push(span(width >= displayWidth(ellipsis) ? ellipsis : ""));
+  return out;
+}
+
+// src/ui/components.ts
+var BLANK = plain("");
+var blank = () => BLANK;
+function textLines(text2, width, style = {}) {
+  return wrapText(sanitize(text2), width).map((line) => [span(line, style)]);
+}
+function heading(text2, profile) {
+  const lines = wrapText(inline(text2), profile.width).map((line) => [span(line, { role: "heading", bold: true })]);
+  return profile.density === "comfortable" ? [...lines, BLANK] : lines;
+}
+var ROLE_WORDS = { success: "OK", warning: "Warning", error: "Error", info: "Note", inactive: "Inactive", pending: "Pending" };
+function badgeLines(text2, role, profile) {
+  return wrapText(text2, profile.width).map((line) => [span(line, { role, bold: true })]);
+}
+function statusBadge(role, label, profile) {
+  const text2 = inline(label);
+  return badgeLines(profile.screenReader ? `${ROLE_WORDS[role]}: ${text2}` : `${profile.symbols.status[role]} ${text2}`, role, profile);
+}
+var STATUS_ROLE = {
+  VERIFIED: "success",
+  FUNCTIONAL_WITH_WARNINGS: "warning",
+  PARTIALLY_VERIFIED: "warning",
+  FAILED: "error",
+  BLOCKED: "error",
+  NOT_TESTED: "inactive"
+};
+function verificationBadge(status, profile) {
+  const role = STATUS_ROLE[status];
+  return badgeLines(profile.screenReader ? `Status: ${status}` : `${profile.symbols.status[role]} ${status}`, role, profile);
+}
+var ALL_STATUSES = COMPLETION_STATUSES;
+var MAX_BAR = 30;
+var MIN_BAR = 5;
+function progressBar(options, profile) {
+  const ratio = Number.isFinite(options.ratio) ? Math.min(1, Math.max(0, options.ratio)) : 0;
+  const percent = Math.round(ratio * 100);
+  const label = options.label === void 0 ? "" : inline(options.label);
+  if (profile.screenReader) return plain(`${label === "" ? "Progress" : label}: ${percent} percent`);
+  const available = Math.min(options.width ?? profile.width, profile.width);
+  const suffix = ` ${String(percent).padStart(3)}%`;
+  const prefix = label === "" ? "" : `${truncate(label, Math.max(4, Math.floor(available / 3)), profile.symbols.ellipsis)} `;
+  const barWidth = Math.min(MAX_BAR, available - displayWidth(prefix) - suffix.length);
+  if (barWidth < MIN_BAR) return fitLine(plain(`${prefix}${percent}%`), available, profile.symbols.ellipsis);
+  const filled = Math.round(ratio * barWidth);
+  return [
+    ...prefix === "" ? [] : [span(prefix, { role: "muted" })],
+    span(profile.symbols.barFull.repeat(filled), { role: "accent" }),
+    span(profile.symbols.barEmpty.repeat(barWidth - filled), { role: "inactive" }),
+    span(suffix, { role: "text" })
+  ];
+}
+var MIN_PANEL = 12;
+function panel(options, profile) {
+  const title = inline(options.title);
+  if (profile.screenReader) {
+    const head = [span(title, { role: "heading", bold: true })];
+    return [...title === "" ? [] : [head], ...options.body.map((line) => fitLine(line, profile.width, profile.symbols.ellipsis)), BLANK];
+  }
+  const { box, ellipsis } = profile.symbols;
+  const width = Math.max(MIN_PANEL, Math.min(options.width ?? profile.width, profile.width));
+  const inner = width - 4;
+  const border = (text2) => [span(text2, { role: "border" })];
+  const shownTitle = truncate(title, width - 6, ellipsis);
+  const top = shownTitle === "" ? border(`${box.topLeft}${box.horizontal.repeat(width - 2)}${box.topRight}`) : [
+    span(`${box.topLeft}${box.horizontal} `, { role: "border" }),
+    span(shownTitle, { role: "heading", bold: true }),
+    span(` ${box.horizontal.repeat(Math.max(0, width - 5 - displayWidth(shownTitle)))}${box.topRight}`, { role: "border" })
+  ];
+  const rows = options.body.map((line) => [span(`${box.vertical} `, { role: "border" }), ...padLine(fitLine(line, inner, ellipsis), inner), span(` ${box.vertical}`, { role: "border" })]);
+  return [top, ...rows, border(`${box.bottomLeft}${box.horizontal.repeat(width - 2)}${box.bottomRight}`)];
+}
+var DEFAULT_MIN_COLUMN = 6;
+var MIN_INLINE_VALUE = 10;
+function stackedRows(options, profile, available) {
+  const out = [];
+  options.rows.forEach((row, index) => {
+    if (index > 0 && profile.density === "comfortable") out.push(BLANK);
+    options.columns.forEach((column, i) => {
+      const key = `${inline(column.header)}: `;
+      const value = inline(row[i] ?? "");
+      const beside = available - displayWidth(key) >= MIN_INLINE_VALUE;
+      if (beside) {
+        const wrapped2 = wrapText(value, available - displayWidth(key));
+        (wrapped2.length === 0 ? [""] : wrapped2).forEach((text2, n) => {
+          out.push(n === 0 ? [span(key, { role: "muted" }), span(text2)] : [span(" ".repeat(displayWidth(key))), span(text2)]);
+        });
+        return;
+      }
+      out.push(fitLine([span(key.trimEnd(), { role: "muted" })], available, profile.symbols.ellipsis));
+      const wrapped = wrapText(value, Math.max(1, available - 2));
+      for (const text2 of wrapped.length === 0 ? [""] : wrapped) out.push([span("  "), span(text2)]);
+    });
+  });
+  return out;
+}
+function table(options, profile) {
+  const available = Math.min(options.width ?? profile.width, profile.width);
+  const columns = options.columns;
+  if (columns.length === 0) return [];
+  if (profile.screenReader) return stackedRows(options, profile, available);
+  const cell = (row, i) => inline(row[i] ?? "");
+  const widths = columns.map((column, i) => Math.max(displayWidth(inline(column.header)), ...options.rows.map((row) => displayWidth(cell(row, i)))));
+  const mins = columns.map((column, i) => Math.min(widths[i] ?? 0, column.min ?? DEFAULT_MIN_COLUMN));
+  const separator = ` ${profile.symbols.box.separator} `;
+  const gaps = displayWidth(separator) * (columns.length - 1);
+  let total = widths.reduce((a, b) => a + b, 0) + gaps;
+  while (total > available) {
+    let widest = -1;
+    widths.forEach((w, i) => {
+      if (w > (mins[i] ?? 0) && (widest === -1 || w > (widths[widest] ?? 0))) widest = i;
+    });
+    if (widest === -1) return stackedRows(options, profile, available);
+    widths[widest] = (widths[widest] ?? 1) - 1;
+    total -= 1;
+  }
+  const render = (texts, style) => {
+    const parts = texts.map((text2, i) => pad(truncate(text2, widths[i] ?? 0, profile.symbols.ellipsis), widths[i] ?? 0, columns[i]?.align ?? "left"));
+    const spans = parts.flatMap((text2, i) => i === 0 ? [span(text2, style)] : [span(separator, { role: "border" }), span(text2, style)]);
+    return spans;
+  };
+  const head = render(columns.map((c) => inline(c.header)), { bold: true, role: "heading" });
+  const rule = [span(profile.symbols.box.horizontal.repeat(Math.min(available, lineWidth(head))), { role: "border" })];
+  return [head, rule, ...options.rows.map((row) => render(columns.map((_, i) => cell(row, i)), {}))];
+}
+function keyValues(pairs, profile) {
+  const keys = pairs.map(([key]) => inline(key));
+  const keyWidth = Math.max(0, ...keys.map(displayWidth));
+  const linear2 = profile.screenReader || profile.width < 40;
+  return pairs.map(([, value], i) => {
+    const key = keys[i] ?? "";
+    const text2 = inline(value);
+    if (linear2) return fitLine([span(`${key}: `, { role: "muted" }), span(text2)], profile.width, profile.symbols.ellipsis);
+    const room = Math.max(1, profile.width - keyWidth - 2);
+    return [span(pad(key, keyWidth), { role: "muted" }), span("  "), span(truncate(text2, room, profile.symbols.ellipsis))];
+  });
+}
+function bulletList(items, profile) {
+  const bullet = `${profile.symbols.bullet} `;
+  const indent = " ".repeat(displayWidth(bullet));
+  return items.flatMap(
+    (item) => wrapText(inline(item), Math.max(8, profile.width - displayWidth(bullet))).map((text2, i) => [span(i === 0 ? bullet : indent, { role: "muted" }), span(text2)])
+  );
+}
+var ACTION_WORDS = {
+  up: "move up",
+  down: "move down",
+  left: "move left",
+  right: "move right",
+  select: "open",
+  back: "back",
+  quit: "quit",
+  search: "search",
+  palette: "commands",
+  help: "help",
+  "next-pane": "next pane",
+  "prev-pane": "previous pane",
+  top: "top",
+  bottom: "bottom",
+  "page-up": "page up",
+  "page-down": "page down",
+  "toggle-expand": "expand or collapse",
+  favorite: "favorite",
+  refresh: "refresh"
+};
+function keyHints(actions, profile) {
+  const hints = actions.map((action) => {
+    const chords = profile.keymap.byAction[action].slice(0, 2).map(chordLabel);
+    return `${chords.join("/")}: ${ACTION_WORDS[action]}`;
+  });
+  const lines = [];
+  let current = "";
+  for (const hint of hints) {
+    if (current !== "" && displayWidth(current) + 2 + displayWidth(hint) > profile.width) {
+      lines.push([span(current, { role: "muted" })]);
+      current = hint;
+    } else current = current === "" ? hint : `${current}  ${hint}`;
+  }
+  if (current !== "") lines.push([span(current, { role: "muted" })]);
+  return lines;
+}
+
+// src/center/commands.ts
+var command = (id, title, summary, group, changesThings, keywords, argHint) => ({
+  id,
+  slash: `jpe:${id}`,
+  title,
+  summary,
+  group,
+  changesThings,
+  keywords,
+  ...argHint === void 0 ? {} : { argHint }
+});
+var CENTER_COMMANDS = [
+  command("explain", "Explain", "Explain code in everyday English, with the real technical terms in parentheses", "Understand", false, ["what does", "walk through", "describe", "understand", "plain english"], "<file or topic>"),
+  command("research", "Research", "Look up the official documentation for the exact installed version, with sources", "Understand", false, ["docs", "documentation", "api", "version", "library", "deprecated"], "<library>"),
+  command("learn", "Learn", "Learn a programming concept using this project's own code", "Understand", false, ["teach", "concept", "tutorial", "lesson"], "<concept>"),
+  command("impact", "Impact", "See what else depends on a file before you change it", "Understand", false, ["dependents", "refactor", "rename", "blast radius", "who uses"], "<file>"),
+  command("verify", "Verify", "Run the project's real tests, type checks and build, and report evidence", "Check", false, ["test", "build", "lint", "typecheck", "does it work", "check"]),
+  command("status", "Status", "Show the latest verification status and what backs it", "Check", false, ["result", "last run", "evidence", "passed", "failed"]),
+  command("audit", "Audit", "Review the project for risky patterns and exposed credentials", "Check", false, ["security", "secrets", "vulnerabilities", "safe", "review"]),
+  command("fix", "Fix", "Investigate a failure and repair it in small, checked steps with a backup", "Change", true, ["repair", "bug", "broken", "error", "failing", "debug"]),
+  command("setup", "Setup", "Check JPE's health and set up language servers", "Manage", true, ["doctor", "install", "health", "language server", "diagnose"]),
+  command("config", "Config", "View or change JPE's settings", "Manage", true, ["settings", "preferences", "theme", "options", "configure"])
+];
+var findCommand = (id) => CENTER_COMMANDS.find((c) => c.id === id);
+
+// src/center/memory.ts
+var MEMORY_VERSION = 1;
+var EMPTY_MEMORY = { version: MEMORY_VERSION, favorites: [], history: [] };
+function recentIds(memory, limit) {
+  const seen = [];
+  for (const entry of memory.history) {
+    if (!seen.includes(entry.id)) seen.push(entry.id);
+    if (seen.length >= limit) break;
+  }
+  return seen;
+}
+
+// src/center/fuzzy.ts
+var SCORE_MATCH = 1;
+var SCORE_CONSECUTIVE = 2;
+var SCORE_WORD_START = 3;
+var SCORE_PREFIX = 5;
+var PENALTY_GAP = 0.1;
+var isWordStart = (text2, index) => index === 0 || /[\s\-_/.:]/.test(text2.charAt(index - 1));
+function matchFrom(query, text2, start) {
+  const indices = [];
+  let score2 = 0;
+  let cursor = start;
+  for (let q = 0; q < query.length; q++) {
+    const char = query.charAt(q);
+    let found = q === 0 ? start : -1;
+    for (let i = cursor; q > 0 && i < text2.length; i++) {
+      if (text2.charAt(i) !== char) continue;
+      if (found === -1) found = i;
+      if (i === cursor || isWordStart(text2, i)) {
+        found = i;
+        break;
+      }
+    }
+    if (found === -1) return void 0;
+    score2 += SCORE_MATCH;
+    const previous = indices.at(-1);
+    if (previous !== void 0 && found === previous + 1) score2 += SCORE_CONSECUTIVE;
+    else if (previous !== void 0) score2 -= (found - previous - 1) * PENALTY_GAP;
+    if (isWordStart(text2, found)) score2 += SCORE_WORD_START;
+    indices.push(found);
+    cursor = found + 1;
+  }
+  if (indices[0] === 0 && indices.every((position, i) => position === i)) score2 += SCORE_PREFIX;
+  return { score: score2, indices };
+}
+function fuzzyMatch(query, text2) {
+  const q = query.trim().toLowerCase();
+  if (q === "") return { score: 0, indices: [] };
+  const t = text2.toLowerCase();
+  let best;
+  for (let start = t.indexOf(q.charAt(0)); start !== -1; start = t.indexOf(q.charAt(0), start + 1)) {
+    const candidate = matchFrom(q, t, start);
+    if (candidate !== void 0 && (best === void 0 || candidate.score > best.score)) best = candidate;
+  }
+  return best;
+}
+
+// src/center/palette.ts
+var MAX_JUMP = 99;
+var MAX_ARGS_LENGTH = 500;
+function normalize(raw) {
+  let text2 = raw.trim();
+  if (text2.startsWith("/")) text2 = text2.slice(1);
+  const lower = text2.toLowerCase();
+  if (lower.startsWith("jpe:")) return text2.slice(4).trimStart();
+  if (lower.startsWith("jpe ")) return text2.slice(4).trimStart();
+  return text2;
+}
+function parseQuery(raw) {
+  const text2 = normalize(raw);
+  if (/^\d{1,2}$/.test(text2)) {
+    const n = Number.parseInt(text2, 10);
+    if (n >= 1 && n <= MAX_JUMP) return { kind: "jump", index: n - 1 };
+  }
+  const space = text2.search(/\s/);
+  if (space > 0) {
+    const first = text2.slice(0, space).toLowerCase();
+    const args = text2.slice(space).trim();
+    if (findCommand(first) !== void 0 && args !== "") return { kind: "run", commandId: first, args: args.slice(0, MAX_ARGS_LENGTH) };
+  }
+  return { kind: "search", text: text2 };
+}
+function defaultOrder(memory) {
+  const ordered = [];
+  const push = (id) => {
+    const found = findCommand(id);
+    if (found !== void 0 && !ordered.includes(found)) ordered.push(found);
+  };
+  for (const id of memory.favorites) push(id);
+  for (const id of recentIds(memory, CENTER_COMMANDS.length)) push(id);
+  for (const c of CENTER_COMMANDS) push(c.id);
+  return ordered;
+}
+var RECENCY_BONUS = 3;
+var RECENCY_STEP = 0.5;
+var FAVORITE_BONUS = 4;
+function bestScore(query, c) {
+  const fields = [[c.title, 1], [c.id, 1.2], ...c.keywords.map((k) => [k, 0.8]), [c.summary, 0.4]];
+  let best;
+  for (const [text2, weight] of fields) {
+    const match = fuzzyMatch(query, text2);
+    if (match === void 0) continue;
+    const weighted = match.score * weight;
+    if (best === void 0 || weighted > best) best = weighted;
+  }
+  return best;
+}
+function rankCommands(rawQuery, memory) {
+  const parsed = parseQuery(rawQuery);
+  const recent = recentIds(memory, CENTER_COMMANDS.length);
+  const lastUsed = (id) => memory.history.find((h) => h.id === id)?.at;
+  const entryFor = (command2, score2, titleMatch) => {
+    const used = lastUsed(command2.id);
+    return { command: command2, score: score2, titleMatch, isFavorite: memory.favorites.includes(command2.id), ...used === void 0 ? {} : { lastUsed: used } };
+  };
+  if (parsed.kind !== "search" || parsed.text === "") {
+    const order = defaultOrder(memory);
+    const target = parsed.kind === "run" ? findCommand(parsed.commandId) : void 0;
+    const list = target === void 0 ? order : [target, ...order.filter((c) => c !== target)];
+    return list.map((c) => entryFor(c, 0, []));
+  }
+  const results = [];
+  CENTER_COMMANDS.forEach((command2) => {
+    const score2 = bestScore(parsed.text, command2);
+    if (score2 === void 0) return;
+    const recency = recent.indexOf(command2.id);
+    const bonus = (memory.favorites.includes(command2.id) ? FAVORITE_BONUS : 0) + (recency === -1 ? 0 : Math.max(0, RECENCY_BONUS - recency * RECENCY_STEP));
+    results.push(entryFor(command2, score2 + bonus, fuzzyMatch(parsed.text, command2.title)?.indices ?? []));
+  });
+  return results.sort((a, b) => b.score - a.score);
+}
+
+// src/center/suggestions.ts
+var MAX_SUGGESTIONS = 5;
+var LEVEL_ORDER = { error: 0, warning: 1, info: 2 };
+var BASIS_ORDER = { confirmed: 0, suggestion: 1 };
+function suggest(hud) {
+  const out = [];
+  const v = hud.verification;
+  if (v.problem !== void 0) {
+    out.push({ id: "verification-record-damaged", commandId: "verify", title: "Run the checks again", why: v.problem, basis: "confirmed", level: "warning" });
+  } else if (v.status === "FAILED") {
+    out.push({ id: "verification-failed", commandId: "fix", title: "Fix the failing checks", why: `The last verification FAILED${v.reasons[0] === void 0 ? "." : `: ${v.reasons[0]}`}`, basis: "confirmed", level: "error" });
+  } else if (v.status === "BLOCKED") {
+    out.push({ id: "verification-blocked", commandId: "status", title: "See what is blocking verification", why: `The last verification is BLOCKED${v.reasons[0] === void 0 ? "." : `: ${v.reasons[0]}`}`, basis: "confirmed", level: "error" });
+  } else if (v.status === "PARTIALLY_VERIFIED" || v.status === "FUNCTIONAL_WITH_WARNINGS") {
+    out.push({ id: "verification-incomplete", commandId: "status", title: "See what is not fully verified", why: `The last verification is ${v.status}${v.reasons[0] === void 0 ? "." : `: ${v.reasons[0]}`}`, basis: "confirmed", level: "warning" });
+  } else if (v.status === "NOT_TESTED" && v.checksAvailable.length > 0) {
+    out.push({ id: "verification-not-run", commandId: "verify", title: "Run the project's checks", why: `Nothing has been verified yet, and this project has: ${v.checksAvailable.join(", ")}.`, basis: "confirmed", level: "info" });
+  }
+  if (hud.languageServersMissing.length > 0) {
+    out.push({ id: "language-servers-missing", commandId: "setup", title: "Set up language servers", why: `Not installed: ${hud.languageServersMissing.join(", ")}. Without one, nothing is checked by the language server.`, basis: "confirmed", level: "warning" });
+  }
+  const alreadyVerifying = out.some((s) => s.commandId === "verify");
+  if (hud.git.state === "dirty" && v.checksAvailable.length > 0 && v.status !== "FAILED" && !alreadyVerifying) {
+    const n = hud.git.changedFiles;
+    out.push({ id: "uncommitted-changes", commandId: "verify", title: "Verify before you commit", why: `${n} uncommitted ${n === 1 ? "file" : "files"}. This is a habit, not a finding: JPE cannot tell whether the last verification covers them.`, basis: "suggestion", level: "info" });
+  }
+  return out.sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level] || BASIS_ORDER[a.basis] - BASIS_ORDER[b.basis]).slice(0, MAX_SUGGESTIONS);
+}
+
+// src/center/home.ts
+var MAX_NUMBERED = 9;
+function formatAge(iso, now) {
+  const then = Date.parse(iso);
+  if (Number.isNaN(then)) return "at an unknown time";
+  const seconds = Math.max(0, Math.round((now.getTime() - then) / 1e3));
+  if (seconds < 60) return "just now";
+  const unit = (n, word) => `${n} ${word}${n === 1 ? "" : "s"} ago`;
+  if (seconds < 3600) return unit(Math.floor(seconds / 60), "minute");
+  if (seconds < 86400) return unit(Math.floor(seconds / 3600), "hour");
+  return unit(Math.floor(seconds / 86400), "day");
+}
+var actionFor = (n, command2, tag, detail, extra = {}) => ({
+  n,
+  commandId: command2.id,
+  args: extra.args ?? "",
+  slash: `/${command2.slash}`,
+  title: command2.title,
+  detail,
+  tag,
+  changesThings: command2.changesThings,
+  ...extra.basis === void 0 ? {} : { basis: extra.basis },
+  ...extra.level === void 0 ? {} : { level: extra.level }
+});
+function homeActions(hud, memory) {
+  const actions = [];
+  const has = (id) => actions.some((a) => a.commandId === id);
+  const add = (command2, tag, detail, extra = {}) => {
+    if (command2 === void 0 || has(command2.id) || actions.length >= MAX_NUMBERED) return;
+    actions.push(actionFor(actions.length + 1, command2, tag, detail, extra));
+  };
+  for (const s of suggest(hud)) add(findCommand(s.commandId), "next", `${s.title}. ${s.why}`, { basis: s.basis, level: s.level, ...s.args === void 0 ? {} : { args: s.args } });
+  for (const id of memory.favorites) add(findCommand(id), "favorite", findCommand(id)?.summary ?? "");
+  for (const id of recentIds(memory, MAX_NUMBERED)) add(findCommand(id), "recent", findCommand(id)?.summary ?? "");
+  for (const c of CENTER_COMMANDS) add(c, "command", c.summary);
+  return actions;
+}
+var TAG_WORDS = { next: "next step", favorite: "favorite", recent: "recent", command: "" };
+function gitText(hud) {
+  switch (hud.git.state) {
+    case "unavailable":
+      return "git is not installed";
+    case "not-repo":
+      return "not a git repository";
+    case "clean":
+      return `branch ${hud.git.branch}, no uncommitted changes`;
+    case "dirty":
+      return `branch ${hud.git.branch}, ${hud.git.changedFiles} uncommitted ${hud.git.changedFiles === 1 ? "file" : "files"}`;
+  }
+}
+function hudLines(hud, profile, now) {
+  const label = (text2) => [span(text2, { role: "muted" })];
+  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(" \xB7 ");
+  const v = hud.verification;
+  const age = v.at === void 0 ? "never run" : `last run ${formatAge(v.at, now)}`;
+  const servers = hud.languageServersMissing.length === 0 ? "all found" : `missing: ${hud.languageServersMissing.join(", ")}`;
+  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} \xB7 approvals: ${hud.runtime.approval}`;
+  const rows = [
+    ["Project", project],
+    ["Git", gitText(hud)],
+    ["Language servers", servers],
+    ["Mode", mode]
+  ];
+  const keyWidth = Math.max(...rows.map(([k]) => displayWidth(k)), displayWidth("Verification"));
+  const wide = profile.width >= 50 && !profile.screenReader;
+  const valueWidth = Math.max(8, profile.width - keyWidth - 2);
+  const out = rows.flatMap(([key, value]) => {
+    if (!wide) return [label(key), ...textLines(value, profile.width - 2).map((l) => [span("  "), ...l])];
+    return textLines(value, valueWidth).map((l, n) => [span(n === 0 ? pad(key, keyWidth) : " ".repeat(keyWidth), { role: "muted" }), span("  "), ...l]);
+  });
+  out.push(label("Verification"));
+  out.push(...verificationBadge(v.status, profile).map((l) => [span("  "), ...l]));
+  out.push(...textLines(age, profile.width - 2, { role: "muted" }).map((l) => [span("  "), ...l]));
+  for (const reason of v.reasons) out.push(...textLines(reason, profile.width - 2, { role: "muted" }).map((l) => [span("  "), ...l]));
+  if (v.problem !== void 0) out.push(...textLines(v.problem, profile.width - 2, { role: "warning" }).map((l) => [span("  "), ...l]));
+  return out;
+}
+function actionBody(a, profile) {
+  const indent = (lines) => lines.map((l) => [span("   "), ...l]);
+  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(" \xB7 ");
+  const why = a.basis === void 0 ? a.detail : `${a.detail} (${a.basis})`;
+  const width = Math.max(8, profile.width - 3);
+  return [...indent(notes === "" ? [] : textLines(notes, width, { role: "muted" })), ...indent(textLines(why, width, { role: "muted" }))];
+}
+var actionHead = (a) => [span(`${a.n}. `, { role: "muted" }), span(a.slash, { role: "accent", bold: true })];
+function actionLines(actions, profile) {
+  return actions.flatMap((a) => [actionHead(a), ...actionBody(a, profile)]);
+}
+function buildHome(hud, memory, profile, now) {
+  const actions = homeActions(hud, memory);
+  const unnumbered = CENTER_COMMANDS.filter((c) => !actions.some((a) => a.commandId === c.id));
+  return [
+    ...heading("JPE command center", profile),
+    ...hudLines(hud, profile, now),
+    blank(),
+    ...heading("What to do", profile),
+    ...actionLines(actions, profile),
+    ...unnumbered.length === 0 ? [] : [blank(), ...heading("Also available", profile), ...bulletList(unnumbered.map((c) => `/${c.slash}${c.argHint === void 0 ? "" : ` ${c.argHint}`}: ${c.summary}`), profile)],
+    blank(),
+    ...bulletList(["Type /jpe on its own to open this again, or /jpe <command> to run one directly."], profile)
+  ];
+}
+function buildPaletteText(query, memory, profile) {
+  const entries = rankCommands(query, memory);
+  if (entries.length === 0) return [...heading("Command palette", profile), plain(`No command matches "${inline(query)}".`)];
+  const marker = profile.unicode ? "\u2605" : "*";
+  const rows = entries.map((e, i) => [String(i + 1), `/${e.command.slash}${e.isFavorite ? ` ${marker}` : ""}`, e.command.summary]);
+  return [...heading(query.trim() === "" ? "Command palette" : `Command palette: ${inline(query)}`, profile), ...table({ columns: [{ header: "#", align: "right", min: 2 }, { header: "Command", min: 10 }, { header: "What it does", min: 12 }], rows }, profile)];
+}
+
+// src/ui/color.ts
+var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+var isHexColor = (value) => HEX_COLOR.test(value);
+function parseHex(hex3) {
+  if (!isHexColor(hex3)) throw new RangeError(`Not a #RRGGBB colour: ${hex3}`);
+  return { r: Number.parseInt(hex3.slice(1, 3), 16), g: Number.parseInt(hex3.slice(3, 5), 16), b: Number.parseInt(hex3.slice(5, 7), 16) };
+}
+var linear = (channel) => {
+  const c = channel / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+};
+function relativeLuminance(hex3) {
+  const { r, g, b } = parseHex(hex3);
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+}
+function contrastRatio(foreground, background) {
+  const a = relativeLuminance(foreground);
+  const b = relativeLuminance(background);
+  const [light, dark] = a >= b ? [a, b] : [b, a];
+  return (light + 0.05) / (dark + 0.05);
+}
+function toAnsi256(hex3) {
+  const { r, g, b } = parseHex(hex3);
+  if (Math.abs(r - g) < 8 && Math.abs(g - b) < 8) {
+    if (r < 8) return 16;
+    if (r > 248) return 231;
+    return 232 + Math.round((r - 8) / 247 * 23);
+  }
+  const level = (channel) => Math.round(channel / 255 * 5);
+  return 16 + 36 * level(r) + 6 * level(g) + level(b);
+}
+
+// src/ui/paint.ts
+var CSI2 = "\x1B[";
+var RESET = `${CSI2}0m`;
+var TERMINAL_STYLE_ROLES = {
+  text: {},
+  muted: { dim: true },
+  heading: { bold: true, colorAs: "accent" },
+  border: { dim: true },
+  inactive: { dim: true }
+};
+function foregroundCode(profile, role) {
+  if (profile.color === "none") return void 0;
+  let colorRole = role;
+  if (profile.surface === "terminal" && role in TERMINAL_STYLE_ROLES) {
+    const treatment = TERMINAL_STYLE_ROLES[role];
+    if (treatment?.colorAs === void 0) return void 0;
+    colorRole = treatment.colorAs;
+  }
+  const hex3 = profile.theme.colors[colorRole];
+  if (profile.color === "truecolor") {
+    const { r, g, b } = parseHex(hex3);
+    return `38;2;${r};${g};${b}`;
+  }
+  if (profile.color === "256") return `38;5;${toAnsi256(hex3)}`;
+  const index = profile.theme.ansi16[colorRole];
+  return index < 8 ? `${30 + index}` : `${90 + index - 8}`;
+}
+function sgrFor(profile, part) {
+  if (!profile.styles) return "";
+  const role = part.role ?? "text";
+  const standIn = profile.surface === "terminal" ? TERMINAL_STYLE_ROLES[role] : void 0;
+  const codes = [];
+  if (part.bold || standIn?.bold) codes.push("1");
+  if (part.dim || standIn?.dim) codes.push("2");
+  if (part.underline) codes.push("4");
+  const color = foregroundCode(profile, role);
+  if (color) codes.push(color);
+  return codes.join(";");
+}
+function paintLine(line, profile) {
+  let out = "";
+  for (const part of line) {
+    const text2 = sanitize(part.text).replace(/\n/g, " ");
+    if (text2 === "") continue;
+    const sgr = sgrFor(profile, part);
+    out += sgr === "" ? text2 : `${CSI2}${sgr}m${text2}${RESET}`;
+  }
+  return out;
+}
+function paint(lines, profile) {
+  return lines.map((line) => paintLine(line, profile)).join("\n");
+}
+
+// src/ui/capabilities.ts
+var MIN_COLUMNS = 20;
+var MAX_COLUMNS = 500;
+var DEFAULT_COLUMNS = 80;
+var DEFAULT_ROWS = 24;
+var isSet = (value) => value !== void 0 && value !== "";
+var isTruthy = (value) => isSet(value) && value !== "0" && value.toLowerCase() !== "false";
+var clampInt = (value, min, max) => Math.min(max, Math.max(min, Math.trunc(value)));
+function parsePositiveInt(value) {
+  if (!isSet(value) || !/^\d{1,5}$/.test(value)) return void 0;
+  const n = Number.parseInt(value, 10);
+  return n > 0 ? n : void 0;
+}
+var TRUECOLOR_PROGRAMS = /* @__PURE__ */ new Set(["iTerm.app", "vscode", "WezTerm", "Hyper", "ghostty"]);
+var BASIC_TERMS = /(xterm|screen|tmux|rxvt|linux|vt100|vt220|ansi|cygwin|color)/i;
+function detectColor(input2, reasons) {
+  const { env } = input2;
+  const term = env["TERM"] ?? "";
+  if (isSet(env["NO_COLOR"])) {
+    reasons.push("Colour is off because NO_COLOR is set.");
+    return "none";
+  }
+  const force = env["FORCE_COLOR"];
+  if (isSet(force)) {
+    const level = { "0": "none", false: "none", "1": "16", true: "16", "2": "256", "3": "truecolor" };
+    const forced = level[force.toLowerCase()];
+    if (forced) {
+      reasons.push(`Colour depth is ${forced} because FORCE_COLOR=${force}.`);
+      return forced;
+    }
+  }
+  if (!input2.isTTY) {
+    reasons.push("Colour is off because output is not an interactive terminal (it is piped or redirected).");
+    return "none";
+  }
+  if (term === "dumb") {
+    reasons.push("Colour is off because TERM=dumb.");
+    return "none";
+  }
+  const colorterm = (env["COLORTERM"] ?? "").toLowerCase();
+  if (colorterm === "truecolor" || colorterm === "24bit") {
+    reasons.push("Truecolor because COLORTERM advertises it.");
+    return "truecolor";
+  }
+  if (isSet(env["WT_SESSION"])) {
+    reasons.push("Truecolor because this is Windows Terminal.");
+    return "truecolor";
+  }
+  if (isSet(env["TERM_PROGRAM"]) && TRUECOLOR_PROGRAMS.has(env["TERM_PROGRAM"])) {
+    reasons.push(`Truecolor because TERM_PROGRAM=${env["TERM_PROGRAM"]}.`);
+    return "truecolor";
+  }
+  if (/256color/i.test(term)) {
+    reasons.push("256 colours because TERM names 256color.");
+    return "256";
+  }
+  if (input2.platform === "win32") {
+    reasons.push("Truecolor assumed for a Windows console (Windows 10 and later). Override with ui.color if colours look wrong.");
+    return "truecolor";
+  }
+  if (BASIC_TERMS.test(term)) {
+    reasons.push(`16 colours because TERM=${term} does not advertise more.`);
+    return "16";
+  }
+  reasons.push("16 colours as a safe default: the terminal did not say what it supports.");
+  return "16";
+}
+function localeIsUtf8(env) {
+  const locale = [env["LC_ALL"], env["LC_CTYPE"], env["LANG"]].find(isSet);
+  if (locale === void 0) return void 0;
+  return /utf-?8/i.test(locale);
+}
+function detectUnicode(input2, reasons) {
+  const { env } = input2;
+  const term = env["TERM"] ?? "";
+  if (isTruthy(env["JPE_ASCII"])) {
+    reasons.push("ASCII symbols because JPE_ASCII is set.");
+    return false;
+  }
+  if (term === "dumb" || term === "linux") {
+    reasons.push(`ASCII symbols because TERM=${term} (the Linux console and dumb terminals lack most box and symbol glyphs).`);
+    return false;
+  }
+  const utf8 = localeIsUtf8(env);
+  if (utf8 === false) {
+    reasons.push("ASCII symbols because the locale is not UTF-8.");
+    return false;
+  }
+  if (utf8 === true) {
+    reasons.push("Unicode symbols because the locale is UTF-8.");
+    return true;
+  }
+  if (input2.platform === "win32") {
+    const modern = isSet(env["WT_SESSION"]) || isSet(env["TERM_PROGRAM"]) || env["ConEmuANSI"] === "ON";
+    reasons.push(modern ? "Unicode symbols because this is a modern Windows terminal." : "ASCII symbols because this looks like the legacy Windows console. Override with ui.unicode if yours supports Unicode.");
+    return modern;
+  }
+  reasons.push("Unicode symbols assumed: no locale was set and TERM is not a known ASCII-only terminal.");
+  return true;
+}
+function detectCapabilities(input2) {
+  const { env } = input2;
+  const reasons = [];
+  const color = detectColor(input2, reasons);
+  const styles = input2.isTTY && (env["TERM"] ?? "") !== "dumb" || isSet(env["FORCE_COLOR"]) && env["FORCE_COLOR"] !== "0";
+  const unicode = detectUnicode(input2, reasons);
+  const columns = clampInt(input2.columns ?? parsePositiveInt(env["COLUMNS"]) ?? DEFAULT_COLUMNS, MIN_COLUMNS, MAX_COLUMNS);
+  const rows = clampInt(input2.rows ?? parsePositiveInt(env["LINES"]) ?? DEFAULT_ROWS, 5, 200);
+  reasons.push(input2.columns !== void 0 ? `Width is ${columns} columns, read from the terminal.` : `Width is ${columns} columns (${isSet(env["COLUMNS"]) ? "from COLUMNS" : "the default; the terminal size is unknown"}).`);
+  const remote = isSet(env["SSH_CONNECTION"]) || isSet(env["SSH_TTY"]) || isSet(env["SSH_CLIENT"]);
+  const ci = isTruthy(env["CI"]);
+  const interactive = input2.isTTY && !ci && (env["TERM"] ?? "") !== "dumb";
+  if (remote) reasons.push("Remote (SSH) session: animation is reduced and the layout stays compact-friendly.");
+  if (ci) reasons.push("CI environment: output is plain and non-interactive.");
+  const reducedMotion = isTruthy(env["JPE_REDUCED_MOTION"]) || remote || ci || !input2.isTTY;
+  const screenReader = isTruthy(env["JPE_SCREEN_READER"]);
+  reasons.push(screenReader ? "Screen-reader layout is on because JPE_SCREEN_READER is set." : "Screen-reader layout is off. It cannot be detected automatically; turn it on with ui.screenReader or JPE_SCREEN_READER=1.");
+  return { color, styles, unicode, columns, rows, interactive, remote, ci, reducedMotion, screenReader, reasons };
+}
+
+// src/ui/symbols.ts
+var UNICODE_SYMBOLS = {
+  status: { success: "\u2714", warning: "\u25B2", error: "\u2718", info: "\u25C6", inactive: "\u25CB", pending: "\u2026" },
+  box: { topLeft: "\u256D", topRight: "\u256E", bottomLeft: "\u2570", bottomRight: "\u256F", horizontal: "\u2500", vertical: "\u2502", separator: "\u2502" },
+  barFull: "\u2588",
+  barEmpty: "\u2591",
+  ellipsis: "\u2026",
+  bullet: "\u2022",
+  arrow: "\u2192"
+};
+var ASCII_SYMBOLS = {
+  status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
+  box: { topLeft: "+", topRight: "+", bottomLeft: "+", bottomRight: "+", horizontal: "-", vertical: "|", separator: "|" },
+  barFull: "#",
+  barEmpty: "-",
+  ellipsis: "...",
+  bullet: "*",
+  arrow: "->"
+};
+var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
+
+// src/ui/profile.ts
+function breakpointFor(width) {
+  if (width < 60) return "narrow";
+  return width < 100 ? "medium" : "wide";
+}
+function resolveProfile(caps, settings, overrides = {}) {
+  const width = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, Math.trunc(overrides.width ?? caps.columns)));
+  const color = settings.color === "auto" ? caps.color : settings.color;
+  const unicode = settings.unicode === "auto" ? caps.unicode : settings.unicode === "on";
+  const density = settings.density === "auto" ? width < 80 || caps.rows < 24 ? "compact" : "comfortable" : settings.density;
+  const motion = settings.motion === "auto" ? caps.reducedMotion ? "reduced" : "full" : settings.motion;
+  return {
+    theme: THEMES[settings.theme],
+    color,
+    // An explicit colour setting means the person wants styling even where detection said "not a terminal".
+    styles: caps.styles || settings.color !== "auto" && settings.color !== "none",
+    unicode,
+    symbols: symbolsFor(unicode),
+    width,
+    density,
+    motion,
+    screenReader: settings.screenReader || caps.screenReader,
+    surface: overrides.surface ?? "terminal",
+    keymap: buildKeymap(settings.navigation, settings.shortcuts)
+  };
+}
+
+// src/cli/commands/render-profile.ts
+var SETTING_FLAGS = ["theme", "color", "unicode", "density", "motion", "navigation"];
+function parseWidth(raw) {
+  if (raw === void 0) return void 0;
+  const width = /^\d{1,4}$/.test(raw) ? Number.parseInt(raw, 10) : Number.NaN;
+  if (!(width >= MIN_COLUMNS && width <= MAX_COLUMNS)) throw new JpeError("INVALID_INPUT", `--width must be a whole number from ${MIN_COLUMNS} to ${MAX_COLUMNS}.`);
+  return width;
+}
+function settingsFor(args, saved) {
+  const merged = { ...saved };
+  for (const name of SETTING_FLAGS) {
+    const value = flagString(args, name);
+    if (value !== void 0) merged[name] = value;
+  }
+  if (flagBool(args, "screen-reader")) merged["screenReader"] = true;
+  const parsed = uiSettingsSchema.safeParse(merged);
+  if (!parsed.success) {
+    const problems = parsed.error.issues.map((issue2) => `${issue2.path.join(".") || "ui"}: ${issue2.message}`);
+    throw new JpeError("INVALID_INPUT", `Those display settings are not valid. ${problems.join(" ")}`);
+  }
+  return parsed.data;
+}
+async function renderContext(args, ctx) {
+  const config2 = await ctx.loadConfig();
+  const terminal = ctx.terminal();
+  const caps = detectCapabilities({ env: ctx.pathEnv.env, platform: ctx.pathEnv.platform, isTTY: terminal.isTTY, columns: terminal.columns, rows: terminal.rows });
+  const width = parseWidth(flagString(args, "width"));
+  return { caps, profile: resolveProfile(caps, settingsFor(args, config2.ui), width === void 0 ? {} : { width }) };
+}
+
+// src/cli/commands/center.ts
+async function centerCommand(args, ctx) {
+  const view = args.positionals[0] ?? "home";
+  if (view !== "home" && view !== "palette" && view !== "hud") throw new JpeError("INVALID_INPUT", `Unknown view "${view}". Use "jpe center", "jpe center palette <query>" or "jpe center hud".`);
+  const json2 = flagBool(args, "json");
+  const { profile } = await renderContext(args, ctx);
+  if (view === "palette") {
+    const query = args.positionals.slice(1).join(" ");
+    if (json2) {
+      ctx.out(JSON.stringify(rankCommands(query, EMPTY_MEMORY).map((e) => ({ id: e.command.id, slash: `/${e.command.slash}`, title: e.command.title, summary: e.command.summary, changesThings: e.command.changesThings, score: e.score })), null, 2));
+      return 0;
+    }
+    ctx.out(paint(buildPaletteText(query, EMPTY_MEMORY, profile), profile));
+    return 0;
+  }
+  const hud = await collectHud(ctx);
+  if (view === "hud") {
+    ctx.out(json2 ? JSON.stringify(hud, null, 2) : paint([...heading("Project facts", profile), ...hudLines(hud, profile, ctx.now())], profile));
+    return 0;
+  }
+  if (json2) {
+    ctx.out(JSON.stringify({ hud, suggestions: suggest(hud), actions: homeActions(hud, EMPTY_MEMORY) }, null, 2));
+    return 0;
+  }
+  ctx.out(paint(buildHome(hud, EMPTY_MEMORY, profile, ctx.now()), profile));
+  return 0;
+}
+
 // src/doctor/doctor.ts
 import os2 from "os";
 
 // src/doctor/env-checks.ts
 import { mkdir as mkdir4, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
-import path16 from "path";
+import path18 from "path";
 
 // src/docs/cache.ts
 import { createHash as createHash3 } from "crypto";
 import { mkdir as mkdir3, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path13 from "path";
+import path15 from "path";
 var sha256Hex = (text2) => createHash3("sha256").update(text2).digest("hex");
 var MAX_CONTENT_CHARS = 2e5;
 var entrySchema = external_exports.strictObject({
@@ -39091,7 +40513,7 @@ var DocCache = class {
     return sha256Hex([provider, library, version2 ?? "", topic.trim().toLowerCase()].join("\0"));
   }
   file(key) {
-    return path13.join(this.deps.dir, `${key}.json`);
+    return path15.join(this.deps.dir, `${key}.json`);
   }
   async put(key, drafts) {
     const stored = drafts.map((d) => ({ ...d, content: redactSecrets(d.content).slice(0, MAX_CONTENT_CHARS) }));
@@ -39139,22 +40561,22 @@ var DocCache = class {
       throw error62;
     }
     const files = await Promise.all(
-      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path13.join(this.deps.dir, n))).mtimeMs }))
+      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path15.join(this.deps.dir, n))).mtimeMs }))
     );
     files.sort((a, b) => b.mtime - a.mtime);
     const doomed = files.slice(Math.max(0, maxEntries));
-    await Promise.all(doomed.map((f3) => unlink2(path13.join(this.deps.dir, f3.n))));
+    await Promise.all(doomed.map((f3) => unlink2(path15.join(this.deps.dir, f3.n))));
     return doomed.length;
   }
 };
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path14 from "path";
+import path16 from "path";
 
 // src/hooks/payload.ts
 import { createHash as createHash4 } from "crypto";
-var base = {
+var base2 = {
   session_id: external_exports.string().min(1).max(200),
   cwd: external_exports.string().min(1),
   hook_event_name: external_exports.string(),
@@ -39162,12 +40584,12 @@ var base = {
 };
 var toolInput = external_exports.record(external_exports.string(), external_exports.unknown());
 var payloadSchemas = {
-  SessionStart: external_exports.looseObject({ ...base, source: external_exports.string().optional() }),
-  UserPromptSubmit: external_exports.looseObject({ ...base, prompt: external_exports.string() }),
-  PreToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput }),
-  PostToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
-  PostToolUseFailure: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
-  Stop: external_exports.looseObject({ ...base, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
+  SessionStart: external_exports.looseObject({ ...base2, source: external_exports.string().optional() }),
+  UserPromptSubmit: external_exports.looseObject({ ...base2, prompt: external_exports.string() }),
+  PreToolUse: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput }),
+  PostToolUse: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
+  PostToolUseFailure: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
+  Stop: external_exports.looseObject({ ...base2, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
 };
 var HOOK_EVENTS = Object.keys(payloadSchemas);
 
@@ -39186,7 +40608,7 @@ var stateSchema = external_exports.strictObject({
 });
 var STALE_MS = 7 * 24 * 36e5;
 async function pruneStaleStates(ctx) {
-  const dir = path14.join(ctx.stateDir(), "sessions");
+  const dir = path16.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -39196,7 +40618,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path14.join(dir, name);
+    const file2 = path16.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -39206,14 +40628,14 @@ async function pruneStaleStates(ctx) {
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path15 from "path";
+import path17 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path15.normalize(file2).toLowerCase() : path15.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path17.normalize(file2).toLowerCase() : path17.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path15.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path17.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -39252,7 +40674,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path15.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path17.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -39463,163 +40885,10 @@ var LspClient = class _LspClient {
   }
 };
 
-// src/project/detect.ts
-var NPM_NAME = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
-var stringRecord = external_exports.record(external_exports.string(), external_exports.string());
-var packageJsonSchema = external_exports.looseObject({
-  scripts: stringRecord.optional(),
-  dependencies: stringRecord.optional(),
-  devDependencies: stringRecord.optional(),
-  packageManager: external_exports.string().optional()
-});
-var lockSchema = external_exports.looseObject({ packages: external_exports.record(external_exports.string(), external_exports.looseObject({ version: external_exports.string().optional() })).optional() });
-var versionOnly = external_exports.looseObject({ version: external_exports.string() });
-var NODE_LOCKFILES = [
-  ["bun.lock", "bun"],
-  ["bun.lockb", "bun"],
-  ["pnpm-lock.yaml", "pnpm"],
-  ["yarn.lock", "yarn"],
-  ["package-lock.json", "npm"]
-];
-function tryJson(text2) {
-  try {
-    return JSON.parse(text2);
-  } catch {
-    return void 0;
-  }
-}
-async function detectNode(root, fs, info) {
-  const text2 = await fs.readText(inRoot(root, "package.json"));
-  if (text2 === void 0) return;
-  info.ecosystems.push("node");
-  const parsed = packageJsonSchema.safeParse(tryJson(text2));
-  if (!parsed.success) {
-    info.warnings.push("package.json is not valid JSON or has an unexpected shape; dependency details were skipped.");
-    return;
-  }
-  const pkg = parsed.data;
-  info.scripts = pkg.scripts ?? {};
-  for (const [file2, manager] of NODE_LOCKFILES) {
-    if (await fs.exists(inRoot(root, file2))) {
-      info.packageManager = manager;
-      info.hasLockfile = true;
-      break;
-    }
-  }
-  if (!info.packageManager) {
-    const declared = pkg.packageManager?.split("@")[0];
-    info.packageManager = declared === "pnpm" || declared === "yarn" || declared === "bun" ? declared : "npm";
-  }
-  const lockText = await fs.readText(inRoot(root, "package-lock.json"));
-  const lock = lockText === void 0 ? void 0 : lockSchema.safeParse(tryJson(lockText));
-  const lockPackages = lock?.success ? lock.data.packages : void 0;
-  const groups = [
-    [pkg.dependencies ?? {}, false],
-    [pkg.devDependencies ?? {}, true]
-  ];
-  for (const [deps, dev] of groups) {
-    for (const [name, declared] of Object.entries(deps)) {
-      if (!NPM_NAME.test(name)) {
-        info.warnings.push(`Skipped dependency with an unusual name: ${name.slice(0, 60)}`);
-        continue;
-      }
-      const dep = { name, ecosystem: "node", declared, versionSource: "declared", dev };
-      const installedText = await fs.readText(inRoot(root, "node_modules", name, "package.json"));
-      const installed = installedText === void 0 ? void 0 : versionOnly.safeParse(tryJson(installedText));
-      const locked = lockPackages?.[`node_modules/${name}`]?.version;
-      if (installed?.success) {
-        dep.version = installed.data.version;
-        dep.versionSource = "installed";
-      } else if (locked) {
-        dep.version = locked;
-        dep.versionSource = "lockfile";
-      }
-      info.dependencies.push(dep);
-    }
-  }
-}
-async function detectRust(root, fs, info) {
-  const manifest = await fs.readText(inRoot(root, "Cargo.toml"));
-  if (manifest === void 0) return;
-  info.ecosystems.push("rust");
-  const lock = await fs.readText(inRoot(root, "Cargo.lock")) ?? "";
-  const locked = /* @__PURE__ */ new Map();
-  for (const m of lock.matchAll(/\[\[package\]\]\s*name\s*=\s*"([^"]+)"\s*version\s*=\s*"([^"]+)"/g)) {
-    if (m[1] && m[2]) locked.set(m[1], m[2]);
-  }
-  let section = "";
-  for (const raw of manifest.split(/\r?\n/)) {
-    const line = raw.trim();
-    const header = /^\[([^\]]+)\]$/.exec(line);
-    if (header?.[1]) {
-      section = header[1];
-      continue;
-    }
-    if (section !== "dependencies" && section !== "dev-dependencies") continue;
-    const dep = /^([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]+)"|\{[^}]*version\s*=\s*"([^"]+)")/.exec(line);
-    if (!dep?.[1]) continue;
-    const version2 = locked.get(dep[1]);
-    info.dependencies.push({
-      name: dep[1],
-      ecosystem: "rust",
-      declared: dep[2] ?? dep[3] ?? "",
-      ...version2 ? { version: version2, versionSource: "lockfile" } : { versionSource: "declared" },
-      dev: section === "dev-dependencies"
-    });
-  }
-  if (lock !== "") info.hasLockfile = true;
-}
-async function detectGo(root, fs, info) {
-  const mod = await fs.readText(inRoot(root, "go.mod"));
-  if (mod === void 0) return;
-  info.ecosystems.push("go");
-  info.hasLockfile = true;
-  for (const m of mod.matchAll(/^\s*(?:require\s+)?([A-Za-z0-9._~/-]+\.[A-Za-z0-9._~/-]+)\s+(v[0-9][^\s]*)/gm)) {
-    if (m[1] && m[2]) info.dependencies.push({ name: m[1], ecosystem: "go", declared: m[2], version: m[2], versionSource: "lockfile", dev: false });
-  }
-}
-async function detectPython(root, fs, info) {
-  const requirements = await fs.readText(inRoot(root, "requirements.txt"));
-  const hasPyproject = await fs.exists(inRoot(root, "pyproject.toml"));
-  if (requirements === void 0 && !hasPyproject) return;
-  info.ecosystems.push("python");
-  for (const raw of (requirements ?? "").split(/\r?\n/)) {
-    const m = /^([A-Za-z0-9][A-Za-z0-9._-]*)\s*(==|>=|<=|~=|>|<|!=)\s*([A-Za-z0-9.*+!_-]+)/.exec(raw.trim());
-    if (!m?.[1] || !m[2] || !m[3]) continue;
-    const pinned = m[2] === "==";
-    info.dependencies.push({
-      name: m[1],
-      ecosystem: "python",
-      declared: `${m[2]}${m[3]}`,
-      ...pinned ? { version: m[3] } : {},
-      versionSource: "declared",
-      dev: false
-    });
-  }
-}
-var INSTRUCTION_FILES = ["CLAUDE.md", "AGENTS.md", ".claude/CLAUDE.md"];
-async function detectProject(root, fs) {
-  const info = {
-    root,
-    ecosystems: [],
-    hasLockfile: false,
-    scripts: {},
-    dependencies: [],
-    instructionFiles: [],
-    warnings: []
-  };
-  await detectNode(root, fs, info);
-  await detectRust(root, fs, info);
-  await detectGo(root, fs, info);
-  await detectPython(root, fs, info);
-  for (const file2 of INSTRUCTION_FILES) if (await fs.exists(inRoot(root, file2))) info.instructionFiles.push(file2);
-  return info;
-}
-
 // src/doctor/env-checks.ts
 var f = (id, area, status, title, extra = {}) => ({ id, area, status, title, ...extra });
 var lookupFor = (env) => ({ platform: env.ctx.pathEnv.platform, env: env.ctx.pathEnv.env, exists: (p) => env.ctx.fs.exists(p) });
-var cacheDir = (env) => path16.join(dataDir(env.ctx.pathEnv), "docs-cache");
+var cacheDir = (env) => path18.join(dataDir(env.ctx.pathEnv), "docs-cache");
 async function runClaude(env, args, timeoutMs) {
   const exe = await findOnPath("claude", lookupFor(env));
   if (!exe) return { ok: false, text: "" };
@@ -39666,7 +40935,7 @@ async function checkStorage(env) {
   const out = [];
   try {
     await mkdir4(dir, { recursive: true });
-    const probe = path16.join(dir, `.doctor-${process.pid}`);
+    const probe = path18.join(dir, `.doctor-${process.pid}`);
     await writeFile4(probe, "x");
     await unlink4(probe);
     out.push(f("storage", "Storage", "ok", "The local data folder is writable.", { detail: dir }));
@@ -39787,7 +41056,7 @@ async function repair(env, id) {
   const { ctx } = env;
   switch (id) {
     case "create-data-dirs":
-      await mkdir4(path16.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
+      await mkdir4(path18.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
       await mkdir4(ctx.stateDir(), { recursive: true });
       return "Created the data folders.";
     case "remove-corrupt-cache": {
@@ -39799,7 +41068,7 @@ async function repair(env, id) {
         const isTemp = name.includes(".tmp-");
         if (!isTemp && (!name.endsWith(".json") || !/^[a-f0-9]{64}$/.test(key))) continue;
         if (isTemp || !await cache.get(key)) {
-          await rm2(path16.join(dir, name), { force: true });
+          await rm2(path18.join(dir, name), { force: true });
           removed++;
         }
       }
@@ -39820,7 +41089,7 @@ async function repair(env, id) {
 
 // src/doctor/plugin-checks.ts
 import { createInterface } from "readline";
-import path17 from "path";
+import path19 from "path";
 
 // src/doctor/frontmatter.ts
 function parseFrontmatter(text2) {
@@ -39841,7 +41110,7 @@ var EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "P
 var MCP_PREFIX = "mcp__plugin_jpe_jpe__";
 var f2 = (id, status, title, extra = {}) => ({ id, area: "Plugin", status, title, ...extra });
 async function readJson(env, ...parts) {
-  const file2 = path17.join(env.pluginRoot ?? "", ...parts);
+  const file2 = path19.join(env.pluginRoot ?? "", ...parts);
   const text2 = await env.ctx.fs.readText(file2);
   if (text2 === void 0) return { error: `${parts.join("/")} is missing` };
   try {
@@ -39910,14 +41179,14 @@ async function checkPlugin(env) {
   const name = manifest.value?.name;
   out.push(manifest.error ? f2("manifest", "fail", `Plugin manifest problem: ${manifest.error}.`, { fix: "Reinstall the plugin." }) : name === "jpe" ? f2("manifest", "ok", "Plugin manifest is valid (name: jpe).") : f2("manifest", "fail", `Plugin manifest has an unexpected name (${String(name)}).`));
   for (const bundle of ["cli.js", "hook.js", "mcp.js", "package.json"]) {
-    const present = await ctx.fs.exists(path17.join(pluginRoot, "dist", bundle));
+    const present = await ctx.fs.exists(path19.join(pluginRoot, "dist", bundle));
     if (present) out.push(f2(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`));
     else if (bundle === "package.json") out.push(f2(`bundle-${bundle}`, "warn", "dist/package.json is missing, so Node re-parses the bundles on every start and prints warnings.", { fix: "Reinstall a release build of the plugin." }));
     else out.push(f2(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
   }
   const skillProblems = [];
   for (const s of EXPECTED_SKILLS) {
-    const text2 = await ctx.fs.readText(path17.join(pluginRoot, "skills", s, "SKILL.md"));
+    const text2 = await ctx.fs.readText(path19.join(pluginRoot, "skills", s, "SKILL.md"));
     const parsed = text2 === void 0 ? void 0 : parseFrontmatter(text2);
     if (!parsed) skillProblems.push(`${s}: missing or no front matter`);
     else if (!parsed.front["description"]) skillProblems.push(`${s}: no description`);
@@ -39931,7 +41200,7 @@ async function checkPlugin(env) {
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f2("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));
   } else {
-    const hs = await ctx.fs.exists(path17.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path17.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
+    const hs = await ctx.fs.exists(path19.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path19.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
     if (!hs) out.push(f2("mcp-start", "fail", "The MCP server bundle is missing, so it could not be started."));
     else if (!hs.ok) out.push(f2("mcp-start", "fail", `The JPE MCP server did not answer a real handshake (${hs.detail}).`, { fix: "Run `node dist/mcp.js` manually to see the error." }));
     else {
@@ -39941,7 +41210,7 @@ async function checkPlugin(env) {
   }
   const agentProblems = [];
   for (const a of EXPECTED_AGENTS) {
-    const text2 = await ctx.fs.readText(path17.join(pluginRoot, "agents", `${a}.md`));
+    const text2 = await ctx.fs.readText(path19.join(pluginRoot, "agents", `${a}.md`));
     const parsed = text2 === void 0 ? void 0 : parseFrontmatter(text2);
     if (!parsed) {
       agentProblems.push(`${a}: missing or no front matter`);
@@ -39964,7 +41233,13 @@ async function checkPlugin(env) {
   else if (EXPECTED_HOOK_EVENTS.some((e) => !events.includes(e)) || events.some((e) => !EXPECTED_HOOK_EVENTS.includes(e))) {
     out.push(f2("hooks-config", "warn", "The registered hook events differ from the expected set.", { area: "Hooks", detail: events.join(", ") }));
   } else out.push(f2("hooks-config", "ok", `All ${events.length} hooks are registered exactly once.`, { area: "Hooks" }));
-  const hookJs = path17.join(pluginRoot, "dist", "hook.js");
+  const modules = hooksJson.value?.modules;
+  const moduleRegistered = Array.isArray(modules) && modules.includes("./center.js");
+  if (!moduleRegistered) out.push(f2("interface-module", "warn", "The command center interface is not registered in hooks/hooks.json, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else if (!await ctx.fs.exists(path19.join(pluginRoot, "hooks", "center.js"))) out.push(f2("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
+  else if (!await ctx.fs.exists(path19.join(pluginRoot, "types", "index.d.ts"))) out.push(f2("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else out.push(f2("interface-module", "ok", "The command center interface module is installed.", { area: "Interface" }));
+  const hookJs = path19.join(pluginRoot, "dist", "hook.js");
   if (await ctx.fs.exists(hookJs)) {
     try {
       const payload = JSON.stringify({ session_id: "doctor-check", cwd: ctx.cwd, hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "rm -rf doctor-smoke-test" } });
@@ -40027,7 +41302,7 @@ async function applyRepairs(env, report) {
 }
 var ICON = { ok: "OK  ", info: "INFO", warn: "WARN", fail: "FAIL" };
 var escapeRegex3 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-function sanitize(text2) {
+function sanitize2(text2) {
   const home = os2.homedir();
   let out = text2;
   if (home) {
@@ -40037,7 +41312,7 @@ function sanitize(text2) {
   return redactSecrets(out);
 }
 function sanitizeDeep(value) {
-  if (typeof value === "string") return sanitize(value);
+  if (typeof value === "string") return sanitize2(value);
   if (Array.isArray(value)) return value.map(sanitizeDeep);
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sanitizeDeep(v)]));
   return value;
@@ -40057,7 +41332,7 @@ function formatDoctor(report) {
   }
   if (report.repairs.length > 0) lines.push("", "Repairs performed:", ...report.repairs.map((r) => `  ${r.done ? "done" : "FAILED"}: ${r.message}`));
   lines.push("", "Doctor only checks what it can truly test; INFO lines are things it could not or did not test.");
-  return sanitize(lines.join("\n"));
+  return sanitize2(lines.join("\n"));
 }
 function exportDoctor(report) {
   return `${JSON.stringify(sanitizeDeep(report), null, 2)}
@@ -40080,138 +41355,14 @@ Report exported to ${exportTo} (home folder replaced by ~, credentials redacted)
 
 // src/cli/commands/lsp.ts
 import { appendFile, mkdir as mkdir5, readFile as readFile6 } from "fs/promises";
-import path19 from "path";
-
-// src/core/evidence.ts
-var CHECK_NAMES = [
-  "typecheck",
-  "lint",
-  "format",
-  "unit-test",
-  "integration-test",
-  "e2e-test",
-  "build",
-  "dependency-audit",
-  "static-analysis",
-  "security-scan",
-  "regression"
-];
-var checkNameSchema = external_exports.enum(CHECK_NAMES);
-var base2 = { id: external_exports.string().min(1), at: external_exports.iso.datetime() };
-var commandEvidence = external_exports.strictObject({
-  ...base2,
-  kind: external_exports.literal("command"),
-  check: checkNameSchema,
-  command: external_exports.string().min(1),
-  exitCode: external_exports.number().int(),
-  durationMs: external_exports.number().int().min(0),
-  timedOut: external_exports.boolean(),
-  /** Failure that existed before this change. Reported as a warning, never hidden. */
-  preexisting: external_exports.boolean(),
-  /** Warning count reported by the tool (for example lint warnings). */
-  warnings: external_exports.number().int().min(0),
-  /** Redacted, length-limited tail of the tool output. */
-  outputExcerpt: external_exports.string()
-});
-var lspEvidence = external_exports.strictObject({
-  ...base2,
-  kind: external_exports.literal("lsp"),
-  server: external_exports.string().min(1),
-  available: external_exports.boolean(),
-  errors: external_exports.number().int().min(0),
-  warnings: external_exports.number().int().min(0)
-});
-var notRunEvidence = external_exports.strictObject({
-  ...base2,
-  kind: external_exports.literal("not-run"),
-  check: checkNameSchema,
-  reason: external_exports.string().min(1)
-});
-var blockerEvidence = external_exports.strictObject({
-  ...base2,
-  kind: external_exports.literal("blocker"),
-  reason: external_exports.string().min(1)
-});
-var evidenceSchema = external_exports.discriminatedUnion("kind", [commandEvidence, lspEvidence, notRunEvidence, blockerEvidence]);
-
-// src/core/ledger.ts
-var MAX_EXCERPT_CHARS = 2e3;
-function excerpt(output2) {
-  const safe = redactSecrets(output2);
-  return safe.length <= MAX_EXCERPT_CHARS ? safe : `...${safe.slice(-MAX_EXCERPT_CHARS)}`;
-}
-var EvidenceLedger = class {
-  constructor(deps) {
-    this.deps = deps;
-  }
-  deps;
-  items = [];
-  get entries() {
-    return this.items;
-  }
-  push(candidate) {
-    const parsed = evidenceSchema.safeParse(candidate);
-    if (!parsed.success) {
-      throw new JpeError("INVALID_INPUT", "Refused to record malformed verification evidence.", { cause: parsed.error });
-    }
-    const entry = Object.freeze(parsed.data);
-    this.items.push(entry);
-    return entry;
-  }
-  stamp() {
-    return { id: this.deps.newId(), at: this.deps.now().toISOString() };
-  }
-  recordCommand(input2) {
-    return this.push({
-      ...this.stamp(),
-      kind: "command",
-      check: input2.check,
-      command: redactSecrets(input2.command),
-      exitCode: input2.exitCode,
-      durationMs: input2.durationMs,
-      timedOut: input2.timedOut ?? false,
-      preexisting: input2.preexisting ?? false,
-      warnings: input2.warnings ?? 0,
-      outputExcerpt: excerpt(input2.output ?? "")
-    });
-  }
-  recordLsp(input2) {
-    return this.push({ ...this.stamp(), kind: "lsp", ...input2 });
-  }
-  recordNotRun(check2, reason) {
-    return this.push({ ...this.stamp(), kind: "not-run", check: check2, reason });
-  }
-  recordBlocker(reason) {
-    return this.push({ ...this.stamp(), kind: "blocker", reason: redactSecrets(reason) });
-  }
-  /** One JSON object per line, suitable for appending to a file. */
-  toJsonLines() {
-    return this.items.map((e) => JSON.stringify(e)).join("\n");
-  }
-};
-function parseEvidenceLines(text2) {
-  const out = [];
-  const lines = text2.split(/\r?\n/).filter((l) => l.trim() !== "");
-  lines.forEach((line, index) => {
-    let raw;
-    try {
-      raw = JSON.parse(line);
-    } catch (cause) {
-      throw new JpeError("INVALID_INPUT", `Evidence line ${index + 1} is not valid JSON.`, { cause });
-    }
-    const parsed = evidenceSchema.safeParse(raw);
-    if (!parsed.success) throw new JpeError("INVALID_INPUT", `Evidence line ${index + 1} failed validation.`, { cause: parsed.error });
-    out.push(parsed.data);
-  });
-  return out;
-}
+import path21 from "path";
 
 // src/lsp/diagnostics.ts
-import path18 from "path";
+import path20 from "path";
 var count = (list, severity) => list.filter((d) => d.severity === severity).length;
 function parseCompilerOutput(output2, cwd) {
   const found = [];
-  const abs = (f3) => path18.resolve(cwd, f3.trim());
+  const abs = (f3) => path20.resolve(cwd, f3.trim());
   const lines = output2.split(/\r?\n/);
   lines.forEach((line, i) => {
     let m = /^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s+([A-Za-z]+\d+)?:?\s*(.*)$/.exec(line);
@@ -40282,7 +41433,7 @@ function recordLspEvidence(ledger, report) {
 function lookupFor2(ctx) {
   return { platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f3) => ctx.fs.exists(f3) };
 }
-var rel = (ctx, file2) => path19.relative(ctx.cwd, file2).split(path19.sep).join("/") || file2;
+var rel = (ctx, file2) => path21.relative(ctx.cwd, file2).split(path21.sep).join("/") || file2;
 function formatDiagnostics(ctx, report) {
   return [
     `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} \u2014 ${report.server}`,
@@ -40329,8 +41480,8 @@ async function diagnosticsSub(args, ctx) {
   const report = binary ? await collectLspDiagnostics(language, { command: binary, args: language.server.args, rootDir: ctx.cwd, files, readFile: (f3) => readFile6(f3, "utf8"), startupTimeoutMs: cfg.lsp.diagnosticsTimeoutMs, maxWaitMs: cfg.lsp.diagnosticsTimeoutMs }) : await collectCliDiagnostics(language, { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs });
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   recordLspEvidence(ledger, report);
-  const ledgerFile = path19.join(ctx.stateDir(), "ledger.jsonl");
-  await mkdir5(path19.dirname(ledgerFile), { recursive: true });
+  const ledgerFile = path21.join(ctx.stateDir(), "ledger.jsonl");
+  await mkdir5(path21.dirname(ledgerFile), { recursive: true });
   await appendFile(ledgerFile, `${ledger.toJsonLines()}
 `);
   const missing = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
@@ -40532,7 +41683,7 @@ function formatReport(report) {
 }
 
 // src/docs/providers/local-package.ts
-import path20 from "path";
+import path22 from "path";
 var pkgSchema = external_exports.looseObject({
   name: external_exports.string().optional(),
   version: external_exports.string().optional(),
@@ -40572,8 +41723,8 @@ var localPackageProvider = {
   async fetch(request, ctx) {
     if (request.ecosystem !== "node") return { results: [], notes: ["Local package inspection currently supports npm packages only."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const dir = path20.join(ctx.projectRoot, "node_modules", request.library);
-    const pkgText = await ctx.fs.readText(path20.join(dir, "package.json"));
+    const dir = path22.join(ctx.projectRoot, "node_modules", request.library);
+    const pkgText = await ctx.fs.readText(path22.join(dir, "package.json"));
     const parsed = pkgText === void 0 ? void 0 : pkgSchema.safeParse(safeJson(pkgText));
     if (!parsed?.success) return { results: [], notes: [`${request.library} is not installed in node_modules, so it could not be inspected locally.`] };
     const pkg = parsed.data;
@@ -40589,7 +41740,7 @@ var localPackageProvider = {
     ].filter(Boolean).join("\n");
     results.push({ ...base3, kind: "metadata", title: `${request.library}@${version2 ?? "?"} (installed package)`, content: meta3 });
     for (const name of ["README.md", "readme.md", "Readme.md"]) {
-      const readme = await ctx.fs.readText(path20.join(dir, name));
+      const readme = await ctx.fs.readText(path22.join(dir, name));
       if (readme !== void 0) {
         results.push({ ...base3, kind: "reference", title: `${request.library} README (installed copy)`, content: focusOnTopic(readme, request.topic, MAX_README_CHARS) });
         break;
@@ -40625,15 +41776,15 @@ function topicWords(topic) {
   return topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
 }
 function declarationCandidates(fromFile, spec) {
-  const base3 = path20.resolve(path20.dirname(fromFile), spec);
+  const base3 = path22.resolve(path22.dirname(fromFile), spec);
   const mapped = base3.replace(/\.(c|m)?js$/, (_m, k) => `.d.${k ?? ""}ts`);
-  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path20.join(base3, "index.d.ts"), path20.join(base3, "index.d.cts")])];
+  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path22.join(base3, "index.d.ts"), path22.join(base3, "index.d.cts")])];
 }
 async function collectDeclarations(packageDir, entry, entryText, topic, read) {
   const words = topicWords(topic);
   const mentions = (text2) => words.some((w) => text2.toLowerCase().includes(w));
   if (words.length === 0 || mentions(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words.length > 0, files: 1 };
-  const seen = /* @__PURE__ */ new Set([path20.normalize(entry)]);
+  const seen = /* @__PURE__ */ new Set([path22.normalize(entry)]);
   const queue = [{ file: entry, text: entryText }];
   const excerpts = [];
   let used = 0;
@@ -40641,10 +41792,10 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
     const current = queue.shift();
     for (const m of current.text.matchAll(REEXPORT)) {
       for (const candidate of declarationCandidates(current.file, m[1] ?? "")) {
-        const normal = path20.normalize(candidate);
+        const normal = path22.normalize(candidate);
         if (seen.has(normal)) continue;
         try {
-          resolveInside(packageDir, path20.relative(packageDir, normal));
+          resolveInside(packageDir, path22.relative(packageDir, normal));
         } catch {
           continue;
         }
@@ -40653,7 +41804,7 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
         seen.add(normal);
         queue.push({ file: normal, text: text2 });
         if (mentions(text2) && used < MAX_TYPES_CHARS) {
-          const excerpt2 = `// ${path20.relative(packageDir, normal).split(path20.sep).join("/")}
+          const excerpt2 = `// ${path22.relative(packageDir, normal).split(path22.sep).join("/")}
 ${focusOnTopic(text2, topic, Math.min(8e3, MAX_TYPES_CHARS - used))}`;
           excerpts.push(excerpt2);
           used += excerpt2.length;
@@ -40783,7 +41934,7 @@ var osvProvider = {
 };
 
 // src/docs/providers/repo-release.ts
-import path21 from "path";
+import path23 from "path";
 var MAX_NOTES_CHARS = 8e3;
 var pkgSchema2 = external_exports.looseObject({ repository: external_exports.union([external_exports.string(), external_exports.looseObject({ url: external_exports.string().optional() })]).optional() });
 var releaseSchema = external_exports.looseObject({ name: external_exports.string().nullable().optional(), tag_name: external_exports.string().optional(), body: external_exports.string().nullable().optional(), html_url: external_exports.string().optional() });
@@ -40798,7 +41949,7 @@ var repoReleaseProvider = {
     if (request.ecosystem !== "node") return { results: [], notes: ["Release-note lookup currently supports npm packages only."] };
     if (!request.version) return { results: [], notes: ["An exact version is needed to find its release notes."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const pkgText = await ctx.fs.readText(path21.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
+    const pkgText = await ctx.fs.readText(path23.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
     let repoField;
     if (pkgText !== void 0) {
       try {
@@ -40838,7 +41989,7 @@ var repoReleaseProvider = {
 };
 
 // src/cli/commands/research.ts
-import path22 from "path";
+import path24 from "path";
 var PROVIDERS = {
   "local-package": localPackageProvider,
   official: officialProvider,
@@ -40862,7 +42013,7 @@ async function researchCommand(args, ctx) {
     { library, ...exact ? { version: exact } : {}, topic: flagString(args, "topic") ?? library, ecosystem: dep?.ecosystem ?? project.ecosystems[0] ?? "node" },
     {
       providers,
-      cache: new DocCache({ dir: path22.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
+      cache: new DocCache({ dir: path24.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
       context: { fs: ctx.fs, projectRoot: ctx.cwd, net: ctx.net, extraHosts, requestTimeoutMs: cfg.docs.requestTimeoutMs },
       offline: cfg.runtime.offline || flagBool(args, "offline"),
       now: ctx.now
@@ -40871,664 +42022,6 @@ async function researchCommand(args, ctx) {
   const context7 = cfg.docs.providers.includes("context7") ? "\nContext7: not queried by this command. The jpe-researcher agent queries it through its MCP tools; treat its output as third-party and unversioned.\n" : "";
   ctx.out(versionNote + formatReport(report) + context7);
   return 0;
-}
-
-// src/ui/capabilities.ts
-var MIN_COLUMNS = 20;
-var MAX_COLUMNS = 500;
-var DEFAULT_COLUMNS = 80;
-var DEFAULT_ROWS = 24;
-var isSet = (value) => value !== void 0 && value !== "";
-var isTruthy = (value) => isSet(value) && value !== "0" && value.toLowerCase() !== "false";
-var clampInt = (value, min, max) => Math.min(max, Math.max(min, Math.trunc(value)));
-function parsePositiveInt(value) {
-  if (!isSet(value) || !/^\d{1,5}$/.test(value)) return void 0;
-  const n = Number.parseInt(value, 10);
-  return n > 0 ? n : void 0;
-}
-var TRUECOLOR_PROGRAMS = /* @__PURE__ */ new Set(["iTerm.app", "vscode", "WezTerm", "Hyper", "ghostty"]);
-var BASIC_TERMS = /(xterm|screen|tmux|rxvt|linux|vt100|vt220|ansi|cygwin|color)/i;
-function detectColor(input2, reasons) {
-  const { env } = input2;
-  const term = env["TERM"] ?? "";
-  if (isSet(env["NO_COLOR"])) {
-    reasons.push("Colour is off because NO_COLOR is set.");
-    return "none";
-  }
-  const force = env["FORCE_COLOR"];
-  if (isSet(force)) {
-    const level = { "0": "none", false: "none", "1": "16", true: "16", "2": "256", "3": "truecolor" };
-    const forced = level[force.toLowerCase()];
-    if (forced) {
-      reasons.push(`Colour depth is ${forced} because FORCE_COLOR=${force}.`);
-      return forced;
-    }
-  }
-  if (!input2.isTTY) {
-    reasons.push("Colour is off because output is not an interactive terminal (it is piped or redirected).");
-    return "none";
-  }
-  if (term === "dumb") {
-    reasons.push("Colour is off because TERM=dumb.");
-    return "none";
-  }
-  const colorterm = (env["COLORTERM"] ?? "").toLowerCase();
-  if (colorterm === "truecolor" || colorterm === "24bit") {
-    reasons.push("Truecolor because COLORTERM advertises it.");
-    return "truecolor";
-  }
-  if (isSet(env["WT_SESSION"])) {
-    reasons.push("Truecolor because this is Windows Terminal.");
-    return "truecolor";
-  }
-  if (isSet(env["TERM_PROGRAM"]) && TRUECOLOR_PROGRAMS.has(env["TERM_PROGRAM"])) {
-    reasons.push(`Truecolor because TERM_PROGRAM=${env["TERM_PROGRAM"]}.`);
-    return "truecolor";
-  }
-  if (/256color/i.test(term)) {
-    reasons.push("256 colours because TERM names 256color.");
-    return "256";
-  }
-  if (input2.platform === "win32") {
-    reasons.push("Truecolor assumed for a Windows console (Windows 10 and later). Override with ui.color if colours look wrong.");
-    return "truecolor";
-  }
-  if (BASIC_TERMS.test(term)) {
-    reasons.push(`16 colours because TERM=${term} does not advertise more.`);
-    return "16";
-  }
-  reasons.push("16 colours as a safe default: the terminal did not say what it supports.");
-  return "16";
-}
-function localeIsUtf8(env) {
-  const locale = [env["LC_ALL"], env["LC_CTYPE"], env["LANG"]].find(isSet);
-  if (locale === void 0) return void 0;
-  return /utf-?8/i.test(locale);
-}
-function detectUnicode(input2, reasons) {
-  const { env } = input2;
-  const term = env["TERM"] ?? "";
-  if (isTruthy(env["JPE_ASCII"])) {
-    reasons.push("ASCII symbols because JPE_ASCII is set.");
-    return false;
-  }
-  if (term === "dumb" || term === "linux") {
-    reasons.push(`ASCII symbols because TERM=${term} (the Linux console and dumb terminals lack most box and symbol glyphs).`);
-    return false;
-  }
-  const utf8 = localeIsUtf8(env);
-  if (utf8 === false) {
-    reasons.push("ASCII symbols because the locale is not UTF-8.");
-    return false;
-  }
-  if (utf8 === true) {
-    reasons.push("Unicode symbols because the locale is UTF-8.");
-    return true;
-  }
-  if (input2.platform === "win32") {
-    const modern = isSet(env["WT_SESSION"]) || isSet(env["TERM_PROGRAM"]) || env["ConEmuANSI"] === "ON";
-    reasons.push(modern ? "Unicode symbols because this is a modern Windows terminal." : "ASCII symbols because this looks like the legacy Windows console. Override with ui.unicode if yours supports Unicode.");
-    return modern;
-  }
-  reasons.push("Unicode symbols assumed: no locale was set and TERM is not a known ASCII-only terminal.");
-  return true;
-}
-function detectCapabilities(input2) {
-  const { env } = input2;
-  const reasons = [];
-  const color = detectColor(input2, reasons);
-  const styles = input2.isTTY && (env["TERM"] ?? "") !== "dumb" || isSet(env["FORCE_COLOR"]) && env["FORCE_COLOR"] !== "0";
-  const unicode = detectUnicode(input2, reasons);
-  const columns = clampInt(input2.columns ?? parsePositiveInt(env["COLUMNS"]) ?? DEFAULT_COLUMNS, MIN_COLUMNS, MAX_COLUMNS);
-  const rows = clampInt(input2.rows ?? parsePositiveInt(env["LINES"]) ?? DEFAULT_ROWS, 5, 200);
-  reasons.push(input2.columns !== void 0 ? `Width is ${columns} columns, read from the terminal.` : `Width is ${columns} columns (${isSet(env["COLUMNS"]) ? "from COLUMNS" : "the default; the terminal size is unknown"}).`);
-  const remote = isSet(env["SSH_CONNECTION"]) || isSet(env["SSH_TTY"]) || isSet(env["SSH_CLIENT"]);
-  const ci = isTruthy(env["CI"]);
-  const interactive = input2.isTTY && !ci && (env["TERM"] ?? "") !== "dumb";
-  if (remote) reasons.push("Remote (SSH) session: animation is reduced and the layout stays compact-friendly.");
-  if (ci) reasons.push("CI environment: output is plain and non-interactive.");
-  const reducedMotion = isTruthy(env["JPE_REDUCED_MOTION"]) || remote || ci || !input2.isTTY;
-  const screenReader = isTruthy(env["JPE_SCREEN_READER"]);
-  reasons.push(screenReader ? "Screen-reader layout is on because JPE_SCREEN_READER is set." : "Screen-reader layout is off. It cannot be detected automatically; turn it on with ui.screenReader or JPE_SCREEN_READER=1.");
-  return { color, styles, unicode, columns, rows, interactive, remote, ci, reducedMotion, screenReader, reasons };
-}
-
-// src/core/status.ts
-var COMPLETION_STATUSES = [
-  "VERIFIED",
-  "FUNCTIONAL_WITH_WARNINGS",
-  "PARTIALLY_VERIFIED",
-  "FAILED",
-  "BLOCKED",
-  "NOT_TESTED"
-];
-function passed(e) {
-  return e.exitCode === 0 && !e.timedOut;
-}
-function deriveStatus(entries, required2) {
-  const reasons = [];
-  const checks = {};
-  const blockers = entries.filter((e) => e.kind === "blocker");
-  if (blockers.length > 0) {
-    for (const b of blockers) reasons.push(`Blocked: ${b.reason}`);
-    return { status: "BLOCKED", reasons, checks };
-  }
-  const latest = /* @__PURE__ */ new Map();
-  for (const e of entries) if (e.kind === "command") latest.set(e.check, e);
-  const warnings = [];
-  const failures = [];
-  const missing = [];
-  for (const check2 of required2) {
-    const run = latest.get(check2);
-    if (!run) {
-      checks[check2] = "not-run";
-      const skipped = entries.find((e) => e.kind === "not-run" && e.check === check2);
-      missing.push(skipped?.kind === "not-run" ? `${check2} was not run (${skipped.reason}).` : `${check2} was not run.`);
-      continue;
-    }
-    if (passed(run)) {
-      checks[check2] = "passed";
-      if (run.warnings > 0) warnings.push(`${check2} passed with ${run.warnings} warning(s).`);
-    } else if (run.preexisting) {
-      checks[check2] = "failed-preexisting";
-      warnings.push(`${check2} fails, but the failure existed before this change.`);
-    } else {
-      checks[check2] = "failed";
-      failures.push(run.timedOut ? `${check2} timed out.` : `${check2} failed with exit code ${run.exitCode}.`);
-    }
-  }
-  for (const e of entries) {
-    if (e.kind !== "lsp") continue;
-    if (!e.available) warnings.push(`Language server "${e.server}" was unavailable, so LSP diagnostics did not verify this change.`);
-    else if (e.errors > 0) failures.push(`Language server "${e.server}" reports ${e.errors} error(s).`);
-    else if (e.warnings > 0) warnings.push(`Language server "${e.server}" reports ${e.warnings} warning(s).`);
-  }
-  if (failures.length > 0) return { status: "FAILED", reasons: [...failures, ...missing, ...warnings], checks };
-  const ranAnything = entries.some((e) => e.kind === "command" || e.kind === "lsp" && e.available);
-  if (required2.length === 0 || !ranAnything) {
-    reasons.push(required2.length === 0 ? "No applicable checks were identified for this project." : "No checks were run.");
-    return { status: "NOT_TESTED", reasons: [...reasons, ...missing, ...warnings], checks };
-  }
-  if (missing.length > 0) return { status: "PARTIALLY_VERIFIED", reasons: [...missing, ...warnings], checks };
-  if (warnings.length > 0) return { status: "FUNCTIONAL_WITH_WARNINGS", reasons: warnings, checks };
-  return { status: "VERIFIED", reasons: ["Every required check passed on its most recent run."], checks };
-}
-
-// src/ui/text.ts
-var ESC = "\x1B";
-var BEL = "\x07";
-var OSC = new RegExp(`${ESC}\\][^${BEL}${ESC}]*(?:${BEL}|${ESC}\\\\)?`, "g");
-var STRING_SEQUENCE = new RegExp(`${ESC}[P^_X][\\s\\S]*?(?:${ESC}\\\\|$)`, "g");
-var CSI = new RegExp(`${ESC}\\[[0-?]*[ -/]*[@-~]`, "g");
-var SHORT_ESCAPE = new RegExp(`${ESC}[ -/]*[0-~]`, "g");
-var CONTROLS = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f‪-‮⁦-⁩‎‏؜]/g;
-function sanitize2(text2) {
-  return text2.replace(OSC, "").replace(STRING_SEQUENCE, "").replace(CSI, "").replace(SHORT_ESCAPE, "").replace(/\r\n?/g, "\n").replace(/\t/g, "  ").replace(CONTROLS, "");
-}
-function inline(text2) {
-  return sanitize2(text2).replace(/\s*\n\s*/g, " ");
-}
-function stripAnsi(text2) {
-  return text2.replace(CSI, "");
-}
-var segmenter = new Intl.Segmenter(void 0, { granularity: "grapheme" });
-function graphemes(text2) {
-  return Array.from(segmenter.segment(text2), (s) => s.segment);
-}
-var ZERO_WIDTH = [
-  [768, 879],
-  [1155, 1161],
-  [1425, 1469],
-  [1611, 1631],
-  [8203, 8205],
-  [8400, 8447],
-  [65024, 65039],
-  [65056, 65071],
-  [917760, 917999]
-];
-var WIDE = [
-  [4352, 4447],
-  [11904, 12350],
-  [12353, 13311],
-  [13312, 19903],
-  [19968, 40959],
-  [40960, 42191],
-  [44032, 55203],
-  [63744, 64255],
-  [65072, 65135],
-  [65280, 65376],
-  [65504, 65510],
-  [127462, 127487],
-  [127744, 128591],
-  [128640, 128767],
-  [129280, 129535],
-  [129648, 129791],
-  [131072, 262141]
-];
-var inRanges = (cp, ranges) => ranges.some(([lo, hi]) => cp >= lo && cp <= hi);
-function codePointWidth(cp) {
-  if (cp < 32 || cp >= 127 && cp < 160) return 0;
-  if (inRanges(cp, ZERO_WIDTH)) return 0;
-  return inRanges(cp, WIDE) ? 2 : 1;
-}
-function graphemeWidth(cluster) {
-  if (cluster.includes("\uFE0F")) return 2;
-  for (const ch of cluster) {
-    const width = codePointWidth(ch.codePointAt(0) ?? 0);
-    if (width > 0) return width;
-  }
-  return 0;
-}
-function displayWidth(text2) {
-  let total = 0;
-  for (const cluster of graphemes(stripAnsi(text2))) total += graphemeWidth(cluster);
-  return total;
-}
-function truncate(text2, max, ellipsis = "\u2026") {
-  if (max <= 0) return "";
-  if (displayWidth(text2) <= max) return text2;
-  const room = max - displayWidth(ellipsis);
-  if (room < 0) return graphemes(ellipsis).slice(0, max).join("");
-  let used = 0;
-  let out = "";
-  for (const cluster of graphemes(text2)) {
-    const width = graphemeWidth(cluster);
-    if (used + width > room) break;
-    out += cluster;
-    used += width;
-  }
-  return out + ellipsis;
-}
-function pad(text2, width, align = "left") {
-  const gap = Math.max(0, width - displayWidth(text2));
-  if (align === "right") return " ".repeat(gap) + text2;
-  if (align === "center") {
-    const left = Math.floor(gap / 2);
-    return " ".repeat(left) + text2 + " ".repeat(gap - left);
-  }
-  return text2 + " ".repeat(gap);
-}
-function breakWord(word, width) {
-  const pieces = [];
-  let current = "";
-  let used = 0;
-  for (const cluster of graphemes(word)) {
-    const w = graphemeWidth(cluster);
-    if (used + w > width && current !== "") {
-      pieces.push(current);
-      current = "";
-      used = 0;
-    }
-    current += cluster;
-    used += w;
-  }
-  if (current !== "") pieces.push(current);
-  return pieces;
-}
-function wrapText(text2, width) {
-  const limit = Math.max(1, width);
-  const lines = [];
-  for (const paragraph of text2.split("\n")) {
-    if (paragraph.trim() === "") {
-      lines.push("");
-      continue;
-    }
-    let line = "";
-    for (const word of paragraph.split(/ +/).filter(Boolean)) {
-      for (const piece of displayWidth(word) > limit ? breakWord(word, limit) : [word]) {
-        if (line === "") line = piece;
-        else if (displayWidth(line) + 1 + displayWidth(piece) <= limit) line += ` ${piece}`;
-        else {
-          lines.push(line);
-          line = piece;
-        }
-      }
-    }
-    if (line !== "") lines.push(line);
-  }
-  return lines;
-}
-
-// src/ui/doc.ts
-function span(text2, style = {}) {
-  const out = { text: text2 };
-  if (style.role !== void 0) out.role = style.role;
-  if (style.bold) out.bold = true;
-  if (style.dim) out.dim = true;
-  if (style.underline) out.underline = true;
-  return out;
-}
-var plain = (text2) => [span(text2)];
-var lineText = (line) => line.map((s) => s.text).join("");
-var lineWidth = (line) => displayWidth(lineText(line));
-function padLine(line, width) {
-  const gap = width - lineWidth(line);
-  return gap > 0 ? [...line, span(" ".repeat(gap))] : line;
-}
-function fitLine(line, width, ellipsis = "\u2026") {
-  if (lineWidth(line) <= width) return line;
-  const room = Math.max(0, width - displayWidth(ellipsis));
-  const out = [];
-  let used = 0;
-  for (const part of line) {
-    const w = displayWidth(part.text);
-    if (used + w <= room) {
-      out.push(part);
-      used += w;
-      continue;
-    }
-    const cut = truncate(part.text, room - used, "");
-    if (cut !== "") out.push({ ...part, text: cut });
-    used += displayWidth(cut);
-    break;
-  }
-  out.push(span(width >= displayWidth(ellipsis) ? ellipsis : ""));
-  return out;
-}
-
-// src/ui/components.ts
-var BLANK = plain("");
-var blank = () => BLANK;
-function textLines(text2, width, style = {}) {
-  return wrapText(sanitize2(text2), width).map((line) => [span(line, style)]);
-}
-function heading(text2, profile) {
-  const lines = wrapText(inline(text2), profile.width).map((line) => [span(line, { role: "heading", bold: true })]);
-  return profile.density === "comfortable" ? [...lines, BLANK] : lines;
-}
-var ROLE_WORDS = { success: "OK", warning: "Warning", error: "Error", info: "Note", inactive: "Inactive", pending: "Pending" };
-function badgeLines(text2, role, profile) {
-  return wrapText(text2, profile.width).map((line) => [span(line, { role, bold: true })]);
-}
-function statusBadge(role, label, profile) {
-  const text2 = inline(label);
-  return badgeLines(profile.screenReader ? `${ROLE_WORDS[role]}: ${text2}` : `${profile.symbols.status[role]} ${text2}`, role, profile);
-}
-var STATUS_ROLE = {
-  VERIFIED: "success",
-  FUNCTIONAL_WITH_WARNINGS: "warning",
-  PARTIALLY_VERIFIED: "warning",
-  FAILED: "error",
-  BLOCKED: "error",
-  NOT_TESTED: "inactive"
-};
-function verificationBadge(status, profile) {
-  const role = STATUS_ROLE[status];
-  return badgeLines(profile.screenReader ? `Status: ${status}` : `${profile.symbols.status[role]} ${status}`, role, profile);
-}
-var ALL_STATUSES = COMPLETION_STATUSES;
-var MAX_BAR = 30;
-var MIN_BAR = 5;
-function progressBar(options, profile) {
-  const ratio = Number.isFinite(options.ratio) ? Math.min(1, Math.max(0, options.ratio)) : 0;
-  const percent = Math.round(ratio * 100);
-  const label = options.label === void 0 ? "" : inline(options.label);
-  if (profile.screenReader) return plain(`${label === "" ? "Progress" : label}: ${percent} percent`);
-  const available = Math.min(options.width ?? profile.width, profile.width);
-  const suffix = ` ${String(percent).padStart(3)}%`;
-  const prefix = label === "" ? "" : `${truncate(label, Math.max(4, Math.floor(available / 3)), profile.symbols.ellipsis)} `;
-  const barWidth = Math.min(MAX_BAR, available - displayWidth(prefix) - suffix.length);
-  if (barWidth < MIN_BAR) return fitLine(plain(`${prefix}${percent}%`), available, profile.symbols.ellipsis);
-  const filled = Math.round(ratio * barWidth);
-  return [
-    ...prefix === "" ? [] : [span(prefix, { role: "muted" })],
-    span(profile.symbols.barFull.repeat(filled), { role: "accent" }),
-    span(profile.symbols.barEmpty.repeat(barWidth - filled), { role: "inactive" }),
-    span(suffix, { role: "text" })
-  ];
-}
-var MIN_PANEL = 12;
-function panel(options, profile) {
-  const title = inline(options.title);
-  if (profile.screenReader) {
-    const head = [span(title, { role: "heading", bold: true })];
-    return [...title === "" ? [] : [head], ...options.body.map((line) => fitLine(line, profile.width, profile.symbols.ellipsis)), BLANK];
-  }
-  const { box, ellipsis } = profile.symbols;
-  const width = Math.max(MIN_PANEL, Math.min(options.width ?? profile.width, profile.width));
-  const inner = width - 4;
-  const border = (text2) => [span(text2, { role: "border" })];
-  const shownTitle = truncate(title, width - 6, ellipsis);
-  const top = shownTitle === "" ? border(`${box.topLeft}${box.horizontal.repeat(width - 2)}${box.topRight}`) : [
-    span(`${box.topLeft}${box.horizontal} `, { role: "border" }),
-    span(shownTitle, { role: "heading", bold: true }),
-    span(` ${box.horizontal.repeat(Math.max(0, width - 5 - displayWidth(shownTitle)))}${box.topRight}`, { role: "border" })
-  ];
-  const rows = options.body.map((line) => [span(`${box.vertical} `, { role: "border" }), ...padLine(fitLine(line, inner, ellipsis), inner), span(` ${box.vertical}`, { role: "border" })]);
-  return [top, ...rows, border(`${box.bottomLeft}${box.horizontal.repeat(width - 2)}${box.bottomRight}`)];
-}
-var DEFAULT_MIN_COLUMN = 6;
-function stackedRows(options, profile, available) {
-  const out = [];
-  options.rows.forEach((row, index) => {
-    if (index > 0 && profile.density === "comfortable") out.push(BLANK);
-    options.columns.forEach((column, i) => {
-      const key = `${inline(column.header)}: `;
-      const wrapped = wrapText(inline(row[i] ?? ""), Math.max(8, available - displayWidth(key)));
-      (wrapped.length === 0 ? [""] : wrapped).forEach((text2, n) => {
-        out.push(n === 0 ? [span(key, { role: "muted" }), span(text2)] : [span(" ".repeat(displayWidth(key))), span(text2)]);
-      });
-    });
-  });
-  return out;
-}
-function table(options, profile) {
-  const available = Math.min(options.width ?? profile.width, profile.width);
-  const columns = options.columns;
-  if (columns.length === 0) return [];
-  if (profile.screenReader) return stackedRows(options, profile, available);
-  const cell = (row, i) => inline(row[i] ?? "");
-  const widths = columns.map((column, i) => Math.max(displayWidth(inline(column.header)), ...options.rows.map((row) => displayWidth(cell(row, i)))));
-  const mins = columns.map((column, i) => Math.min(widths[i] ?? 0, column.min ?? DEFAULT_MIN_COLUMN));
-  const separator = ` ${profile.symbols.box.separator} `;
-  const gaps = displayWidth(separator) * (columns.length - 1);
-  let total = widths.reduce((a, b) => a + b, 0) + gaps;
-  while (total > available) {
-    let widest = -1;
-    widths.forEach((w, i) => {
-      if (w > (mins[i] ?? 0) && (widest === -1 || w > (widths[widest] ?? 0))) widest = i;
-    });
-    if (widest === -1) return stackedRows(options, profile, available);
-    widths[widest] = (widths[widest] ?? 1) - 1;
-    total -= 1;
-  }
-  const render = (texts, style) => {
-    const parts = texts.map((text2, i) => pad(truncate(text2, widths[i] ?? 0, profile.symbols.ellipsis), widths[i] ?? 0, columns[i]?.align ?? "left"));
-    const spans = parts.flatMap((text2, i) => i === 0 ? [span(text2, style)] : [span(separator, { role: "border" }), span(text2, style)]);
-    return spans;
-  };
-  const head = render(columns.map((c) => inline(c.header)), { bold: true, role: "heading" });
-  const rule = [span(profile.symbols.box.horizontal.repeat(Math.min(available, lineWidth(head))), { role: "border" })];
-  return [head, rule, ...options.rows.map((row) => render(columns.map((_, i) => cell(row, i)), {}))];
-}
-function keyValues(pairs, profile) {
-  const keys = pairs.map(([key]) => inline(key));
-  const keyWidth = Math.max(0, ...keys.map(displayWidth));
-  const linear2 = profile.screenReader || profile.width < 40;
-  return pairs.map(([, value], i) => {
-    const key = keys[i] ?? "";
-    const text2 = inline(value);
-    if (linear2) return fitLine([span(`${key}: `, { role: "muted" }), span(text2)], profile.width, profile.symbols.ellipsis);
-    const room = Math.max(1, profile.width - keyWidth - 2);
-    return [span(pad(key, keyWidth), { role: "muted" }), span("  "), span(truncate(text2, room, profile.symbols.ellipsis))];
-  });
-}
-function bulletList(items, profile) {
-  const bullet = `${profile.symbols.bullet} `;
-  const indent = " ".repeat(displayWidth(bullet));
-  return items.flatMap(
-    (item) => wrapText(inline(item), Math.max(8, profile.width - displayWidth(bullet))).map((text2, i) => [span(i === 0 ? bullet : indent, { role: "muted" }), span(text2)])
-  );
-}
-var ACTION_WORDS = {
-  up: "move up",
-  down: "move down",
-  left: "move left",
-  right: "move right",
-  select: "open",
-  back: "back",
-  quit: "quit",
-  search: "search",
-  palette: "commands",
-  help: "help",
-  "next-pane": "next pane",
-  "prev-pane": "previous pane",
-  top: "top",
-  bottom: "bottom",
-  "page-up": "page up",
-  "page-down": "page down",
-  "toggle-expand": "expand or collapse",
-  favorite: "favorite",
-  refresh: "refresh"
-};
-function keyHints(actions, profile) {
-  const hints = actions.map((action) => {
-    const chords = profile.keymap.byAction[action].slice(0, 2).map(chordLabel);
-    return `${chords.join("/")}: ${ACTION_WORDS[action]}`;
-  });
-  const lines = [];
-  let current = "";
-  for (const hint of hints) {
-    if (current !== "" && displayWidth(current) + 2 + displayWidth(hint) > profile.width) {
-      lines.push([span(current, { role: "muted" })]);
-      current = hint;
-    } else current = current === "" ? hint : `${current}  ${hint}`;
-  }
-  if (current !== "") lines.push([span(current, { role: "muted" })]);
-  return lines;
-}
-
-// src/ui/color.ts
-var HEX_COLOR = /^#[0-9a-f]{6}$/i;
-var isHexColor = (value) => HEX_COLOR.test(value);
-function parseHex(hex3) {
-  if (!isHexColor(hex3)) throw new RangeError(`Not a #RRGGBB colour: ${hex3}`);
-  return { r: Number.parseInt(hex3.slice(1, 3), 16), g: Number.parseInt(hex3.slice(3, 5), 16), b: Number.parseInt(hex3.slice(5, 7), 16) };
-}
-var linear = (channel) => {
-  const c = channel / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-};
-function relativeLuminance(hex3) {
-  const { r, g, b } = parseHex(hex3);
-  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
-}
-function contrastRatio(foreground, background) {
-  const a = relativeLuminance(foreground);
-  const b = relativeLuminance(background);
-  const [light, dark] = a >= b ? [a, b] : [b, a];
-  return (light + 0.05) / (dark + 0.05);
-}
-function toAnsi256(hex3) {
-  const { r, g, b } = parseHex(hex3);
-  if (Math.abs(r - g) < 8 && Math.abs(g - b) < 8) {
-    if (r < 8) return 16;
-    if (r > 248) return 231;
-    return 232 + Math.round((r - 8) / 247 * 23);
-  }
-  const level = (channel) => Math.round(channel / 255 * 5);
-  return 16 + 36 * level(r) + 6 * level(g) + level(b);
-}
-
-// src/ui/paint.ts
-var CSI2 = "\x1B[";
-var RESET = `${CSI2}0m`;
-var TERMINAL_STYLE_ROLES = {
-  text: {},
-  muted: { dim: true },
-  heading: { bold: true, colorAs: "accent" },
-  border: { dim: true },
-  inactive: { dim: true }
-};
-function foregroundCode(profile, role) {
-  if (profile.color === "none") return void 0;
-  let colorRole = role;
-  if (profile.surface === "terminal" && role in TERMINAL_STYLE_ROLES) {
-    const treatment = TERMINAL_STYLE_ROLES[role];
-    if (treatment?.colorAs === void 0) return void 0;
-    colorRole = treatment.colorAs;
-  }
-  const hex3 = profile.theme.colors[colorRole];
-  if (profile.color === "truecolor") {
-    const { r, g, b } = parseHex(hex3);
-    return `38;2;${r};${g};${b}`;
-  }
-  if (profile.color === "256") return `38;5;${toAnsi256(hex3)}`;
-  const index = profile.theme.ansi16[colorRole];
-  return index < 8 ? `${30 + index}` : `${90 + index - 8}`;
-}
-function sgrFor(profile, part) {
-  if (!profile.styles) return "";
-  const role = part.role ?? "text";
-  const standIn = profile.surface === "terminal" ? TERMINAL_STYLE_ROLES[role] : void 0;
-  const codes = [];
-  if (part.bold || standIn?.bold) codes.push("1");
-  if (part.dim || standIn?.dim) codes.push("2");
-  if (part.underline) codes.push("4");
-  const color = foregroundCode(profile, role);
-  if (color) codes.push(color);
-  return codes.join(";");
-}
-function paintLine(line, profile) {
-  let out = "";
-  for (const part of line) {
-    const text2 = sanitize2(part.text).replace(/\n/g, " ");
-    if (text2 === "") continue;
-    const sgr = sgrFor(profile, part);
-    out += sgr === "" ? text2 : `${CSI2}${sgr}m${text2}${RESET}`;
-  }
-  return out;
-}
-function paint(lines, profile) {
-  return lines.map((line) => paintLine(line, profile)).join("\n");
-}
-
-// src/ui/symbols.ts
-var UNICODE_SYMBOLS = {
-  status: { success: "\u2714", warning: "\u25B2", error: "\u2718", info: "\u25C6", inactive: "\u25CB", pending: "\u2026" },
-  box: { topLeft: "\u256D", topRight: "\u256E", bottomLeft: "\u2570", bottomRight: "\u256F", horizontal: "\u2500", vertical: "\u2502", separator: "\u2502" },
-  barFull: "\u2588",
-  barEmpty: "\u2591",
-  ellipsis: "\u2026",
-  bullet: "\u2022",
-  arrow: "\u2192"
-};
-var ASCII_SYMBOLS = {
-  status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
-  box: { topLeft: "+", topRight: "+", bottomLeft: "+", bottomRight: "+", horizontal: "-", vertical: "|", separator: "|" },
-  barFull: "#",
-  barEmpty: "-",
-  ellipsis: "...",
-  bullet: "*",
-  arrow: "->"
-};
-var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
-
-// src/ui/profile.ts
-function breakpointFor(width) {
-  if (width < 60) return "narrow";
-  return width < 100 ? "medium" : "wide";
-}
-function resolveProfile(caps, settings, overrides = {}) {
-  const width = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, Math.trunc(overrides.width ?? caps.columns)));
-  const color = settings.color === "auto" ? caps.color : settings.color;
-  const unicode = settings.unicode === "auto" ? caps.unicode : settings.unicode === "on";
-  const density = settings.density === "auto" ? width < 80 || caps.rows < 24 ? "compact" : "comfortable" : settings.density;
-  const motion = settings.motion === "auto" ? caps.reducedMotion ? "reduced" : "full" : settings.motion;
-  return {
-    theme: THEMES[settings.theme],
-    color,
-    // An explicit colour setting means the person wants styling even where detection said "not a terminal".
-    styles: caps.styles || settings.color !== "auto" && settings.color !== "none",
-    unicode,
-    symbols: symbolsFor(unicode),
-    width,
-    density,
-    motion,
-    screenReader: settings.screenReader || caps.screenReader,
-    surface: overrides.surface ?? "terminal",
-    keymap: buildKeymap(settings.navigation, settings.shortcuts)
-  };
 }
 
 // src/ui/preview.ts
@@ -41621,27 +42114,6 @@ function buildPreview(caps, profile) {
 }
 
 // src/cli/commands/ui.ts
-var SETTING_FLAGS = ["theme", "color", "unicode", "density", "motion", "navigation"];
-function parseWidth(raw) {
-  if (raw === void 0) return void 0;
-  const width = /^\d{1,4}$/.test(raw) ? Number.parseInt(raw, 10) : Number.NaN;
-  if (!(width >= MIN_COLUMNS && width <= MAX_COLUMNS)) throw new JpeError("INVALID_INPUT", `--width must be a whole number from ${MIN_COLUMNS} to ${MAX_COLUMNS}.`);
-  return width;
-}
-function settingsFor(args, saved) {
-  const merged = { ...saved };
-  for (const name of SETTING_FLAGS) {
-    const value = flagString(args, name);
-    if (value !== void 0) merged[name] = value;
-  }
-  if (flagBool(args, "screen-reader")) merged["screenReader"] = true;
-  const parsed = uiSettingsSchema.safeParse(merged);
-  if (!parsed.success) {
-    const problems = parsed.error.issues.map((issue2) => `${issue2.path.join(".") || "ui"}: ${issue2.message}`);
-    throw new JpeError("INVALID_INPUT", `Those display settings are not valid. ${problems.join(" ")}`);
-  }
-  return parsed.data;
-}
 function keysScreen(profile) {
   const rows = ACTIONS.map((action) => [action, profile.keymap.byAction[action].map(chordLabel).join(", ")]);
   const problems = profile.keymap.problems.flatMap((problem) => statusBadge("warning", `${problem.action}: ${problem.message}`, profile));
@@ -41655,12 +42127,7 @@ function keysScreen(profile) {
 async function uiCommand(args, ctx) {
   const view = args.positionals[0] ?? "preview";
   if (view !== "preview" && view !== "keys") throw new JpeError("INVALID_INPUT", `Unknown view "${view}". Use "jpe ui" or "jpe ui keys".`);
-  const config2 = await ctx.loadConfig();
-  const settings = settingsFor(args, config2.ui);
-  const terminal = ctx.terminal();
-  const caps = detectCapabilities({ env: ctx.pathEnv.env, platform: ctx.pathEnv.platform, isTTY: terminal.isTTY, columns: terminal.columns, rows: terminal.rows });
-  const width = parseWidth(flagString(args, "width"));
-  const profile = resolveProfile(caps, settings, width === void 0 ? {} : { width });
+  const { caps, profile } = await renderContext(args, ctx);
   if (flagBool(args, "json")) {
     const payload = view === "keys" ? { byAction: profile.keymap.byAction, problems: profile.keymap.problems } : { profile: summarizeProfile(profile), reasons: caps.reasons, shortcutProblems: profile.keymap.problems };
     ctx.out(JSON.stringify(payload, null, 2));
@@ -41671,72 +42138,7 @@ async function uiCommand(args, ctx) {
 }
 
 // src/cli/commands/verify.ts
-import path23 from "path";
-
-// src/project/checks.ts
-var SAFE_SCRIPT_NAME = /^[A-Za-z0-9:_-]+$/;
-var PLACEHOLDER_TEST = /no test specified/i;
-var SCRIPT_CANDIDATES = [
-  ["typecheck", ["typecheck", "type-check", "check-types", "tsc"]],
-  ["lint", ["lint"]],
-  ["format", ["format:check", "format-check", "check-format", "prettier:check"]],
-  ["unit-test", ["test", "test:unit"]],
-  ["integration-test", ["test:integration"]],
-  ["e2e-test", ["test:e2e", "e2e"]],
-  ["build", ["build"]]
-];
-function make(check2, file2, args, source) {
-  return { check: check2, file: file2, args, source, display: [file2, ...args].join(" ") };
-}
-function nodeChecks(info) {
-  const manager = info.packageManager ?? "npm";
-  const found = [];
-  for (const [check2, names] of SCRIPT_CANDIDATES) {
-    const name = names.find((n) => {
-      const body = info.scripts[n];
-      return body !== void 0 && SAFE_SCRIPT_NAME.test(n) && !(check2 === "unit-test" && PLACEHOLDER_TEST.test(body));
-    });
-    if (name) found.push(make(check2, manager, ["run", name], "script"));
-  }
-  const hasTypecheck = found.some((c) => c.check === "typecheck");
-  const usesTypescript = info.dependencies.some((d) => d.name === "typescript");
-  if (!hasTypecheck && usesTypescript) found.push(make("typecheck", "npx", ["--no-install", "tsc", "--noEmit"], "inferred"));
-  if (info.hasLockfile) {
-    found.push(make("dependency-audit", manager, manager === "npm" ? ["audit", "--audit-level=high"] : ["audit"], "convention"));
-  }
-  return found;
-}
-async function pythonChecks(info, fs) {
-  const pyproject = await fs.readText(inRoot(info.root, "pyproject.toml")) ?? "";
-  const found = [];
-  if (pyproject.includes("[tool.pytest") || await fs.exists(inRoot(info.root, "pytest.ini"))) {
-    found.push(make("unit-test", "python", ["-m", "pytest"], "convention"));
-  }
-  if (pyproject.includes("[tool.ruff") || await fs.exists(inRoot(info.root, "ruff.toml"))) {
-    found.push(make("lint", "ruff", ["check", "."], "convention"));
-  }
-  if (pyproject.includes("[tool.mypy") || await fs.exists(inRoot(info.root, "mypy.ini"))) {
-    found.push(make("typecheck", "mypy", ["."], "convention"));
-  }
-  return found;
-}
-async function discoverChecks(info, fs) {
-  const found = [];
-  if (info.ecosystems.includes("node")) found.push(...nodeChecks(info));
-  if (info.ecosystems.includes("python")) found.push(...await pythonChecks(info, fs));
-  if (info.ecosystems.includes("go")) {
-    found.push(make("build", "go", ["build", "./..."], "convention"));
-    found.push(make("unit-test", "go", ["test", "./..."], "convention"));
-    found.push(make("static-analysis", "go", ["vet", "./..."], "convention"));
-  }
-  if (info.ecosystems.includes("rust")) {
-    found.push(make("typecheck", "cargo", ["check"], "convention"));
-    found.push(make("unit-test", "cargo", ["test"], "convention"));
-    found.push(make("build", "cargo", ["build"], "convention"));
-    found.push(make("lint", "cargo", ["clippy"], "convention"));
-  }
-  return found;
-}
+import path25 from "path";
 
 // src/verification/runner.ts
 import { createHash as createHash5 } from "crypto";
@@ -41813,7 +42215,6 @@ async function captureBaseline(checks, deps) {
 }
 
 // src/cli/commands/verify.ts
-var runMetaSchema = external_exports.strictObject({ at: external_exports.iso.datetime(), required: external_exports.array(checkNameSchema) });
 var baselineSchema = external_exports.record(external_exports.string(), external_exports.strictObject({ result: external_exports.enum(["pass", "fail"]), signature: external_exports.string() }));
 function exitCodeFor(status) {
   return status === "FAILED" ? 1 : status === "BLOCKED" ? 3 : status === "NOT_TESTED" ? 4 : 0;
@@ -41871,12 +42272,12 @@ async function verifyCommand(args, ctx) {
   const deps = { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs };
   if (flagBool(args, "baseline")) {
     const baseline2 = await captureBaseline(checks, deps);
-    await ctx.writeText(path23.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
+    await ctx.writeText(path25.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
     ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline2].map(([cmd2, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd2}`)].join("\n"));
     return 0;
   }
   let baseline;
-  const saved = await ctx.readText(path23.join(dir, "baseline.json"));
+  const saved = await ctx.readText(path25.join(dir, "baseline.json"));
   if (saved) {
     const parsed = baselineSchema.safeParse(JSON.parse(saved));
     if (parsed.success) baseline = new Map(Object.entries(parsed.data));
@@ -41884,9 +42285,9 @@ async function verifyCommand(args, ctx) {
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   const outcomes = await runChecks(checks, { ...deps, ledger }, baseline);
   const required2 = [...new Set(checks.map((c) => c.check))];
-  await ctx.writeText(path23.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
+  await ctx.writeText(path25.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
 `);
-  await ctx.writeText(path23.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
+  await ctx.writeText(path25.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
   const report = deriveStatus(ledger.entries, required2);
   const extra = [
     ...warnings.map((w) => `WARNING: ${w}`),
@@ -41897,18 +42298,13 @@ async function verifyCommand(args, ctx) {
   return exitCodeFor(report.status);
 }
 async function statusCommand(_args, ctx) {
-  const dir = ctx.stateDir();
-  const ledgerText = await ctx.readText(path23.join(dir, "ledger.jsonl"));
-  const metaText = await ctx.readText(path23.join(dir, "run.json"));
-  if (ledgerText === void 0 || metaText === void 0) {
+  const last = await readLastStatus(ctx);
+  if (last === void 0) {
     ctx.out("STATUS: NOT_TESTED\n  - No verification has been run for this project yet. Run `jpe verify`.");
     return exitCodeFor("NOT_TESTED");
   }
-  const meta3 = runMetaSchema.parse(JSON.parse(metaText));
-  const entries = parseEvidenceLines(ledgerText);
-  const report = deriveStatus(entries, meta3.required);
-  ctx.out(formatStatus(report, [`Last run: ${meta3.at}`]));
-  return exitCodeFor(report.status);
+  ctx.out(formatStatus(last.report, [`Last run: ${last.at}`]));
+  return exitCodeFor(last.report.status);
 }
 
 // src/cli/main.ts
@@ -41925,6 +42321,7 @@ var COMMANDS = {
   backup: { run: backupCommand, help: "backup create <files...> | seal <id> | verify <id> | rollback <id> [--force] | list | prune   Backups and rollback" },
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
+  center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
   ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },
   doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" }
 };
@@ -41938,8 +42335,8 @@ async function runCli(argv, ctx) {
     ctx.out(helpText());
     return 0;
   }
-  const command = COMMANDS[name];
-  if (!command) {
+  const command2 = COMMANDS[name];
+  if (!command2) {
     ctx.err(`jpe: unknown command "${name}".
 
 ${helpText()}`);
@@ -41947,11 +42344,11 @@ ${helpText()}`);
   }
   const args = parseArgs(rest);
   if (flagBool(args, "help")) {
-    ctx.out(command.help);
+    ctx.out(command2.help);
     return 0;
   }
   try {
-    return await command.run(args, ctx);
+    return await command2.run(args, ctx);
   } catch (error62) {
     if (isJpeError(error62)) {
       ctx.err(`jpe: ${redactSecrets(error62.userMessage)}`);
@@ -41969,7 +42366,7 @@ var text = (max = 4e3) => external_exports.string().min(1).max(max).refine((s) =
 var plain2 = (max = 1e3) => text(max).refine((s) => !s.startsWith("-"), "must not start with '-'");
 var flag = (name, value) => typeof value === "string" || typeof value === "number" ? [`--${name}=${String(value)}`] : [];
 var on = (name, value) => value === true ? [`--${name}`] : [];
-var cmd = (command, flags, positionals = []) => [command, ...flags, ...positionals.length > 0 ? ["--", ...positionals] : []];
+var cmd = (command2, flags, positionals = []) => [command2, ...flags, ...positionals.length > 0 ? ["--", ...positionals] : []];
 var TOOLS = [
   {
     name: "jpe_overview",

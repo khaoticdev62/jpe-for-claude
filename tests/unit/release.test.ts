@@ -116,6 +116,8 @@ describe.skipIf(!built)("release package", () => {
       "jpe-marketplace/.claude-plugin/marketplace.json",
       `${plugin}.claude-plugin/plugin.json`,
       `${plugin}hooks/hooks.json`,
+      `${plugin}hooks/center.js`,
+      `${plugin}types/index.d.ts`,
       `${plugin}dist/cli.js`,
       `${plugin}dist/hook.js`,
       `${plugin}dist/mcp.js`,
@@ -134,7 +136,9 @@ describe.skipIf(!built)("release package", () => {
     ]) {
       expect(files, needed).toContain(needed);
     }
-    expect(files.some((f) => f.includes("node_modules") || f.includes("/src/") || f.endsWith(".ts") || f.includes(".env"))).toBe(false);
+    // The only TypeScript file that ships is the types contract the engine requires beside the interface module.
+    expect(files.some((f) => f.includes("node_modules") || f.includes("/src/") || (f.endsWith(".ts") && f !== `${plugin}types/index.d.ts`) || f.includes(".env"))).toBe(false);
+    expect(files.filter((f) => f.startsWith(`${plugin}hooks/`)).sort()).toEqual([`${plugin}hooks/center.js`, `${plugin}hooks/hooks.json`]);
     expect(files.filter((f) => f.startsWith(`${plugin}skills/`))).toHaveLength(11);
     expect(files.filter((f) => f.startsWith(`${plugin}agents/`))).toHaveLength(7);
 

@@ -51,6 +51,27 @@ function foregroundCode(profile: RenderProfile, role: Role): string | undefined 
   return index < 8 ? `${30 + index}` : `${90 + index - 8}`;
 }
 
+export interface ResolvedStyle {
+  /** `#RRGGBB`, or undefined to keep the surrounding colour (the terminal's own, in `terminal` surface mode). */
+  color?: string;
+  bold: boolean;
+  dim: boolean;
+  underline: boolean;
+}
+
+/**
+ * A span's style as plain values rather than escape codes, for backends that draw with native elements (a pane)
+ * instead of ANSI. Follows exactly the same rules as `sgrFor`: the colour and emphasis a role gets cannot differ
+ * between the command line and a pane.
+ */
+export function resolveSpanStyle(profile: RenderProfile, part: Span): ResolvedStyle {
+  const role = part.role ?? "text";
+  const treatment = profile.surface === "terminal" ? TERMINAL_STYLE_ROLES[role] : undefined;
+  const colorRole = treatment === undefined ? role : treatment.colorAs;
+  const color = profile.color === "none" || colorRole === undefined ? undefined : profile.theme.colors[colorRole];
+  return { ...(color === undefined ? {} : { color }), bold: Boolean(part.bold || treatment?.bold), dim: Boolean(part.dim || treatment?.dim), underline: Boolean(part.underline) };
+}
+
 /** The SGR parameter list for one span, or "" when it has no styling. */
 export function sgrFor(profile: RenderProfile, part: Span): string {
   if (!profile.styles) return "";

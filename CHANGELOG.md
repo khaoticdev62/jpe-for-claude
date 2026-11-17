@@ -6,7 +6,14 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-17
+
 ### Added
+- Command center (`src/center/`, `src/mod/`, documented in `docs/COMMAND-CENTER.md`). `/jpe` on its own opens a pane with real project facts, numbered next steps (each marked as a confirmed finding or only a suggestion, with its evidence), a command palette with fuzzy search, favourites and recent commands, a status-bar summary, and a toast for confirmed warnings. Where no pane can be shown it prints the same screen as plain text. `/jpe <command>` and every other command are unchanged. Commands that can change things (`fix`, `setup`, `config`) ask for confirmation in the pane before running.
+- `jpe center`, `jpe center palette <query>` and `jpe center hud --json`: the same screens and data on the command line, read-only.
+- The interface module (`hooks/center.js`, built from `src/mod/center.tsx`) and its state contract (`types/index.d.ts`), registered under `modules` in `hooks/hooks.json` beside the existing command hooks. It fails open: if it cannot load or throws, Claude Code skips it and `/jpe` runs the text menu as before.
+- Doctor reports a missing or unregistered interface module.
+- `npm run test:mod` runs 19 tests of the built module under Claude Code's own runner (local, needs the `claude` command). CI now also fails if `hooks/center.js` differs from what `src/` builds to.
 - Terminal design system (`src/ui/`, documented in `docs/DESIGN-SYSTEM.md`): the JPE palette as four themes (`jpe`, `jpe-contrast`, `jpe-colorblind`, `jpe-light`) with contrast measured in tests; terminal capability detection with a stated reason for every decision; text sanitising and display-width handling; width-aware components (heading, status badge, progress bar, panel, table, key list, key hints) with Unicode and ASCII sets and a screen-reader layout; and a keyboard model (standard, Vim-style or both, numbered selection, validated overrides).
 - `jpe ui` and `jpe ui keys`: show what JPE detected about the terminal and a live sample of the design system.
 - `ui` section in the configuration (theme, colour, Unicode, density, motion, screen reader, navigation, shortcuts). It is optional with defaults, so existing configuration files load unchanged.

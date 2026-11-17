@@ -27,12 +27,17 @@ src/
   doctor/             health checks and safe repairs
   cli/                the `jpe` command line (all features are reachable here)
   ui/                 design system: tokens, terminal capabilities, text safety, components, keymap (docs/DESIGN-SYSTEM.md)
+  center/             command center logic, pure: commands, fuzzy search, palette, suggestions, memory, home screen, HUD facts (docs/COMMAND-CENTER.md)
+  mod/                the in-Claude-Code interface module (center.tsx), built to hooks/center.js; claude-code.d.ts is a small description of the API it uses
 tests/unit            fast tests, no network
 tests/e2e             real tools against deliberately broken projects (tests/fixtures/broken)
 evals/                behavioral cases for `claude plugin eval`
 installer/            install/uninstall scripts and the alias skill
 scripts/              package.mjs (release), make-icon.mjs
 dist/                 built bundles (committed so marketplace installs work without a build)
+hooks/center.js       the built interface module (committed for the same reason; CI fails if it differs from src/)
+types/                the state contract Claude Code requires beside the module
+tests/mod/            tests for the built module, run by Claude Code's own runner: npm run test:mod (needs the claude command; not in CI)
 ```
 
 ## Design rules

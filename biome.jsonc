@@ -1,8 +1,10 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  // tests/mod is run and typed by Claude Code itself (`npm run test:mod`), whose harness hands tests untyped values.
+  // hooks/center.js is a built bundle.
   "files": {
-    "includes": ["src/**", "tests/**", "scripts/**", "*.ts", "*.mjs", "!tests/fixtures", "!dist", "!release"]
+    "includes": ["src/**", "tests/**", "scripts/**", "*.ts", "*.mjs", "!tests/fixtures", "!tests/mod", "!dist", "!release", "!hooks/center.js"]
   },
   "formatter": { "enabled": false },
   "assist": { "enabled": false },

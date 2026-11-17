@@ -1,18 +1,18 @@
 import path from "node:path";
 import { z } from "zod";
 import { checkNameSchema, type CheckName } from "../../core/evidence.js";
-import { EvidenceLedger, parseEvidenceLines } from "../../core/ledger.js";
+import { EvidenceLedger } from "../../core/ledger.js";
 import { COMPLETION_STATUSES, deriveStatus, type CompletionStatus, type StatusReport } from "../../core/status.js";
 import { discoverChecks, type DiscoveredCheck } from "../../project/checks.js";
 import { detectProject } from "../../project/detect.js";
 import { readGitState } from "../../project/git.js";
+import { readLastStatus } from "../../verification/last-status.js";
 import { captureBaseline, isFailure, runChecks, type Baseline, type CheckOutcome } from "../../verification/runner.js";
 import { JpeError } from "../../core/errors.js";
 import { redactSecrets } from "../../core/redact.js";
 import { flagBool, flagString, type ParsedArgs } from "../args.js";
 import type { CliContext } from "../context.js";
 
-const runMetaSchema = z.strictObject({ at: z.iso.datetime(), required: z.array(checkNameSchema) });
 const baselineSchema = z.record(z.string(), z.strictObject({ result: z.enum(["pass", "fail"]), signature: z.string() }));
 
 /** Exit codes: 0 verified/partial/warnings, 1 failed, 3 blocked, 4 nothing tested. (2 is reserved for crashes.) */
@@ -107,16 +107,11 @@ export async function verifyCommand(args: ParsedArgs, ctx: CliContext): Promise<
 
 /** `jpe status`: the status of the most recent `verify` run, re-derived from its saved evidence. */
 export async function statusCommand(_args: ParsedArgs, ctx: CliContext): Promise<number> {
-  const dir = ctx.stateDir();
-  const ledgerText = await ctx.readText(path.join(dir, "ledger.jsonl"));
-  const metaText = await ctx.readText(path.join(dir, "run.json"));
-  if (ledgerText === undefined || metaText === undefined) {
+  const last = await readLastStatus(ctx);
+  if (last === undefined) {
     ctx.out("STATUS: NOT_TESTED\n  - No verification has been run for this project yet. Run `jpe verify`.");
     return exitCodeFor("NOT_TESTED");
   }
-  const meta = runMetaSchema.parse(JSON.parse(metaText));
-  const entries = parseEvidenceLines(ledgerText);
-  const report = deriveStatus(entries, meta.required);
-  ctx.out(formatStatus(report, [`Last run: ${meta.at}`]));
-  return exitCodeFor(report.status);
+  ctx.out(formatStatus(last.report, [`Last run: ${last.at}`]));
+  return exitCodeFor(last.report.status);
 }

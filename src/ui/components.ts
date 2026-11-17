@@ -146,16 +146,27 @@ export interface TableOptions {
 
 const DEFAULT_MIN_COLUMN = 6;
 
+const MIN_INLINE_VALUE = 10;
+
+/** One block of "Header: value" lines per row. When the value would have under 10 columns beside its header, it moves to indented lines beneath. */
 function stackedRows(options: TableOptions, profile: RenderProfile, available: number): Line[] {
   const out: Line[] = [];
   options.rows.forEach((row, index) => {
     if (index > 0 && profile.density === "comfortable") out.push(BLANK);
     options.columns.forEach((column, i) => {
       const key = `${inline(column.header)}: `;
-      const wrapped = wrapText(inline(row[i] ?? ""), Math.max(8, available - displayWidth(key)));
-      (wrapped.length === 0 ? [""] : wrapped).forEach((text, n) => {
-        out.push(n === 0 ? [span(key, { role: "muted" }), span(text)] : [span(" ".repeat(displayWidth(key))), span(text)]);
-      });
+      const value = inline(row[i] ?? "");
+      const beside = available - displayWidth(key) >= MIN_INLINE_VALUE;
+      if (beside) {
+        const wrapped = wrapText(value, available - displayWidth(key));
+        (wrapped.length === 0 ? [""] : wrapped).forEach((text, n) => {
+          out.push(n === 0 ? [span(key, { role: "muted" }), span(text)] : [span(" ".repeat(displayWidth(key))), span(text)]);
+        });
+        return;
+      }
+      out.push(fitLine([span(key.trimEnd(), { role: "muted" })], available, profile.symbols.ellipsis));
+      const wrapped = wrapText(value, Math.max(1, available - 2));
+      for (const text of wrapped.length === 0 ? [""] : wrapped) out.push([span("  "), span(text)]);
     });
   });
   return out;

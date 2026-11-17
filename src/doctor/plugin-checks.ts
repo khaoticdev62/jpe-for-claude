@@ -158,6 +158,15 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
     out.push(f("hooks-config", "warn", "The registered hook events differ from the expected set.", { area: "Hooks", detail: events.join(", ") }));
   } else out.push(f("hooks-config", "ok", `All ${events.length} hooks are registered exactly once.`, { area: "Hooks" }));
 
+  // The command center interface: a module Claude Code loads beside the command hooks. Without it /jpe still works as
+  // the text menu, so a problem here is a warning, not a failure.
+  const modules = (hooksJson.value as { modules?: unknown } | undefined)?.modules;
+  const moduleRegistered = Array.isArray(modules) && modules.includes("./center.js");
+  if (!moduleRegistered) out.push(f("interface-module", "warn", "The command center interface is not registered in hooks/hooks.json, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else if (!(await ctx.fs.exists(path.join(pluginRoot, "hooks", "center.js")))) out.push(f("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
+  else if (!(await ctx.fs.exists(path.join(pluginRoot, "types", "index.d.ts")))) out.push(f("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else out.push(f("interface-module", "ok", "The command center interface module is installed.", { area: "Interface" }));
+
   const hookJs = path.join(pluginRoot, "dist", "hook.js");
   if (await ctx.fs.exists(hookJs)) {
     try {

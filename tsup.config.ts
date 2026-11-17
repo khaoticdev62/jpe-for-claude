@@ -1,7 +1,8 @@
 import { writeFile } from "node:fs/promises";
 import { defineConfig } from "tsup";
 
-export default defineConfig({
+export default defineConfig([
+  {
   entry: { index: "src/index.ts", cli: "src/cli/bin.ts", hook: "src/hooks/bin.ts", mcp: "src/mcp/bin.ts" },
   format: ["esm"],
   target: "node20",
@@ -20,4 +21,26 @@ export default defineConfig({
   noExternal: [/.*/],
   // Bundled CommonJS dependencies call require(); give the ESM output a real one.
   banner: { js: "import { createRequire as __jpeCreateRequire } from 'node:module'; const require = __jpeCreateRequire(import.meta.url);" },
-});
+  },
+  {
+    // The interface module Claude Code loads (hooks/hooks.json "modules"). It runs in the engine's sandbox: no Node, no
+    // node_modules, so everything is bundled and only the engine's own `claude-code` import stays external.
+    entry: { center: "src/mod/center.tsx" },
+    format: ["esm"],
+    target: "es2022",
+    platform: "neutral",
+    outDir: "hooks",
+    clean: false,
+    splitting: false,
+    sourcemap: false,
+    // Bundle everything except the engine's own module (a plain /.*/ would override `external`).
+    noExternal: [/^(?!claude-code$).*/],
+    external: ["claude-code"],
+    outExtension: () => ({ js: ".js" }),
+    esbuildOptions(options) {
+      options.jsx = "transform";
+      options.jsxFactory = "h";
+      options.jsxFragment = "Fragment";
+    },
+  },
+]);

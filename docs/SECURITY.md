@@ -33,6 +33,12 @@ Agents have no shell and cannot edit files, but they run with your session's per
 
 Everything is stored locally in the plugin's data folder (`CLAUDE_PLUGIN_DATA`, or a per-OS folder when run outside Claude Code): configuration, documentation cache, run records, session state and backups. Network requests are the documentation lookups listed in each research report (npm registry, project sites, GitHub releases API, OSV). Context7 is queried only by the researcher agent through MCP servers you configured yourself.
 
+## The interface module
+
+The command center runs as a module inside Claude Code's plugin sandbox (`hooks/center.js`): no Node, no file access, no network access of its own. Its only reach outside is what the plugin interface grants it, and it uses three things: it runs the plugin's own command line (`node dist/cli.js center hud --json`, as an argument list with no shell, read-only), it reads and writes its own small per-plugin store (favourites and command history: command names and times only), and it asks Claude Code to run a JPE command. It never runs a command that can change things (`fix`, `setup`, `config`) without an explicit yes in the pane, and it cannot bypass Claude Code's own permission prompts, because running a command goes through Claude Code.
+
+Everything it displays that came from outside (a project name, a git branch, a verification reason, an error message) passes the same sanitising as the command line before it is drawn. The data it reads from the command line is validated (`parseHud`) and refused if the version or shape is not exactly what it expects. Tests assert that the built bundle imports nothing but the engine's own module and uses no Node feature, and that it starts exactly one process with exactly one argument list.
+
 ## Known dependency advisories
 
 | Advisory | Package | Affects | Status |

@@ -5,3 +5,5 @@ coverage/
 .env.*
 release/
 evals/results/
+
+.claude-plugin/types/

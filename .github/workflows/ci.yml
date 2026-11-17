@@ -26,9 +26,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run package
-      # The installed plugin runs the committed dist/, so it must be exactly what src/ builds to.
+      # The installed plugin runs the committed dist/ and hooks/center.js, so they must be exactly what src/ builds to.
       # `npm run package` just rebuilt it; any difference means someone forgot to commit a rebuild.
       - name: Committed dist/ matches the source
         if: matrix.os == 'ubuntu-latest'
-        run: git diff --exit-code --stat -- dist
+        run: git diff --exit-code --stat -- dist hooks/center.js
       - run: npm audit --omit=dev --audit-level=high

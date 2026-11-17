@@ -32,7 +32,7 @@ describe("plugin manifest", () => {
   it("names the plugin jpe and declares only documented fields", async () => {
     const manifest = JSON.parse(await readFile(path.join(root, ".claude-plugin", "plugin.json"), "utf8")) as Record<string, unknown>;
     expect(manifest["name"]).toBe("jpe");
-    const allowed = new Set(["name", "displayName", "version", "description", "license", "keywords", "author", "homepage", "repository", "icon", "mcpServers"]);
+    const allowed = new Set(["name", "displayName", "version", "description", "license", "keywords", "author", "homepage", "repository", "icon", "mcpServers", "types"]);
     for (const key of Object.keys(manifest)) expect(allowed.has(key), key).toBe(true);
   });
 });
