@@ -6,6 +6,12 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Dependabot configuration (weekly, npm and GitHub Actions).
+
+### Security
+- Documented the open `picomatch` ReDoS advisory (GHSA-fc5q-39xc-vjpf). It affects dev tooling only, is absent from every shipped bundle, and has no patched release yet; see `docs/SECURITY.md`.
+
 ## [1.1.0] - 2026-11-17
 
 ### Added

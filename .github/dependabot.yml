@@ -1,0 +1,13 @@
+# Weekly checks. Security fixes are proposed as soon as a patched version exists, which is how the open
+# picomatch advisory (docs/SECURITY.md, "Known dependency advisories") will get its fix.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

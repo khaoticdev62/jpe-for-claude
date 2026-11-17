@@ -33,6 +33,20 @@ Agents have no shell and cannot edit files, but they run with your session's per
 
 Everything is stored locally in the plugin's data folder (`CLAUDE_PLUGIN_DATA`, or a per-OS folder when run outside Claude Code): configuration, documentation cache, run records, session state and backups. Network requests are the documentation lookups listed in each research report (npm registry, project sites, GitHub releases API, OSV). Context7 is queried only by the researcher agent through MCP servers you configured yourself.
 
+## Known dependency advisories
+
+| Advisory | Package | Affects | Status |
+|---|---|---|---|
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (ReDoS through single-branch repeated extglobs, high) | `picomatch` `<=4.0.7`, reached through `tsup`, `vitest`, `vite`, `tinyglobby`, `fdir`, `sucrase` | Build and test tooling only | **Open, no patched release exists** (checked 2026-11-17: 4.0.7 is the latest version and is listed as vulnerable). |
+
+Why this does not reach users: `picomatch` is not a runtime dependency, is not in `npm ls --omit=dev`, and does not appear in any `dist/` bundle. It only runs on a developer machine or CI runner, matching glob patterns that this repository writes itself, so an attacker would need to control those patterns. CI audits production dependencies (`npm audit --omit=dev`), which reports 0 vulnerabilities.
+
+Why it is not "fixed" by downgrading: the suggested `npm audit fix --force` moves `vitest` and `tsup` to older major versions that still depend on `picomatch`, so it removes no exposure and loses fixes.
+
+Consequence: `jpe verify` reports `FAILED` for this project because its dependency-audit step also counts dev dependencies. That is accurate until upstream ships a patch.
+
+Re-check: Dependabot (`.github/dependabot.yml`) opens a pull request as soon as a patched `picomatch` exists. Then run `npm update picomatch` and `npm audit`, and delete this entry.
+
 ## Reporting a vulnerability
 
 Open a private security advisory on the GitHub repository (Security tab, "Report a vulnerability"). Do not include real secrets in reports.
