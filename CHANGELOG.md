@@ -7,6 +7,9 @@ All notable changes to JPE For Claude are recorded here. The format follows
 ## [Unreleased]
 
 ### Added
+- Terminal design system (`src/ui/`, documented in `docs/DESIGN-SYSTEM.md`): the JPE palette as four themes (`jpe`, `jpe-contrast`, `jpe-colorblind`, `jpe-light`) with contrast measured in tests; terminal capability detection with a stated reason for every decision; text sanitising and display-width handling; width-aware components (heading, status badge, progress bar, panel, table, key list, key hints) with Unicode and ASCII sets and a screen-reader layout; and a keyboard model (standard, Vim-style or both, numbered selection, validated overrides).
+- `jpe ui` and `jpe ui keys`: show what JPE detected about the terminal and a live sample of the design system.
+- `ui` section in the configuration (theme, colour, Unicode, density, motion, screen reader, navigation, shortcuts). It is optional with defaults, so existing configuration files load unchanged.
 - Dependabot configuration (weekly, npm and GitHub Actions).
 
 ### Security

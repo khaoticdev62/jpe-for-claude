@@ -12,6 +12,13 @@ import { createGitRunner, type GitRunner } from "../project/git.js";
 import { runCommand } from "../security/run.js";
 
 /** Everything a command needs from the outside world, injected so commands are testable. */
+/** What the output stream is: used to decide colour, width and layout. Injected so tests can pose as any terminal. */
+export interface TerminalFacts {
+  isTTY: boolean;
+  columns: number | undefined;
+  rows: number | undefined;
+}
+
 export interface CliContext {
   cwd: string;
   out: (text: string) => void;
@@ -24,6 +31,8 @@ export interface CliContext {
   net: NetDeps;
   now: () => Date;
   newId: () => string;
+  /** The output terminal's facts, read when asked (the window can be resized between calls). */
+  terminal: () => TerminalFacts;
   /** Effective configuration (defaults < global < project < environment). */
   loadConfig: () => Promise<JpeConfig>;
   /** Folder for this project's runs, baselines and backups. */
@@ -78,6 +87,7 @@ export function createContext(overrides: Partial<CliContext> = {}): CliContext {
     run: runCommand,
     net: defaultNetDeps(),
     now: () => new Date(),
+    terminal: () => ({ isTTY: Boolean(process.stdout.isTTY), columns: process.stdout.columns, rows: process.stdout.rows }),
     newId: () => randomUUID().replaceAll("-", "").slice(0, 16),
     loadConfig: () => loadConfig({ fs: { readText: (p) => fs.readText(p) }, pathEnv, projectRoot: cwd }),
     pluginRoot: guessPluginRoot(),

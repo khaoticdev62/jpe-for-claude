@@ -19745,6 +19745,122 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
+// src/ui/keymap.ts
+var ACTIONS = [
+  "up",
+  "down",
+  "left",
+  "right",
+  "select",
+  "back",
+  "quit",
+  "search",
+  "palette",
+  "help",
+  "next-pane",
+  "prev-pane",
+  "top",
+  "bottom",
+  "page-up",
+  "page-down",
+  "toggle-expand",
+  "favorite",
+  "refresh"
+];
+var NAVIGATION_STYLES = ["standard", "vim", "both"];
+var CHORD_PATTERN = /^(?:(?:ctrl|alt|shift)\+)*(?:[a-zA-Z0-9/?:.,;'=\-[\]\\`]|enter|esc|tab|space|up|down|left|right|home|end|pageup|pagedown|backspace|delete|f(?:[1-9]|1[0-2]))$/;
+
+// src/ui/tokens.ts
+var THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"];
+var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
+var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+var THEMES = {
+  jpe: {
+    name: "jpe",
+    description: "The JPE identity: near-black background, violet accent.",
+    mode: "dark",
+    background: "#121212",
+    surface: "#292929",
+    colors: {
+      text: "#F0F0F0",
+      muted: "#BDBDBD",
+      heading: "#FAFAFA",
+      accent: "#9B6DFF",
+      success: "#5FD38D",
+      warning: "#F2B84B",
+      error: "#FF6B6B",
+      info: "#5CB8FF",
+      inactive: "#8A8A8A",
+      pending: "#8FBCD4",
+      border: "#8A8A8A"
+    },
+    ansi16: ANSI16_DARK
+  },
+  "jpe-contrast": {
+    name: "jpe-contrast",
+    description: "High contrast: black background, every text role at least 7:1 (WCAG AAA).",
+    mode: "dark",
+    background: "#000000",
+    surface: "#1A1A1A",
+    colors: {
+      text: "#FFFFFF",
+      muted: "#E6E6E6",
+      heading: "#FFFFFF",
+      accent: "#CDB4FF",
+      success: "#7CFFB2",
+      warning: "#FFD866",
+      error: "#FF8A8A",
+      info: "#8CD2FF",
+      inactive: "#BFBFBF",
+      pending: "#B3E5FC",
+      border: "#BFBFBF"
+    },
+    ansi16: ANSI16_DARK
+  },
+  "jpe-colorblind": {
+    name: "jpe-colorblind",
+    description: "Colour-blind safe: status hues from the Okabe-Ito palette (blue, yellow, reddish purple) instead of green and red.",
+    mode: "dark",
+    background: "#121212",
+    surface: "#292929",
+    colors: {
+      text: "#F0F0F0",
+      muted: "#BDBDBD",
+      heading: "#FAFAFA",
+      accent: "#9B6DFF",
+      success: "#56B4E9",
+      warning: "#F0E442",
+      error: "#E58BBB",
+      info: "#E6E6E6",
+      inactive: "#8A8A8A",
+      pending: "#3DD6A5",
+      border: "#8A8A8A"
+    },
+    ansi16: { ...ANSI16_DARK, success: 12, warning: 11, error: 13, info: 15, pending: 14 }
+  },
+  "jpe-light": {
+    name: "jpe-light",
+    description: "For light terminal backgrounds.",
+    mode: "light",
+    background: "#FAFAFA",
+    surface: "#EDEDED",
+    colors: {
+      text: "#1A1A1A",
+      muted: "#4A4A4A",
+      heading: "#000000",
+      accent: "#6B3FD4",
+      success: "#12703E",
+      warning: "#8A5A00",
+      error: "#B3261E",
+      info: "#0B5FA5",
+      inactive: "#6B6B6B",
+      pending: "#2E6F8E",
+      border: "#6B6B6B"
+    },
+    ansi16: ANSI16_LIGHT
+  }
+};
+
 // src/config/schema.ts
 var CONFIG_SCHEMA_VERSION = 1;
 var explanation = external_exports.strictObject({
@@ -19796,6 +19912,20 @@ var hooks = external_exports.strictObject({
   /** Upper bound on language-server runs triggered by edits in one session. */
   maxDiagnosticsPerSession: external_exports.number().int().min(0).max(500).default(40)
 }).prefault({});
+var uiSettingsSchema = external_exports.strictObject({
+  theme: external_exports.enum(THEME_NAMES).default("jpe"),
+  /** auto = detect from the terminal; none = no colour at all; 16, 256, truecolor = force that depth. */
+  color: external_exports.enum(["auto", "none", "16", "256", "truecolor"]).default("auto"),
+  /** auto = detect; on = Unicode symbols and box drawing; off = ASCII only. */
+  unicode: external_exports.enum(["auto", "on", "off"]).default("auto"),
+  density: external_exports.enum(["auto", "compact", "comfortable"]).default("auto"),
+  motion: external_exports.enum(["auto", "full", "reduced"]).default("auto"),
+  /** Linear, border-free output with every status spelled out in words. Cannot be detected, so it is a setting. */
+  screenReader: external_exports.boolean().default(false),
+  navigation: external_exports.enum(NAVIGATION_STYLES).default("both"),
+  /** Per-action key overrides, e.g. { "palette": ["ctrl+k"] }. Invalid or conflicting keys are reported and ignored. */
+  shortcuts: external_exports.partialRecord(external_exports.enum(ACTIONS), external_exports.array(external_exports.string().regex(CHORD_PATTERN)).min(1).max(4)).default({})
+}).prefault({});
 var configSchema = external_exports.strictObject({
   schemaVersion: external_exports.literal(CONFIG_SCHEMA_VERSION).default(CONFIG_SCHEMA_VERSION),
   explanation,
@@ -19804,7 +19934,8 @@ var configSchema = external_exports.strictObject({
   engineering,
   security,
   runtime,
-  hooks
+  hooks,
+  ui: uiSettingsSchema
 });
 var partialConfigSchema = configSchema.partial();
 
@@ -20238,6 +20369,7 @@ function createContext(overrides = {}) {
     run: runCommand,
     net: defaultNetDeps(),
     now: () => /* @__PURE__ */ new Date(),
+    terminal: () => ({ isTTY: Boolean(process.stdout.isTTY), columns: process.stdout.columns, rows: process.stdout.rows }),
     newId: () => randomUUID().replaceAll("-", "").slice(0, 16),
     loadConfig: () => loadConfig({ fs: { readText: (p) => fs.readText(p) }, pathEnv, projectRoot: cwd }),
     pluginRoot: guessPluginRoot(),

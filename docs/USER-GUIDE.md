@@ -43,6 +43,12 @@ JPE makes Claude Code explain its work in plain English and back its claims with
 | `lsp.continuousDiagnostics` | true | Language-server check after each edit (turn off if Claude Code's own LSP plugin already does this) |
 | `hooks.requireVerificationBeforeStop` | true | One reminder per session to verify edited code before finishing |
 | `runtime.offline` | false | Use only local information and cached documentation |
+| `ui.theme` | jpe | `jpe`, `jpe-contrast` (high contrast), `jpe-colorblind`, `jpe-light` |
+| `ui.color`, `ui.unicode`, `ui.density`, `ui.motion` | auto | Override what JPE detects about your terminal |
+| `ui.screenReader` | false | Linear output with no borders or symbols, status spelled in words |
+| `ui.navigation` | both | `standard` (arrows), `vim`, or `both` |
+
+Run `jpe ui` to see what JPE detected about your terminal, why, and a live sample of every theme element; `jpe ui keys` lists the keyboard shortcuts. Details: [Design system](DESIGN-SYSTEM.md).
 
 Change one with `jpe config set <setting> <value>` (add `--project` for this project only).
 

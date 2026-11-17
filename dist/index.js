@@ -20891,6 +20891,237 @@ var BackupStore = class {
   }
 };
 
+// src/ui/keymap.ts
+var ACTIONS = [
+  "up",
+  "down",
+  "left",
+  "right",
+  "select",
+  "back",
+  "quit",
+  "search",
+  "palette",
+  "help",
+  "next-pane",
+  "prev-pane",
+  "top",
+  "bottom",
+  "page-up",
+  "page-down",
+  "toggle-expand",
+  "favorite",
+  "refresh"
+];
+var NAVIGATION_STYLES = ["standard", "vim", "both"];
+var CHORD_PATTERN = /^(?:(?:ctrl|alt|shift)\+)*(?:[a-zA-Z0-9/?:.,;'=\-[\]\\`]|enter|esc|tab|space|up|down|left|right|home|end|pageup|pagedown|backspace|delete|f(?:[1-9]|1[0-2]))$/;
+var MODIFIER_ORDER = ["ctrl", "alt", "shift"];
+var NAMED_KEYS = /* @__PURE__ */ new Set(["enter", "esc", "tab", "space", "up", "down", "left", "right", "home", "end", "pageup", "pagedown", "backspace", "delete"]);
+var RESERVED = { "ctrl+c": "quit", esc: "back" };
+function normalizeChord(raw) {
+  const text = raw.trim();
+  if (!CHORD_PATTERN.test(text)) return void 0;
+  const parts = text.split("+");
+  const key = parts.at(-1) ?? "";
+  const modifiers = new Set(parts.slice(0, -1));
+  let name = key;
+  if (key.length === 1 && key !== key.toLowerCase()) {
+    modifiers.add("shift");
+    name = key.toLowerCase();
+  } else if (key.length > 1) {
+    name = key.toLowerCase();
+  }
+  const ordered = MODIFIER_ORDER.filter((m) => modifiers.has(m));
+  return [...ordered, name].join("+");
+}
+function chordOf(event) {
+  const key = event.key.length === 1 ? event.key : event.key.toLowerCase();
+  const modifiers = [event.ctrl ? "ctrl" : "", event.alt ? "alt" : "", event.shift ? "shift" : ""].filter(Boolean);
+  const isNamed = NAMED_KEYS.has(key) || /^f(?:[1-9]|1[0-2])$/.test(key);
+  if (!isNamed && key.length !== 1) return void 0;
+  return normalizeChord([...modifiers, key].join("+"));
+}
+var COMMON = {
+  up: [],
+  down: [],
+  left: [],
+  right: [],
+  select: ["enter"],
+  back: ["esc", "backspace"],
+  quit: ["q", "ctrl+c"],
+  search: ["/"],
+  palette: ["ctrl+p"],
+  help: ["?"],
+  "next-pane": ["tab"],
+  "prev-pane": ["shift+tab"],
+  top: [],
+  bottom: [],
+  "page-up": [],
+  "page-down": [],
+  "toggle-expand": ["space"],
+  favorite: ["f"],
+  refresh: ["r"]
+};
+var ARROWS = { up: ["up"], down: ["down"], left: ["left"], right: ["right"], top: ["home"], bottom: ["end"], "page-up": ["pageup"], "page-down": ["pagedown"] };
+var VIM = { up: ["k"], down: ["j"], left: ["h"], right: ["l"], top: ["g"], bottom: ["shift+g"], "page-up": ["ctrl+u"], "page-down": ["ctrl+d"] };
+function defaultBindings(style) {
+  const sources = style === "standard" ? [ARROWS] : style === "vim" ? [VIM] : [ARROWS, VIM];
+  const merged = {};
+  for (const action of ACTIONS) merged[action] = [...COMMON[action], ...sources.flatMap((s) => s[action] ?? [])];
+  return merged;
+}
+function buildKeymap(style, overrides = {}) {
+  const defaults = defaultBindings(style);
+  const problems = [];
+  const desired = {};
+  const overridden = /* @__PURE__ */ new Set();
+  for (const action of ACTIONS) {
+    const supplied = overrides[action];
+    if (supplied === void 0) {
+      desired[action] = [...defaults[action]];
+      continue;
+    }
+    overridden.add(action);
+    const accepted = [];
+    for (const raw of supplied) {
+      const chord = normalizeChord(raw);
+      if (chord === void 0) problems.push({ action, chord: raw, kind: "invalid-chord", message: `"${raw}" is not a valid key.` });
+      else if (RESERVED[chord] !== void 0 && RESERVED[chord] !== action) problems.push({ action, chord, kind: "reserved", message: `${chord} is reserved for "${RESERVED[chord]}" so you can always leave.` });
+      else if (!accepted.includes(chord)) accepted.push(chord);
+    }
+    desired[action] = accepted;
+  }
+  for (const [chord, action] of Object.entries(RESERVED)) {
+    if (!desired[action].includes(chord)) desired[action].push(chord);
+  }
+  const MAX_PASSES = 50;
+  for (let pass = 0; pass < MAX_PASSES; pass++) {
+    for (const action of overridden) {
+      if (desired[action].length > 0) continue;
+      overridden.delete(action);
+      desired[action] = [...defaults[action]];
+      problems.push({ action, chord: "", kind: "empty", message: `No usable key was left for "${action}", so its defaults were kept.` });
+    }
+    const claims = /* @__PURE__ */ new Map();
+    for (const action of ACTIONS) for (const chord of desired[action]) claims.set(chord, [...claims.get(chord) ?? [], action]);
+    const collisions = [...claims].filter(([, actions]) => actions.length > 1);
+    if (collisions.length === 0) break;
+    for (const [chord, actions] of collisions) {
+      const owner = RESERVED[chord];
+      const defaultHolders = actions.filter((a) => !overridden.has(a));
+      const losers = owner !== void 0 && actions.includes(owner) ? actions.filter((a) => a !== owner) : defaultHolders.length > 0 ? actions.filter((a) => overridden.has(a)) : actions;
+      for (const action of losers) {
+        if (!desired[action].includes(chord)) continue;
+        desired[action] = desired[action].filter((c) => c !== chord);
+        problems.push({ action, chord, kind: "conflict", message: `${chord} is already used by ${actions.filter((a) => a !== action).join(", ")}.` });
+      }
+    }
+  }
+  const bindings = /* @__PURE__ */ new Map();
+  for (const action of ACTIONS) for (const chord of desired[action]) if (!bindings.has(chord)) bindings.set(chord, action);
+  return { bindings, byAction: desired, problems };
+}
+function resolveKey(keymap, event, options = {}) {
+  const chord = chordOf(event);
+  if (chord === void 0) return void 0;
+  const action = keymap.bindings.get(chord);
+  if (action !== void 0) return { action };
+  if (options.numbered && /^[1-9]$/.test(chord)) return { action: "jump", index: Number.parseInt(chord, 10) - 1 };
+  return void 0;
+}
+
+// src/ui/tokens.ts
+var THEME_NAMES = ["jpe", "jpe-contrast", "jpe-colorblind", "jpe-light"];
+var ROLES = ["text", "muted", "heading", "accent", "success", "warning", "error", "info", "inactive", "pending", "border"];
+var ANSI16_DARK = { text: 7, muted: 8, heading: 13, accent: 13, success: 10, warning: 11, error: 9, info: 12, inactive: 8, pending: 14, border: 8 };
+var ANSI16_LIGHT = { text: 0, muted: 8, heading: 5, accent: 5, success: 2, warning: 3, error: 1, info: 4, inactive: 8, pending: 6, border: 8 };
+var THEMES = {
+  jpe: {
+    name: "jpe",
+    description: "The JPE identity: near-black background, violet accent.",
+    mode: "dark",
+    background: "#121212",
+    surface: "#292929",
+    colors: {
+      text: "#F0F0F0",
+      muted: "#BDBDBD",
+      heading: "#FAFAFA",
+      accent: "#9B6DFF",
+      success: "#5FD38D",
+      warning: "#F2B84B",
+      error: "#FF6B6B",
+      info: "#5CB8FF",
+      inactive: "#8A8A8A",
+      pending: "#8FBCD4",
+      border: "#8A8A8A"
+    },
+    ansi16: ANSI16_DARK
+  },
+  "jpe-contrast": {
+    name: "jpe-contrast",
+    description: "High contrast: black background, every text role at least 7:1 (WCAG AAA).",
+    mode: "dark",
+    background: "#000000",
+    surface: "#1A1A1A",
+    colors: {
+      text: "#FFFFFF",
+      muted: "#E6E6E6",
+      heading: "#FFFFFF",
+      accent: "#CDB4FF",
+      success: "#7CFFB2",
+      warning: "#FFD866",
+      error: "#FF8A8A",
+      info: "#8CD2FF",
+      inactive: "#BFBFBF",
+      pending: "#B3E5FC",
+      border: "#BFBFBF"
+    },
+    ansi16: ANSI16_DARK
+  },
+  "jpe-colorblind": {
+    name: "jpe-colorblind",
+    description: "Colour-blind safe: status hues from the Okabe-Ito palette (blue, yellow, reddish purple) instead of green and red.",
+    mode: "dark",
+    background: "#121212",
+    surface: "#292929",
+    colors: {
+      text: "#F0F0F0",
+      muted: "#BDBDBD",
+      heading: "#FAFAFA",
+      accent: "#9B6DFF",
+      success: "#56B4E9",
+      warning: "#F0E442",
+      error: "#E58BBB",
+      info: "#E6E6E6",
+      inactive: "#8A8A8A",
+      pending: "#3DD6A5",
+      border: "#8A8A8A"
+    },
+    ansi16: { ...ANSI16_DARK, success: 12, warning: 11, error: 13, info: 15, pending: 14 }
+  },
+  "jpe-light": {
+    name: "jpe-light",
+    description: "For light terminal backgrounds.",
+    mode: "light",
+    background: "#FAFAFA",
+    surface: "#EDEDED",
+    colors: {
+      text: "#1A1A1A",
+      muted: "#4A4A4A",
+      heading: "#000000",
+      accent: "#6B3FD4",
+      success: "#12703E",
+      warning: "#8A5A00",
+      error: "#B3261E",
+      info: "#0B5FA5",
+      inactive: "#6B6B6B",
+      pending: "#2E6F8E",
+      border: "#6B6B6B"
+    },
+    ansi16: ANSI16_LIGHT
+  }
+};
+
 // src/config/schema.ts
 var CONFIG_SCHEMA_VERSION = 1;
 var explanation = external_exports.strictObject({
@@ -20942,6 +21173,20 @@ var hooks = external_exports.strictObject({
   /** Upper bound on language-server runs triggered by edits in one session. */
   maxDiagnosticsPerSession: external_exports.number().int().min(0).max(500).default(40)
 }).prefault({});
+var uiSettingsSchema = external_exports.strictObject({
+  theme: external_exports.enum(THEME_NAMES).default("jpe"),
+  /** auto = detect from the terminal; none = no colour at all; 16, 256, truecolor = force that depth. */
+  color: external_exports.enum(["auto", "none", "16", "256", "truecolor"]).default("auto"),
+  /** auto = detect; on = Unicode symbols and box drawing; off = ASCII only. */
+  unicode: external_exports.enum(["auto", "on", "off"]).default("auto"),
+  density: external_exports.enum(["auto", "compact", "comfortable"]).default("auto"),
+  motion: external_exports.enum(["auto", "full", "reduced"]).default("auto"),
+  /** Linear, border-free output with every status spelled out in words. Cannot be detected, so it is a setting. */
+  screenReader: external_exports.boolean().default(false),
+  navigation: external_exports.enum(NAVIGATION_STYLES).default("both"),
+  /** Per-action key overrides, e.g. { "palette": ["ctrl+k"] }. Invalid or conflicting keys are reported and ignored. */
+  shortcuts: external_exports.partialRecord(external_exports.enum(ACTIONS), external_exports.array(external_exports.string().regex(CHORD_PATTERN)).min(1).max(4)).default({})
+}).prefault({});
 var configSchema = external_exports.strictObject({
   schemaVersion: external_exports.literal(CONFIG_SCHEMA_VERSION).default(CONFIG_SCHEMA_VERSION),
   explanation,
@@ -20950,7 +21195,8 @@ var configSchema = external_exports.strictObject({
   engineering,
   security,
   runtime,
-  hooks
+  hooks,
+  ui: uiSettingsSchema
 });
 var partialConfigSchema = configSchema.partial();
 
@@ -23058,7 +23304,260 @@ function buildErrorBriefing(message, cfg) {
   ].join("\n");
   return { depth: "standard", required: ["what", "why", "how"], optional: [], text };
 }
+
+// src/ui/capabilities.ts
+var MIN_COLUMNS = 20;
+var MAX_COLUMNS = 500;
+var DEFAULT_COLUMNS = 80;
+var DEFAULT_ROWS = 24;
+var isSet = (value) => value !== void 0 && value !== "";
+var isTruthy = (value) => isSet(value) && value !== "0" && value.toLowerCase() !== "false";
+var clampInt = (value, min, max) => Math.min(max, Math.max(min, Math.trunc(value)));
+function parsePositiveInt(value) {
+  if (!isSet(value) || !/^\d{1,5}$/.test(value)) return void 0;
+  const n = Number.parseInt(value, 10);
+  return n > 0 ? n : void 0;
+}
+var TRUECOLOR_PROGRAMS = /* @__PURE__ */ new Set(["iTerm.app", "vscode", "WezTerm", "Hyper", "ghostty"]);
+var BASIC_TERMS = /(xterm|screen|tmux|rxvt|linux|vt100|vt220|ansi|cygwin|color)/i;
+function detectColor(input2, reasons) {
+  const { env } = input2;
+  const term = env["TERM"] ?? "";
+  if (isSet(env["NO_COLOR"])) {
+    reasons.push("Colour is off because NO_COLOR is set.");
+    return "none";
+  }
+  const force = env["FORCE_COLOR"];
+  if (isSet(force)) {
+    const level = { "0": "none", false: "none", "1": "16", true: "16", "2": "256", "3": "truecolor" };
+    const forced = level[force.toLowerCase()];
+    if (forced) {
+      reasons.push(`Colour depth is ${forced} because FORCE_COLOR=${force}.`);
+      return forced;
+    }
+  }
+  if (!input2.isTTY) {
+    reasons.push("Colour is off because output is not an interactive terminal (it is piped or redirected).");
+    return "none";
+  }
+  if (term === "dumb") {
+    reasons.push("Colour is off because TERM=dumb.");
+    return "none";
+  }
+  const colorterm = (env["COLORTERM"] ?? "").toLowerCase();
+  if (colorterm === "truecolor" || colorterm === "24bit") {
+    reasons.push("Truecolor because COLORTERM advertises it.");
+    return "truecolor";
+  }
+  if (isSet(env["WT_SESSION"])) {
+    reasons.push("Truecolor because this is Windows Terminal.");
+    return "truecolor";
+  }
+  if (isSet(env["TERM_PROGRAM"]) && TRUECOLOR_PROGRAMS.has(env["TERM_PROGRAM"])) {
+    reasons.push(`Truecolor because TERM_PROGRAM=${env["TERM_PROGRAM"]}.`);
+    return "truecolor";
+  }
+  if (/256color/i.test(term)) {
+    reasons.push("256 colours because TERM names 256color.");
+    return "256";
+  }
+  if (input2.platform === "win32") {
+    reasons.push("Truecolor assumed for a Windows console (Windows 10 and later). Override with ui.color if colours look wrong.");
+    return "truecolor";
+  }
+  if (BASIC_TERMS.test(term)) {
+    reasons.push(`16 colours because TERM=${term} does not advertise more.`);
+    return "16";
+  }
+  reasons.push("16 colours as a safe default: the terminal did not say what it supports.");
+  return "16";
+}
+function localeIsUtf8(env) {
+  const locale = [env["LC_ALL"], env["LC_CTYPE"], env["LANG"]].find(isSet);
+  if (locale === void 0) return void 0;
+  return /utf-?8/i.test(locale);
+}
+function detectUnicode(input2, reasons) {
+  const { env } = input2;
+  const term = env["TERM"] ?? "";
+  if (isTruthy(env["JPE_ASCII"])) {
+    reasons.push("ASCII symbols because JPE_ASCII is set.");
+    return false;
+  }
+  if (term === "dumb" || term === "linux") {
+    reasons.push(`ASCII symbols because TERM=${term} (the Linux console and dumb terminals lack most box and symbol glyphs).`);
+    return false;
+  }
+  const utf8 = localeIsUtf8(env);
+  if (utf8 === false) {
+    reasons.push("ASCII symbols because the locale is not UTF-8.");
+    return false;
+  }
+  if (utf8 === true) {
+    reasons.push("Unicode symbols because the locale is UTF-8.");
+    return true;
+  }
+  if (input2.platform === "win32") {
+    const modern = isSet(env["WT_SESSION"]) || isSet(env["TERM_PROGRAM"]) || env["ConEmuANSI"] === "ON";
+    reasons.push(modern ? "Unicode symbols because this is a modern Windows terminal." : "ASCII symbols because this looks like the legacy Windows console. Override with ui.unicode if yours supports Unicode.");
+    return modern;
+  }
+  reasons.push("Unicode symbols assumed: no locale was set and TERM is not a known ASCII-only terminal.");
+  return true;
+}
+function detectCapabilities(input2) {
+  const { env } = input2;
+  const reasons = [];
+  const color = detectColor(input2, reasons);
+  const styles = input2.isTTY && (env["TERM"] ?? "") !== "dumb" || isSet(env["FORCE_COLOR"]) && env["FORCE_COLOR"] !== "0";
+  const unicode = detectUnicode(input2, reasons);
+  const columns = clampInt(input2.columns ?? parsePositiveInt(env["COLUMNS"]) ?? DEFAULT_COLUMNS, MIN_COLUMNS, MAX_COLUMNS);
+  const rows = clampInt(input2.rows ?? parsePositiveInt(env["LINES"]) ?? DEFAULT_ROWS, 5, 200);
+  reasons.push(input2.columns !== void 0 ? `Width is ${columns} columns, read from the terminal.` : `Width is ${columns} columns (${isSet(env["COLUMNS"]) ? "from COLUMNS" : "the default; the terminal size is unknown"}).`);
+  const remote = isSet(env["SSH_CONNECTION"]) || isSet(env["SSH_TTY"]) || isSet(env["SSH_CLIENT"]);
+  const ci = isTruthy(env["CI"]);
+  const interactive = input2.isTTY && !ci && (env["TERM"] ?? "") !== "dumb";
+  if (remote) reasons.push("Remote (SSH) session: animation is reduced and the layout stays compact-friendly.");
+  if (ci) reasons.push("CI environment: output is plain and non-interactive.");
+  const reducedMotion = isTruthy(env["JPE_REDUCED_MOTION"]) || remote || ci || !input2.isTTY;
+  const screenReader = isTruthy(env["JPE_SCREEN_READER"]);
+  reasons.push(screenReader ? "Screen-reader layout is on because JPE_SCREEN_READER is set." : "Screen-reader layout is off. It cannot be detected automatically; turn it on with ui.screenReader or JPE_SCREEN_READER=1.");
+  return { color, styles, unicode, columns, rows, interactive, remote, ci, reducedMotion, screenReader, reasons };
+}
+
+// src/ui/symbols.ts
+var UNICODE_SYMBOLS = {
+  status: { success: "\u2714", warning: "\u25B2", error: "\u2718", info: "\u25C6", inactive: "\u25CB", pending: "\u2026" },
+  box: { topLeft: "\u256D", topRight: "\u256E", bottomLeft: "\u2570", bottomRight: "\u256F", horizontal: "\u2500", vertical: "\u2502", separator: "\u2502" },
+  barFull: "\u2588",
+  barEmpty: "\u2591",
+  ellipsis: "\u2026",
+  bullet: "\u2022",
+  arrow: "\u2192"
+};
+var ASCII_SYMBOLS = {
+  status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
+  box: { topLeft: "+", topRight: "+", bottomLeft: "+", bottomRight: "+", horizontal: "-", vertical: "|", separator: "|" },
+  barFull: "#",
+  barEmpty: "-",
+  ellipsis: "...",
+  bullet: "*",
+  arrow: "->"
+};
+var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
+
+// src/ui/profile.ts
+function breakpointFor(width) {
+  if (width < 60) return "narrow";
+  return width < 100 ? "medium" : "wide";
+}
+function resolveProfile(caps, settings, overrides = {}) {
+  const width = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, Math.trunc(overrides.width ?? caps.columns)));
+  const color = settings.color === "auto" ? caps.color : settings.color;
+  const unicode = settings.unicode === "auto" ? caps.unicode : settings.unicode === "on";
+  const density = settings.density === "auto" ? width < 80 || caps.rows < 24 ? "compact" : "comfortable" : settings.density;
+  const motion = settings.motion === "auto" ? caps.reducedMotion ? "reduced" : "full" : settings.motion;
+  return {
+    theme: THEMES[settings.theme],
+    color,
+    // An explicit colour setting means the person wants styling even where detection said "not a terminal".
+    styles: caps.styles || settings.color !== "auto" && settings.color !== "none",
+    unicode,
+    symbols: symbolsFor(unicode),
+    width,
+    density,
+    motion,
+    screenReader: settings.screenReader || caps.screenReader,
+    surface: overrides.surface ?? "terminal",
+    keymap: buildKeymap(settings.navigation, settings.shortcuts)
+  };
+}
+
+// src/ui/color.ts
+var HEX_COLOR = /^#[0-9a-f]{6}$/i;
+var isHexColor = (value) => HEX_COLOR.test(value);
+function parseHex(hex3) {
+  if (!isHexColor(hex3)) throw new RangeError(`Not a #RRGGBB colour: ${hex3}`);
+  return { r: Number.parseInt(hex3.slice(1, 3), 16), g: Number.parseInt(hex3.slice(3, 5), 16), b: Number.parseInt(hex3.slice(5, 7), 16) };
+}
+function toAnsi256(hex3) {
+  const { r, g, b } = parseHex(hex3);
+  if (Math.abs(r - g) < 8 && Math.abs(g - b) < 8) {
+    if (r < 8) return 16;
+    if (r > 248) return 231;
+    return 232 + Math.round((r - 8) / 247 * 23);
+  }
+  const level = (channel) => Math.round(channel / 255 * 5);
+  return 16 + 36 * level(r) + 6 * level(g) + level(b);
+}
+
+// src/ui/text.ts
+var ESC = "\x1B";
+var BEL = "\x07";
+var OSC = new RegExp(`${ESC}\\][^${BEL}${ESC}]*(?:${BEL}|${ESC}\\\\)?`, "g");
+var STRING_SEQUENCE = new RegExp(`${ESC}[P^_X][\\s\\S]*?(?:${ESC}\\\\|$)`, "g");
+var CSI = new RegExp(`${ESC}\\[[0-?]*[ -/]*[@-~]`, "g");
+var SHORT_ESCAPE = new RegExp(`${ESC}[ -/]*[0-~]`, "g");
+var CONTROLS = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f‪-‮⁦-⁩‎‏؜]/g;
+function sanitize(text) {
+  return text.replace(OSC, "").replace(STRING_SEQUENCE, "").replace(CSI, "").replace(SHORT_ESCAPE, "").replace(/\r\n?/g, "\n").replace(/\t/g, "  ").replace(CONTROLS, "");
+}
+var segmenter = new Intl.Segmenter(void 0, { granularity: "grapheme" });
+
+// src/ui/paint.ts
+var CSI2 = "\x1B[";
+var RESET = `${CSI2}0m`;
+var TERMINAL_STYLE_ROLES = {
+  text: {},
+  muted: { dim: true },
+  heading: { bold: true, colorAs: "accent" },
+  border: { dim: true },
+  inactive: { dim: true }
+};
+function foregroundCode(profile, role) {
+  if (profile.color === "none") return void 0;
+  let colorRole = role;
+  if (profile.surface === "terminal" && role in TERMINAL_STYLE_ROLES) {
+    const treatment = TERMINAL_STYLE_ROLES[role];
+    if (treatment?.colorAs === void 0) return void 0;
+    colorRole = treatment.colorAs;
+  }
+  const hex3 = profile.theme.colors[colorRole];
+  if (profile.color === "truecolor") {
+    const { r, g, b } = parseHex(hex3);
+    return `38;2;${r};${g};${b}`;
+  }
+  if (profile.color === "256") return `38;5;${toAnsi256(hex3)}`;
+  const index = profile.theme.ansi16[colorRole];
+  return index < 8 ? `${30 + index}` : `${90 + index - 8}`;
+}
+function sgrFor(profile, part) {
+  if (!profile.styles) return "";
+  const role = part.role ?? "text";
+  const standIn = profile.surface === "terminal" ? TERMINAL_STYLE_ROLES[role] : void 0;
+  const codes = [];
+  if (part.bold || standIn?.bold) codes.push("1");
+  if (part.dim || standIn?.dim) codes.push("2");
+  if (part.underline) codes.push("4");
+  const color = foregroundCode(profile, role);
+  if (color) codes.push(color);
+  return codes.join(";");
+}
+function paintLine(line, profile) {
+  let out = "";
+  for (const part of line) {
+    const text = sanitize(part.text).replace(/\n/g, " ");
+    if (text === "") continue;
+    const sgr = sgrFor(profile, part);
+    out += sgr === "" ? text : `${CSI2}${sgr}m${text}${RESET}`;
+  }
+  return out;
+}
+function paint(lines, profile) {
+  return lines.map((line) => paintLine(line, profile)).join("\n");
+}
 export {
+  ACTIONS,
   BackupStore,
   CHECK_NAMES,
   COMPLETION_STATUSES,
@@ -23069,11 +23568,16 @@ export {
   JpeError,
   LANGUAGES,
   LspClient,
+  ROLES,
+  THEMES,
+  THEME_NAMES,
   analyzeCode,
   assessCommand,
+  breakpointFor,
   buildChangeBriefing,
   buildErrorBriefing,
   buildFileBriefing,
+  buildKeymap,
   captureBaseline,
   checkServer,
   chooseDepth,
@@ -23087,6 +23591,7 @@ export {
   defaultConfig,
   defaultNetDeps,
   deriveStatus,
+  detectCapabilities,
   detectLanguages,
   detectProject,
   discoverChecks,
@@ -23112,6 +23617,8 @@ export {
   nodeProjectFs,
   officialProvider,
   osvProvider,
+  paint,
+  paintLine,
   parseCompilerOutput,
   parseEvidenceLines,
   parseVersion,
@@ -23127,6 +23634,8 @@ export {
   researchDocs,
   resolveInside,
   resolveInsideReal,
+  resolveKey,
+  resolveProfile,
   runChecks,
   runCommand,
   safeRequest,

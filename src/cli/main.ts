@@ -5,6 +5,7 @@ import { briefCommand } from "./commands/brief.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { impactCommand, installPlanCommand, lspCommand } from "./commands/lsp.js";
 import { researchCommand } from "./commands/research.js";
+import { uiCommand } from "./commands/ui.js";
 import { checksCommand, statusCommand, verifyCommand } from "./commands/verify.js";
 import { flagBool, parseArgs, type ParsedArgs } from "./args.js";
 import type { CliContext } from "./context.js";
@@ -24,6 +25,7 @@ const COMMANDS: Readonly<Record<string, { run: Handler; help: string }>> = {
   backup: { run: backupCommand, help: "backup create <files...> | seal <id> | verify <id> | rollback <id> [--force] | list | prune   Backups and rollback" },
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
+  ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },
   doctor: { run: doctorCommand, help: "doctor [--deep] [--repair] [--export file] [--json]   Health check of the plugin, hooks, agents, MCP, language servers, cache and backups" },
 };
 

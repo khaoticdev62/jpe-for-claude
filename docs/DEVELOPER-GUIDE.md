@@ -26,6 +26,7 @@ src/
   mcp/                MCP tool definitions and server
   doctor/             health checks and safe repairs
   cli/                the `jpe` command line (all features are reachable here)
+  ui/                 design system: tokens, terminal capabilities, text safety, components, keymap (docs/DESIGN-SYSTEM.md)
 tests/unit            fast tests, no network
 tests/e2e             real tools against deliberately broken projects (tests/fixtures/broken)
 evals/                behavioral cases for `claude plugin eval`

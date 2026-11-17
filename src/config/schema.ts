@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { ACTIONS, CHORD_PATTERN, NAVIGATION_STYLES } from "../ui/keymap.js";
+import { THEME_NAMES } from "../ui/tokens.js";
 
 export const CONFIG_SCHEMA_VERSION = 1;
 
@@ -81,6 +83,23 @@ const hooks = z
   })
   .prefault({});
 
+export const uiSettingsSchema = z
+  .strictObject({
+    theme: z.enum(THEME_NAMES).default("jpe"),
+    /** auto = detect from the terminal; none = no colour at all; 16, 256, truecolor = force that depth. */
+    color: z.enum(["auto", "none", "16", "256", "truecolor"]).default("auto"),
+    /** auto = detect; on = Unicode symbols and box drawing; off = ASCII only. */
+    unicode: z.enum(["auto", "on", "off"]).default("auto"),
+    density: z.enum(["auto", "compact", "comfortable"]).default("auto"),
+    motion: z.enum(["auto", "full", "reduced"]).default("auto"),
+    /** Linear, border-free output with every status spelled out in words. Cannot be detected, so it is a setting. */
+    screenReader: z.boolean().default(false),
+    navigation: z.enum(NAVIGATION_STYLES).default("both"),
+    /** Per-action key overrides, e.g. { "palette": ["ctrl+k"] }. Invalid or conflicting keys are reported and ignored. */
+    shortcuts: z.partialRecord(z.enum(ACTIONS), z.array(z.string().regex(CHORD_PATTERN)).min(1).max(4)).default({}),
+  })
+  .prefault({});
+
 export const configSchema = z.strictObject({
   schemaVersion: z.literal(CONFIG_SCHEMA_VERSION).default(CONFIG_SCHEMA_VERSION),
   explanation,
@@ -90,6 +109,7 @@ export const configSchema = z.strictObject({
   security,
   runtime,
   hooks,
+  ui: uiSettingsSchema,
 });
 
 export type JpeConfig = z.infer<typeof configSchema>;
