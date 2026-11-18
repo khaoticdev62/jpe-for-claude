@@ -2,6 +2,10 @@
 
 JPE runs inside your Claude Code session with your permissions. This page explains what it can touch, what it refuses to do, and where its protections stop.
 
+## Removing saved data
+
+`jpe data remove` deletes only names JPE creates, only inside its data folder (it refuses any target outside it, or the folder itself, and re-checks each target just before deleting). The `all` scope is a fixed list of JPE's own names, never "everything in the folder". Symbolic links are removed as links, never followed. Nothing is deleted without `--confirm`, and the approval check asks before running a `--confirm` removal. `jpe about --check` makes one GET request to the published plugin manifest, through the same guarded request code as documentation (https only, host allow-listed, public addresses only, size and time limited); it is refused in offline mode.
+
 ## Event log and offline mode
 
 The event log (`events.jsonl`) holds a level, a source, a time and one line of text per entry. Secrets are removed from every line, control and bidirectional characters are replaced, and lines are cut to 300 characters; stored lines are cleaned again when read, so a hand-edited file cannot inject anything. Prompts, file contents, command output and stack traces are never written. In offline mode the network handle passed to documentation sources refuses every request and lookup (a test counts calls), in addition to the engine skipping network sources.

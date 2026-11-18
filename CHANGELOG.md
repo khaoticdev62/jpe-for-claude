@@ -6,6 +6,19 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-11-18
+
+### Added
+- Lifecycle (see docs/LIFECYCLE.md): `jpe about [--check]` (the version running, where the plugin and its data live, the real `claude plugin update` and `uninstall` commands for this install, and an optional check against the published manifest that is refused in offline mode and reports failures as "could not tell"); `jpe data` (an inventory of everything JPE stores); `jpe data remove <cache|records|backups|all>`, which previews by default, names what would be lost, and deletes only with `--confirm`.
+- A one-time notice at session start when JPE's version changed since it last ran ("JPE was updated from X to Y").
+- Removal is narrow by design: only names JPE creates, only inside its data folder, `all` is an allow-list of names rather than the folder's contents, links are never followed, and each target is re-checked before deletion.
+- JPE's approval check now asks before `jpe data remove ... --confirm`, so Claude cannot confirm a deletion on its own.
+- 53 new tests (1156 in total).
+
+### Fixed
+- Yes/no flags swallowed the next word: `jpe settings preset --apply high-contrast` (shipped in 1.8.0) silently lost the preset name. `--apply`, `--confirm` and `--check` are now declared as yes/no flags, with a regression test.
+- Long file paths in the new screens are wrapped instead of being cut off with an ellipsis.
+
 ## [1.9.0] - 2026-11-18
 
 ### Added

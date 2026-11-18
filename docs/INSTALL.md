@@ -75,6 +75,8 @@ The installer never overwrites a different skill named `jpe`: it reports it and 
 
 Unzip the new release and run the installer with `-Update` / `--update`. It shows the release notes, backs up your JPE configuration (`config.json.bak-<time>`), verifies checksums, updates through Claude Code, and runs Doctor. If Doctor reports a problem, restore the backup and reinstall the previous release folder with the installer. Updates are always manual. An installed plugin runs a cached copy of the release, so editing a source checkout changes nothing until you publish a new version and update the installed plugin (or run with `--plugin-dir`).
 
+Once installed, `jpe about` shows the version and the update and uninstall commands for your install, and `jpe data` shows what JPE stores and can clear it: see [Install, update and uninstall](LIFECYCLE.md).
+
 ## Uninstalling
 
 The uninstaller removes the plugin and, by default, **keeps** JPE's saved data (backups, caches, run records). `-PurgeData` / `--purge-data` deletes that data as well. `-RemoveMarketplace` / `--remove-marketplace` also removes the marketplace entry. Your projects and your Claude Code settings are not touched, apart from the entries Claude Code manages itself.

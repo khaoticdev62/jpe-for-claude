@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path35) {
-      let input2 = path35;
+    function removeDotSegments(path38) {
+      let input2 = path38;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3337,11 +3337,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path35) {
-      if (path35 === "" || path35[0] === "/") {
-        return removeDotSegments(path35);
+    function removeDotSegmentsRelative(path38) {
+      if (path38 === "" || path38[0] === "/") {
+        return removeDotSegments(path38);
       }
-      const segments = path35.split("/");
+      const segments = path38.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -3704,8 +3704,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path35 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path35 && path35 !== "/" ? path35 : void 0;
+        const path38 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path38 && path38 !== "/" ? path38 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -8075,10 +8075,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path35) {
-  if (!path35)
+function getElementAtPath(obj, path38) {
+  if (!path38)
     return obj;
-  return path35.reduce((acc, key) => acc?.[key], obj);
+  return path38.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8418,11 +8418,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path35, issues) {
+function prefixIssues(path38, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path35);
+    iss.path.unshift(path38);
     return iss;
   });
 }
@@ -8884,16 +8884,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path35 = []) => {
+  const processError = (error63, path38 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path35, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path38, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path35, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path38, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path35, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path38, ...issue2.path]);
       } else {
-        const fullpath = [...path35, ...issue2.path];
+        const fullpath = [...path38, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8932,17 +8932,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path35 = []) => {
+  const processError = (error63, path38 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path35, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path38, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path35, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path38, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path35, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path38, ...issue2.path]);
       } else {
-        const fullpath = [...path35, ...issue2.path];
+        const fullpath = [...path38, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8981,8 +8981,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path35 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path35) {
+  const path38 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path38) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -26120,13 +26120,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path35 = ref.slice(1).split("/").filter(Boolean);
-  if (path35.length === 0) {
+  const path38 = ref.slice(1).split("/").filter(Boolean);
+  if (path38.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path35[0] === defsKey) {
-    const key = path35[1] === void 0 ? void 0 : decodeJSONPointerSegment(path35[1]);
+  if (path38[0] === defsKey) {
+    const key = path38[1] === void 0 ? void 0 : decodeJSONPointerSegment(path38[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -28984,8 +28984,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path35, errorMaps, issueData } = params;
-  const fullPath = [...path35, ...issueData.path || []];
+  const { data, path: path38, errorMaps, issueData } = params;
+  const fullPath = [...path38, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -29100,11 +29100,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path35, key) {
+  constructor(parent, value, path38, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path35;
+    this._path = path38;
     this._key = key;
   }
   get path() {
@@ -32655,11 +32655,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path35) {
-  if (path35.length === 0) {
+function getDotPath(path38) {
+  if (path38.length === 0) {
     return "object root";
   }
-  return path35.reduce((acc, seg, index) => {
+  return path38.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -36681,7 +36681,7 @@ function redactSecrets(text2) {
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.9.0",
+  version: "1.10.0",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",
@@ -37766,19 +37766,19 @@ function extractSymbols(content, family) {
 }
 function extractImports(content, family) {
   const found = /* @__PURE__ */ new Set();
-  const add = (s) => {
+  const add2 = (s) => {
     if (s) found.add(s);
   };
   if (family === "js") {
-    for (const m of content.matchAll(/(?:\bfrom\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']/g)) add(m[1]);
+    for (const m of content.matchAll(/(?:\bfrom\s*|\brequire\s*\(\s*|\bimport\s+)["']([^"']+)["']/g)) add2(m[1]);
   } else if (family === "python") {
-    for (const m of content.matchAll(/^\s*from\s+([\w.]+)\s+import\b/gm)) add(m[1]);
-    for (const m of content.matchAll(/^\s*import\s+([\w.]+)/gm)) add(m[1]);
+    for (const m of content.matchAll(/^\s*from\s+([\w.]+)\s+import\b/gm)) add2(m[1]);
+    for (const m of content.matchAll(/^\s*import\s+([\w.]+)/gm)) add2(m[1]);
   } else if (family === "rust") {
-    for (const m of content.matchAll(/^\s*use\s+([\w:]+)/gm)) add(m[1]);
+    for (const m of content.matchAll(/^\s*use\s+([\w:]+)/gm)) add2(m[1]);
   } else if (family === "go") {
-    for (const block of content.matchAll(/^import\s*\(([\s\S]*?)\)/gm)) for (const m of (block[1] ?? "").matchAll(/"([^"]+)"/g)) add(m[1]);
-    for (const m of content.matchAll(/^import\s+"([^"]+)"/gm)) add(m[1]);
+    for (const block of content.matchAll(/^import\s*\(([\s\S]*?)\)/gm)) for (const m of (block[1] ?? "").matchAll(/"([^"]+)"/g)) add2(m[1]);
+    for (const m of content.matchAll(/^import\s+"([^"]+)"/gm)) add2(m[1]);
   }
   return [...found];
 }
@@ -38409,7 +38409,7 @@ var BackupStore = class {
 };
 
 // src/cli/args.ts
-var BOOLEAN_FLAGS = /* @__PURE__ */ new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader", "collapse", "all"]);
+var BOOLEAN_FLAGS = /* @__PURE__ */ new Set(["json", "offline", "force", "stdin", "dependents", "baseline", "help", "project", "global", "deep", "repair", "screen-reader", "collapse", "all", "apply", "confirm", "check"]);
 function parseArgs(argv) {
   const positionals = [];
   const flags = /* @__PURE__ */ new Map();
@@ -40402,14 +40402,14 @@ var actionFor = (n, command2, tag, detail, extra = {}) => ({
 function homeActions(hud, memory) {
   const actions = [];
   const has = (id) => actions.some((a) => a.commandId === id);
-  const add = (command2, tag, detail, extra = {}) => {
+  const add2 = (command2, tag, detail, extra = {}) => {
     if (command2 === void 0 || has(command2.id) || actions.length >= MAX_NUMBERED) return;
     actions.push(actionFor(actions.length + 1, command2, tag, detail, extra));
   };
-  for (const s of suggest(hud)) add(findCommand(s.commandId), "next", `${s.title}. ${s.why}`, { basis: s.basis, level: s.level, ...s.args === void 0 ? {} : { args: s.args } });
-  for (const id of memory.favorites) add(findCommand(id), "favorite", findCommand(id)?.summary ?? "");
-  for (const id of recentIds(memory, MAX_NUMBERED)) add(findCommand(id), "recent", findCommand(id)?.summary ?? "");
-  for (const c of CENTER_COMMANDS) add(c, "command", c.summary);
+  for (const s of suggest(hud)) add2(findCommand(s.commandId), "next", `${s.title}. ${s.why}`, { basis: s.basis, level: s.level, ...s.args === void 0 ? {} : { args: s.args } });
+  for (const id of memory.favorites) add2(findCommand(id), "favorite", findCommand(id)?.summary ?? "");
+  for (const id of recentIds(memory, MAX_NUMBERED)) add2(findCommand(id), "recent", findCommand(id)?.summary ?? "");
+  for (const c of CENTER_COMMANDS) add2(c, "command", c.summary);
   return actions;
 }
 var TAG_WORDS = { next: "next step", favorite: "favorite", recent: "recent", command: "" };
@@ -42546,9 +42546,321 @@ async function agentsCommand(args, ctx) {
   return 0;
 }
 
-// src/cli/commands/observe.ts
-import { readdir as readdir6 } from "fs/promises";
+// src/cli/commands/lifecycle.ts
+import path33 from "path";
+
+// src/lifecycle/inventory.ts
+import { lstat, readdir as readdir6, rm as rm3 } from "fs/promises";
 import path31 from "path";
+var MAX_ENTRIES = 2e4;
+var EMPTY = { files: 0, bytes: 0, newestMs: 0, truncated: false };
+async function pathStats(target, limit = MAX_ENTRIES) {
+  let files = 0;
+  let bytes = 0;
+  let newestMs = 0;
+  let seen = 0;
+  let truncated = false;
+  const walk = async (current) => {
+    if (truncated) return;
+    const info = await lstat(current).catch(() => void 0);
+    if (info === void 0) return;
+    if (++seen > limit) {
+      truncated = true;
+      return;
+    }
+    newestMs = Math.max(newestMs, info.mtimeMs);
+    if (!info.isDirectory()) {
+      files += 1;
+      bytes += info.size;
+      return;
+    }
+    for (const name of await readdir6(current).catch(() => [])) await walk(path31.join(current, name));
+  };
+  await walk(target);
+  return files === 0 && !truncated ? { ...EMPTY } : { files, bytes, newestMs: Math.round(newestMs), truncated };
+}
+var add = (a, b) => ({ files: a.files + b.files, bytes: a.bytes + b.bytes, newestMs: Math.max(a.newestMs, b.newestMs), truncated: a.truncated || b.truncated });
+var BACKUPS_DIR = "backups";
+var SETTINGS_FILE = "config.json";
+var CACHE_DIR = "docs-cache";
+var PROJECTS_DIR = "projects";
+var VERSION_FILE = "version.json";
+var isSettingsName = (name) => name === SETTINGS_FILE || name.startsWith(`${SETTINGS_FILE}.bak-`);
+async function scanInventory(root, currentKey) {
+  const names = await readdir6(root).catch(() => []);
+  let settings = { ...EMPTY };
+  let other = { ...EMPTY };
+  for (const name of names) {
+    if (name === CACHE_DIR || name === PROJECTS_DIR) continue;
+    const stats = await pathStats(path31.join(root, name));
+    if (isSettingsName(name)) settings = add(settings, stats);
+    else other = add(other, stats);
+  }
+  const docsCache = await pathStats(path31.join(root, CACHE_DIR));
+  const projects = [];
+  const projectsDir = path31.join(root, PROJECTS_DIR);
+  for (const key of (await readdir6(projectsDir).catch(() => [])).sort()) {
+    const dir = path31.join(projectsDir, key);
+    const all = await pathStats(dir);
+    const backups = await pathStats(path31.join(dir, BACKUPS_DIR));
+    projects.push({ key, current: key === currentKey, records: { ...all, files: all.files - backups.files, bytes: all.bytes - backups.bytes }, backups });
+  }
+  const total = projects.reduce((sum, p) => add(add(sum, p.records), p.backups), add(add(settings, docsCache), other));
+  return { root, settings, docsCache, other, projects, total };
+}
+var REMOVAL_SCOPES = ["cache", "records", "backups", "all"];
+function isStrictlyInside(root, target) {
+  const relative = path31.relative(path31.resolve(root), path31.resolve(target));
+  return relative !== "" && !relative.startsWith("..") && !path31.isAbsolute(relative);
+}
+async function planRemoval(scope, root, projectDir) {
+  let targets;
+  let consequences;
+  switch (scope) {
+    case "cache":
+      targets = [path31.join(root, CACHE_DIR)];
+      consequences = ["Cached documentation is removed. It is downloaded again the next time it is needed (offline mode will have nothing cached until then)."];
+      break;
+    case "records":
+      targets = (await readdir6(projectDir).catch(() => [])).filter((n) => n !== BACKUPS_DIR).map((n) => path31.join(projectDir, n));
+      consequences = ["This project's tasks, review decisions, agent activity, event log, verification record and session records are removed.", "File backups for this project are kept."];
+      break;
+    case "backups":
+      targets = [path31.join(projectDir, BACKUPS_DIR)];
+      consequences = ["This project's file backups are removed, so `jpe backup rollback` can no longer restore files Claude edited. This cannot be undone."];
+      break;
+    case "all": {
+      const names = await readdir6(root).catch(() => []);
+      targets = names.filter((n) => n === CACHE_DIR || n === PROJECTS_DIR || n === VERSION_FILE || isSettingsName(n)).map((n) => path31.join(root, n));
+      consequences = ["Your settings, the documentation cache, and the records AND file backups of EVERY project are removed. This cannot be undone.", "Your project folders and any `.jpe/config.json` inside them are not touched."];
+      break;
+    }
+  }
+  const safe = targets.filter((t) => isStrictlyInside(root, t));
+  let stats = { ...EMPTY };
+  for (const t of safe) stats = add(stats, await pathStats(t));
+  return { scope, targets: safe, consequences, stats };
+}
+async function executeRemoval(plan, root) {
+  const result = { removed: [], failed: [] };
+  for (const target of plan.targets) {
+    if (!isStrictlyInside(root, target)) {
+      result.failed.push({ target, reason: "it is outside JPE's data folder" });
+      continue;
+    }
+    try {
+      await rm3(target, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      result.removed.push(target);
+    } catch (error62) {
+      result.failed.push({ target, reason: error62 instanceof Error ? error62.message : "it could not be removed" });
+    }
+  }
+  return result;
+}
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// src/lifecycle/views.ts
+function aboutView(facts, profile) {
+  const out = [...heading(`JPE For Claude ${facts.version}`, profile)];
+  const mismatch = facts.manifestVersion !== void 0 && facts.manifestVersion !== facts.version;
+  out.push(...statusBadge(mismatch ? "warning" : "success", mismatch ? `The built code is ${facts.version} but the plugin manifest says ${facts.manifestVersion}: it is out of date.` : "The built code and the plugin manifest agree on the version.", profile));
+  out.push(
+    blank(),
+    ...keyValues(
+      [
+        ["Version", facts.version],
+        ["Plugin folder", facts.pluginRoot === void 0 ? "not found (running outside a plugin folder)" : inline(facts.pluginRoot)],
+        ["Data folder", inline(facts.dataRoot)]
+      ],
+      profile
+    ),
+    ...facts.settingsFiles.flatMap((s) => textLines(`${s.label}: ${inline(s.path)} ${s.exists ? "(exists)" : "(not created: defaults are in use)"}`, profile.width))
+  );
+  if (facts.check !== void 0) out.push(blank(), ...checkLines(facts.check, profile));
+  const id = facts.pluginId ?? "<plugin>";
+  out.push(
+    blank(),
+    ...heading("Update and uninstall", profile),
+    ...bulletList(
+      [
+        `Update: \`claude plugin update ${id}\`, then restart Claude Code. JPE tells you once, at the next session start, when its version changed.`,
+        `Uninstall: \`claude plugin uninstall ${id}\`. Claude Code removes the plugin's data folder too; add --keep-data to keep it.`,
+        "Check for a newer version: `jpe about --check` (needs the network; offline mode refuses it).",
+        "See or clear what JPE stores: `jpe data`."
+      ],
+      profile
+    )
+  );
+  return out;
+}
+function checkLines(check2, profile) {
+  switch (check2.state) {
+    case "up-to-date":
+      return statusBadge("success", `You have the latest published version (${check2.latest}).`, profile);
+    case "update-available":
+      return statusBadge("info", `A newer version is published: ${check2.latest} (you have ${check2.installed}).`, profile);
+    case "ahead":
+      return statusBadge("info", `You have ${check2.installed}, which is newer than the latest published version (${check2.latest}): a development build.`, profile);
+    case "unknown":
+      return [...statusBadge("warning", "Could not tell whether there is a newer version.", profile), ...textLines(check2.reason, profile.width, { role: "muted" })];
+    case "skipped":
+      return [...statusBadge("inactive", "Did not check for a newer version.", profile), ...textLines(check2.reason, profile.width, { role: "muted" })];
+  }
+}
+var sizeText = (s) => s.files === 0 ? "empty" : `${s.files}${s.truncated ? "+" : ""} ${s.files === 1 ? "file" : "files"}, ${formatBytes(s.bytes)}`;
+function dataView(inv, now, profile) {
+  const out = [...heading("What JPE stores", profile)];
+  out.push(...keyValues([["Folder", inline(inv.root)], ["Total", sizeText(inv.total)]], profile));
+  out.push(blank(), ...table({ columns: [{ header: "What", min: 14 }, { header: "Size", min: 10 }], rows: [["Settings (and backups of them)", sizeText(inv.settings)], ["Documentation cache", sizeText(inv.docsCache)], ["Other (version record)", sizeText(inv.other)]] }, profile));
+  if (inv.projects.length > 0) {
+    out.push(blank(), ...heading("Per project", profile));
+    out.push(
+      ...table(
+        { columns: [{ header: "Project", min: 10 }, { header: "Records", min: 8 }, { header: "File backups", min: 8 }, { header: "Last used", min: 8 }], rows: inv.projects.map((p) => [`${p.key}${p.current ? " (this one)" : ""}`, sizeText(p.records), sizeText(p.backups), p.records.newestMs === 0 && p.backups.newestMs === 0 ? "never" : formatAge(new Date(Math.max(p.records.newestMs, p.backups.newestMs)).toISOString(), now)]) },
+        profile
+      )
+    );
+  }
+  out.push(
+    blank(),
+    ...bulletList(
+      [
+        "Records are tasks, review decisions, agent activity, the event log, the verification record and session records. Backups are copies of files Claude edited, kept so you can roll back.",
+        "Nothing is stored in your project except `.jpe/config.json`, which is yours and is never touched here.",
+        "`jpe data remove cache|records|backups|all` shows exactly what would be deleted. Nothing is deleted until you add --confirm."
+      ],
+      profile
+    )
+  );
+  return out;
+}
+function removalView(plan, root, result, profile) {
+  const out = [...heading(`Remove: ${plan.scope}`, profile)];
+  if (plan.targets.length === 0 || plan.stats.files === 0) {
+    out.push(...textLines(result === void 0 ? "Nothing to remove: that part is already empty." : "Nothing was removed: that part is already empty.", profile.width));
+    return out;
+  }
+  out.push(...textLines(`${result === void 0 ? "Would delete" : "Deleted"} ${sizeText(plan.stats)} from ${inline(root)}.`, profile.width), blank(), ...bulletList(plan.consequences, profile));
+  if (result === void 0) {
+    out.push(blank(), ...textLines("Nothing has been deleted. To go ahead, run the same command again with --confirm.", profile.width, { role: "muted" }));
+    return out;
+  }
+  out.push(blank(), ...statusBadge(result.failed.length === 0 ? "success" : "warning", result.failed.length === 0 ? `Removed ${result.removed.length} ${result.removed.length === 1 ? "item" : "items"}.` : `Removed ${result.removed.length}; ${result.failed.length} could not be removed.`, profile));
+  for (const f4 of result.failed) out.push(...textLines(`${inline(f4.target)}: ${inline(f4.reason)}`, profile.width, { role: "muted" }));
+  return out;
+}
+
+// src/lifecycle/version.ts
+import path32 from "path";
+var PACKAGE_VERSION = package_default.version;
+var LATEST_MANIFEST_URL = "https://raw.githubusercontent.com/khaoticdev62/jpe-for-claude/master/.claude-plugin/plugin.json";
+var LATEST_MANIFEST_HOST = "raw.githubusercontent.com";
+function parseVersion2(text2) {
+  const match = /^(\d{1,6})\.(\d{1,6})\.(\d{1,6})$/.exec(text2.trim());
+  return match === null ? void 0 : [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+function compareVersions(a, b) {
+  const x = parseVersion2(a);
+  const y = parseVersion2(b);
+  if (x === void 0 || y === void 0) return void 0;
+  for (let i = 0; i < 3; i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+function checkAgainstManifest(installed, manifestText) {
+  let latest;
+  try {
+    latest = JSON.parse(manifestText).version;
+  } catch {
+    return { state: "unknown", installed, reason: "the published manifest was not valid JSON" };
+  }
+  if (typeof latest !== "string" || parseVersion2(latest) === void 0) return { state: "unknown", installed, reason: "the published manifest has no readable version" };
+  const order = compareVersions(installed, latest);
+  if (order === void 0) return { state: "unknown", installed, reason: `the installed version "${installed}" is not a plain x.y.z version` };
+  return { state: order === 0 ? "up-to-date" : order < 0 ? "update-available" : "ahead", installed, latest };
+}
+
+// src/cli/commands/lifecycle.ts
+var CHECK_TIMEOUT_MS = 1e4;
+async function readJsonField(ctx, file2, field) {
+  const text2 = await ctx.readText(file2).catch(() => void 0);
+  if (text2 === void 0) return void 0;
+  try {
+    const value = JSON.parse(text2)[field];
+    return typeof value === "string" ? value : void 0;
+  } catch {
+    return void 0;
+  }
+}
+async function checkForUpdate(ctx, offline) {
+  if (offline) return { state: "skipped", reason: "Offline mode is on, so JPE made no network request. Turn it off with `jpe config set runtime.offline false`." };
+  try {
+    const response = await safeRequest({ url: LATEST_MANIFEST_URL, accept: "application/json", allowedHosts: [LATEST_MANIFEST_HOST], timeoutMs: CHECK_TIMEOUT_MS, maxBytes: 64 * 1024 }, ctx.net);
+    return checkAgainstManifest(PACKAGE_VERSION, response.text);
+  } catch (error62) {
+    return { state: "unknown", installed: PACKAGE_VERSION, reason: isJpeError(error62) ? error62.userMessage : "the request failed" };
+  }
+}
+async function aboutCommand(args, ctx) {
+  const root = ctx.pluginRoot;
+  const manifestVersion = root === void 0 ? void 0 : await readJsonField(ctx, path33.join(root, ".claude-plugin", "plugin.json"), "version");
+  const marketplace = root === void 0 ? void 0 : await readJsonField(ctx, path33.join(root, ".claude-plugin", "marketplace.json"), "name");
+  const pluginName = root === void 0 ? void 0 : await readJsonField(ctx, path33.join(root, ".claude-plugin", "plugin.json"), "name");
+  const globalSettings = globalConfigPath(ctx.pathEnv);
+  const projectSettings = projectConfigPath(ctx.cwd);
+  const config2 = await ctx.loadConfig().catch(() => void 0);
+  const facts = {
+    version: PACKAGE_VERSION,
+    ...manifestVersion === void 0 ? {} : { manifestVersion },
+    ...root === void 0 ? {} : { pluginRoot: root },
+    dataRoot: dataDir(ctx.pathEnv),
+    settingsFiles: [
+      { label: "Your settings", path: globalSettings, exists: await ctx.readText(globalSettings).catch(() => void 0) !== void 0 },
+      { label: "Project settings", path: projectSettings, exists: await ctx.readText(projectSettings).catch(() => void 0) !== void 0 }
+    ],
+    ...pluginName !== void 0 && marketplace !== void 0 ? { pluginId: `${pluginName}@${marketplace}` } : {},
+    ...flagBool(args, "check") ? { check: await checkForUpdate(ctx, config2?.runtime.offline === true) } : {}
+  };
+  if (flagBool(args, "json")) {
+    ctx.out(JSON.stringify(facts, null, 2));
+    return 0;
+  }
+  const { profile } = await renderContext(args, ctx, { defaultsIfSettingsUnreadable: true });
+  ctx.out(paint(aboutView(facts, profile), profile));
+  return 0;
+}
+var USAGE = `Usage: jpe data [remove <${REMOVAL_SCOPES.join("|")}> [--confirm]] [--json]`;
+async function dataCommand(args, ctx) {
+  const [sub, rawScope] = args.positionals;
+  const json2 = flagBool(args, "json");
+  const root = dataDir(ctx.pathEnv);
+  const { profile } = await renderContext(args, ctx, { defaultsIfSettingsUnreadable: true });
+  if (sub === void 0) {
+    const inventory = await scanInventory(root, projectKey(ctx.cwd));
+    ctx.out(json2 ? JSON.stringify(inventory, null, 2) : paint(dataView(inventory, ctx.now(), profile), profile));
+    return 0;
+  }
+  if (sub === "remove") {
+    if (rawScope === void 0 || !REMOVAL_SCOPES.includes(rawScope)) throw new JpeError("INVALID_INPUT", `Choose what to remove: ${REMOVAL_SCOPES.join(", ")}. ${USAGE}`);
+    const plan = await planRemoval(rawScope, root, ctx.stateDir());
+    const confirmed = flagBool(args, "confirm");
+    const result = confirmed && plan.targets.length > 0 ? await executeRemoval(plan, root) : void 0;
+    if (json2) ctx.out(JSON.stringify({ scope: plan.scope, targets: plan.targets, stats: plan.stats, consequences: plan.consequences, confirmed, ...result === void 0 ? {} : { result } }, null, 2));
+    else ctx.out(paint(removalView(plan, root, result, profile), profile));
+    return result !== void 0 && result.failed.length > 0 ? 1 : 0;
+  }
+  throw new JpeError("INVALID_INPUT", `"${sub}" is not a data command. ${USAGE}`);
+}
+
+// src/cli/commands/observe.ts
+import { readdir as readdir7 } from "fs/promises";
+import path34 from "path";
 
 // src/config/catalog.ts
 var isPlain2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -42739,7 +43051,7 @@ async function readLayer2(ctx, file2) {
 async function offlineCommand(args, ctx) {
   const config2 = await ctx.loadConfig();
   const sources = settingSources({ global: await readLayer2(ctx, globalConfigPath(ctx.pathEnv)), project: await readLayer2(ctx, projectConfigPath(ctx.cwd)), environment: envOverrides(ctx.pathEnv.env) });
-  const cached2 = (await readdir6(path31.join(dataDir(ctx.pathEnv), "docs-cache")).catch(() => [])).filter((n) => n.endsWith(".json")).length;
+  const cached2 = (await readdir7(path34.join(dataDir(ctx.pathEnv), "docs-cache")).catch(() => [])).filter((n) => n.endsWith(".json")).length;
   const facts = {
     offline: effectiveValue(config2, "runtime.offline") === true,
     source: sources["runtime.offline"] ?? "default",
@@ -42833,7 +43145,7 @@ function presetPreviewView(preset, changes, applied, backedUp, scope, profile) {
 }
 
 // src/cli/commands/settings.ts
-var USAGE = "Usage: jpe settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]";
+var USAGE2 = "Usage: jpe settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]";
 async function readLayer3(ctx, file2) {
   const text2 = await ctx.readText(file2);
   if (text2 === void 0) return void 0;
@@ -42865,7 +43177,7 @@ async function settingsCommand(args, ctx) {
     return 0;
   }
   if (sub === "unset") {
-    if (target === void 0 || !isSettingKey(target)) throw new JpeError("INVALID_INPUT", `"${target ?? ""}" is not a setting. Run \`jpe settings\` to see them all. ${USAGE}`);
+    if (target === void 0 || !isSettingKey(target)) throw new JpeError("INVALID_INPUT", `"${target ?? ""}" is not a setting. Run \`jpe settings\` to see them all. ${USAGE2}`);
     const file2 = scopeFile(args, ctx);
     const layer = await readLayer3(ctx, file2) ?? {};
     const updated = unsetPath(layer, target);
@@ -42903,11 +43215,11 @@ async function settingsCommand(args, ctx) {
   }
   if (isSettingKey(sub)) {
     const row = (await rowsFor(ctx)).find((r) => r.key === sub);
-    if (row === void 0) throw new JpeError("INVALID_INPUT", USAGE);
+    if (row === void 0) throw new JpeError("INVALID_INPUT", USAGE2);
     ctx.out(json2 ? JSON.stringify(row, null, 2) : paint(settingDetailView(row, profile), profile));
     return 0;
   }
-  throw new JpeError("INVALID_INPUT", `"${sub}" is not a setting or a settings command. ${USAGE}`);
+  throw new JpeError("INVALID_INPUT", `"${sub}" is not a setting or a settings command. ${USAGE2}`);
 }
 
 // src/workspace/views.ts
@@ -42960,7 +43272,7 @@ function resumeView(hud, sessions, tasks, now, profile) {
 }
 
 // src/cli/commands/workspace.ts
-var USAGE2 = "Usage: jpe task <add <text> | list [--all] | done <number> | remove <number>> [--json]";
+var USAGE3 = "Usage: jpe task <add <text> | list [--all] | done <number> | remove <number>> [--json]";
 async function taskCommand(args, ctx) {
   const sub = args.positionals[0] ?? "list";
   const json2 = flagBool(args, "json");
@@ -42974,7 +43286,7 @@ async function taskCommand(args, ctx) {
   }
   if (sub === "add") {
     const added = addTask(tasks, { id: ctx.newId(), text: args.positionals.slice(1).join(" "), at: now });
-    if (added === void 0) throw new JpeError("INVALID_INPUT", `Nothing to add: give the task some text, and note the list holds at most 200 tasks. ${USAGE2}`);
+    if (added === void 0) throw new JpeError("INVALID_INPUT", `Nothing to add: give the task some text, and note the list holds at most 200 tasks. ${USAGE3}`);
     await saveTasks(ctx, added.tasks);
     ctx.out(json2 ? JSON.stringify(added.task, null, 2) : paint(statusBadge("success", `Added task ${openTasks(added.tasks).length}: ${added.task.text}`, profile), profile));
     return 0;
@@ -42982,12 +43294,12 @@ async function taskCommand(args, ctx) {
   if (sub === "done" || sub === "remove") {
     const ref = args.positionals[1] ?? "";
     const result = sub === "done" ? completeTask(tasks, ref, now) : removeTask(tasks, ref);
-    if (result === void 0) throw new JpeError("INVALID_INPUT", `No open task matches "${ref}". Run \`jpe task list\` and use the number in the # column. ${USAGE2}`);
+    if (result === void 0) throw new JpeError("INVALID_INPUT", `No open task matches "${ref}". Run \`jpe task list\` and use the number in the # column. ${USAGE3}`);
     await saveTasks(ctx, result.tasks);
     ctx.out(json2 ? JSON.stringify(result.task, null, 2) : paint(statusBadge("success", `${sub === "done" ? "Marked done" : "Removed"}: ${result.task.text}`, profile), profile));
     return 0;
   }
-  throw new JpeError("INVALID_INPUT", USAGE2);
+  throw new JpeError("INVALID_INPUT", USAGE3);
 }
 async function sessionsCommand(args, ctx) {
   const sessions = await listSessions(ctx);
@@ -43012,15 +43324,15 @@ async function resumeCommand(args, ctx) {
 
 // src/cli/commands/review.ts
 import { mkdir as mkdir8 } from "fs/promises";
-import path32 from "path";
+import path35 from "path";
 var HISTORY_SHOWN = 20;
 var SHORT = 8;
-var decisionsFile = (ctx) => path32.join(ctx.stateDir(), DECISIONS_FILE);
+var decisionsFile = (ctx) => path35.join(ctx.stateDir(), DECISIONS_FILE);
 async function record2(ctx, decision, note) {
   const { fingerprint, fileCount } = await reviewFingerprint(ctx);
   if (fileCount === 0) throw new JpeError("INVALID_INPUT", "There are no uncommitted changes to review, so there is nothing to approve or reject.");
   const entry = { id: ctx.newId(), at: ctx.now().toISOString(), decision, fingerprint, fileCount, ...note === "" ? {} : { note } };
-  await mkdir8(path32.dirname(decisionsFile(ctx)), { recursive: true });
+  await mkdir8(path35.dirname(decisionsFile(ctx)), { recursive: true });
   await ctx.writeText(decisionsFile(ctx), appendDecision(await loadDecisions(ctx), entry));
   return entry;
 }
@@ -43080,7 +43392,7 @@ async function reviewCommand(args, ctx) {
 }
 
 // src/cli/commands/show.ts
-import path33 from "path";
+import path36 from "path";
 
 // src/ui/highlight.ts
 var EXTENSIONS = {
@@ -43619,7 +43931,7 @@ function diagnosticsView(report, notes, rel2, profile, options) {
 
 // src/cli/commands/show.ts
 var VIEWS = ["file", "change", "review", "impact", "docs", "diagnostics"];
-var USAGE3 = `Usage: jpe show <${VIEWS.join("|")}> ...
+var USAGE4 = `Usage: jpe show <${VIEWS.join("|")}> ...
   file <path>              a file's code with possible risks marked, beside its structure
   change <path>            one file's uncommitted change as a diff
   review                   every uncommitted change: overview, notes, checklist, diffs
@@ -43651,7 +43963,7 @@ async function reviewFiles(ctx) {
     const rel2 = changed.path;
     const deleted = changed.status.includes("D");
     const added = changed.status.includes("?") || changed.status.includes("A");
-    const after = deleted ? "" : await ctx.fs.readText(path33.resolve(root, rel2));
+    const after = deleted ? "" : await ctx.fs.readText(path36.resolve(root, rel2));
     if (after === void 0) {
       skipped.push(`${rel2} (not readable as text)`);
       continue;
@@ -43668,7 +43980,7 @@ async function reviewFiles(ctx) {
 }
 async function showCommand(args, ctx) {
   const view = args.positionals[0];
-  if (view === void 0 || !VIEWS.includes(view)) throw new JpeError("INVALID_INPUT", USAGE3);
+  if (view === void 0 || !VIEWS.includes(view)) throw new JpeError("INVALID_INPUT", USAGE4);
   const { profile } = await renderContext(args, ctx);
   const json2 = flagBool(args, "json");
   const expanded = !flagBool(args, "collapse");
@@ -43701,7 +44013,7 @@ async function showCommand(args, ctx) {
   }
   if (view === "impact") {
     const run2 = await computeImpact(rest[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
-    const rel3 = (file2) => path33.relative(ctx.cwd, file2).split(path33.sep).join("/") || file2;
+    const rel3 = (file2) => path36.relative(ctx.cwd, file2).split(path36.sep).join("/") || file2;
     return emit({ report: run2.report, notes: run2.notes }, () => impactView(run2.report, rel3(run2.abs), run2.notes, rel3, profile));
   }
   if (view === "docs") {
@@ -43710,7 +44022,7 @@ async function showCommand(args, ctx) {
     return emit({ versionNote, report: { ...report, results: report.results.map((r) => ({ ...r, content: r.content.slice(0, 4e3) })) } }, () => docsView(report, versionNote, profile, { expanded, ...find === void 0 ? {} : { find } }));
   }
   const run = await collectDiagnostics(rest, ctx);
-  const rel2 = (file2) => path33.relative(ctx.cwd, file2).split(path33.sep).join("/") || file2;
+  const rel2 = (file2) => path36.relative(ctx.cwd, file2).split(path36.sep).join("/") || file2;
   return emit(run, () => diagnosticsView(run.report, run.notes, rel2, profile, { expanded }));
 }
 
@@ -43828,7 +44140,7 @@ async function uiCommand(args, ctx) {
 }
 
 // src/cli/commands/verify.ts
-import path34 from "path";
+import path37 from "path";
 
 // src/verification/runner.ts
 import { createHash as createHash6 } from "crypto";
@@ -43962,12 +44274,12 @@ async function verifyCommand(args, ctx) {
   const deps = { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs };
   if (flagBool(args, "baseline")) {
     const baseline2 = await captureBaseline(checks, deps);
-    await ctx.writeText(path34.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
+    await ctx.writeText(path37.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
     ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline2].map(([cmd2, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd2}`)].join("\n"));
     return 0;
   }
   let baseline;
-  const saved = await ctx.readText(path34.join(dir, "baseline.json"));
+  const saved = await ctx.readText(path37.join(dir, "baseline.json"));
   if (saved) {
     const parsed = baselineSchema.safeParse(JSON.parse(saved));
     if (parsed.success) baseline = new Map(Object.entries(parsed.data));
@@ -43975,9 +44287,9 @@ async function verifyCommand(args, ctx) {
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   const outcomes = await runChecks(checks, { ...deps, ledger }, baseline);
   const required2 = [...new Set(checks.map((c) => c.check))];
-  await ctx.writeText(path34.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
+  await ctx.writeText(path37.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
 `);
-  await ctx.writeText(path34.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
+  await ctx.writeText(path37.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
   const report = deriveStatus(ledger.entries, required2);
   const extra = [
     ...warnings.map((w) => `WARNING: ${w}`),
@@ -44018,6 +44330,8 @@ var COMMANDS = {
   settings: { run: settingsCommand, help: "settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]   Every setting with its meaning, default and source; accessibility presets" },
   offline: { run: offlineCommand, help: "offline [--json]   Whether offline mode is on, who set it, what it affects, and what is cached" },
   log: { run: logCommand, help: "log [--level debug|info|warn|error] [--limit n] [--json]   JPE's own recent events (hook failures and timeouts, session starts)" },
+  about: { run: aboutCommand, help: "about [--check] [--json]   The version running, where JPE and its data live, how to update or uninstall, and (with --check) whether a newer version is published" },
+  data: { run: dataCommand, help: "data [remove <cache|records|backups|all> [--confirm]] [--json]   What JPE stores, and removing it (preview first; nothing is deleted without --confirm)" },
   agents: { run: agentsCommand, help: "agents [--json]   Agent runs Claude Code reported in this project: running or finished, how long they took, and use by type" },
   review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },

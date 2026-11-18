@@ -845,10 +845,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path19) {
-  if (!path19)
+function getElementAtPath(obj, path20) {
+  if (!path20)
     return obj;
-  return path19.reduce((acc, key) => acc?.[key], obj);
+  return path20.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1188,11 +1188,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path19, issues) {
+function prefixIssues(path20, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path19);
+    iss.path.unshift(path20);
     return iss;
   });
 }
@@ -1654,16 +1654,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path19 = []) => {
+  const processError = (error63, path20 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path19, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path20, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else {
-        const fullpath = [...path19, ...issue2.path];
+        const fullpath = [...path20, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1702,17 +1702,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path19 = []) => {
+  const processError = (error63, path20 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path19, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path20, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path20, ...issue2.path]);
       } else {
-        const fullpath = [...path19, ...issue2.path];
+        const fullpath = [...path20, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1751,8 +1751,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path19 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path19) {
+  const path20 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path20) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18890,13 +18890,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path19 = ref.slice(1).split("/").filter(Boolean);
-  if (path19.length === 0) {
+  const path20 = ref.slice(1).split("/").filter(Boolean);
+  if (path20.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path19[0] === defsKey) {
-    const key = path19[1] === void 0 ? void 0 : decodeJSONPointerSegment(path19[1]);
+  if (path20[0] === defsKey) {
+    const key = path20[1] === void 0 ? void 0 : decodeJSONPointerSegment(path20[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -20400,7 +20400,7 @@ function createContext(overrides = {}) {
 
 // src/hooks/run.ts
 import { appendFile as appendFile3, mkdir as mkdir6 } from "fs/promises";
-import path18 from "path";
+import path19 from "path";
 
 // src/core/redact.ts
 var REDACTED = "[REDACTED_SECRET_FOUND]";
@@ -20505,7 +20505,7 @@ async function pruneLog(ctx) {
 }
 
 // src/hooks/handlers.ts
-import path17 from "path";
+import path18 from "path";
 
 // src/cli/commands/admin.ts
 import { copyFile } from "fs/promises";
@@ -21081,10 +21081,89 @@ async function pruneAgentEvents(ctx) {
   await ctx.writeText(fileFor2(ctx), trimAgentEvents(text));
 }
 
+// src/lifecycle/version.ts
+import path13 from "path";
+
+// package.json
+var package_default = {
+  name: "jpe-for-claude",
+  version: "1.10.0",
+  description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
+  private: true,
+  type: "module",
+  engines: {
+    node: ">=20"
+  },
+  scripts: {
+    build: "tsup",
+    lint: "biome lint",
+    typecheck: "tsc --noEmit",
+    test: "vitest run",
+    "validate:plugin": "claude plugin validate .",
+    "test:mod": "node scripts/test-mod.mjs",
+    version: "node scripts/sync-version.mjs && git add .claude-plugin",
+    package: "npm run build && node scripts/package.mjs"
+  },
+  devDependencies: {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "^26.6.6",
+    tsup: "^9.0.0",
+    typescript: "^7.0.2",
+    vitest: "^5.1.0"
+  },
+  dependencies: {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    zod: "^4.6.7"
+  },
+  repository: {
+    type: "git",
+    url: "https://github.com/khaoticdev62/jpe-for-claude.git"
+  },
+  license: "MIT"
+};
+
+// src/lifecycle/version.ts
+var PACKAGE_VERSION = package_default.version;
+function parseVersion(text) {
+  const match = /^(\d{1,6})\.(\d{1,6})\.(\d{1,6})$/.exec(text.trim());
+  return match === null ? void 0 : [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+function compareVersions(a, b) {
+  const x = parseVersion(a);
+  const y = parseVersion(b);
+  if (x === void 0 || y === void 0) return void 0;
+  for (let i = 0; i < 3; i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0);
+    if (d !== 0) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+var seenFile = (ctx) => path13.join(dataDir(ctx.pathEnv), "version.json");
+async function readSeenVersion(ctx) {
+  const text = await ctx.readText(seenFile(ctx)).catch(() => void 0);
+  if (text === void 0) return void 0;
+  try {
+    const parsed = JSON.parse(text);
+    const version2 = typeof parsed === "object" && parsed !== null ? parsed.version : void 0;
+    return typeof version2 === "string" && parseVersion(version2) !== void 0 ? version2 : void 0;
+  } catch {
+    return void 0;
+  }
+}
+async function recordSeenVersion(ctx, version2) {
+  await ctx.writeText(seenFile(ctx), `${JSON.stringify({ version: version2, at: ctx.now().toISOString() })}
+`);
+}
+function describeVersionChange(previous, current) {
+  if (previous === void 0) return { kind: "first" };
+  if (previous === current) return { kind: "same" };
+  return compareVersions(previous, current) === -1 ? { kind: "updated", message: `JPE was updated from ${previous} to ${current}. What changed is in CHANGELOG.md in the plugin folder, or on GitHub.` } : { kind: "changed", message: `JPE is now version ${current} (it was ${previous}).` };
+}
+
 // src/docs/cache.ts
 import { createHash as createHash3 } from "crypto";
 import { mkdir as mkdir5, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path13 from "path";
+import path14 from "path";
 var sha256Hex = (text) => createHash3("sha256").update(text).digest("hex");
 var entrySchema = external_exports.strictObject({
   key: external_exports.string().regex(/^[a-f0-9]{64}$/),
@@ -21140,18 +21219,18 @@ function explainError(message) {
 }
 
 // src/lsp/diagnostics.ts
-import path15 from "path";
+import path16 from "path";
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path14 from "path";
+import path15 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path14.normalize(file2).toLowerCase() : path14.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path15.normalize(file2).toLowerCase() : path15.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path14.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path15.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -21190,7 +21269,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path14.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path15.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -21651,7 +21730,8 @@ var DESTRUCTIVE = [
   { pattern: /\bgit\s+branch\s+-D\b/i, reason: "force-deletes a branch" },
   { pattern: /\bdrop\s+(table|database|schema)\b/i, reason: "drops database objects" },
   { pattern: /\b(mkfs|format\s+[a-z]:|dd\s+if=)/i, reason: "overwrites a disk" },
-  { pattern: /\bchmod\s+-R\s+777\b/i, reason: "removes file protections" }
+  { pattern: /\bchmod\s+-R\s+777\b/i, reason: "removes file protections" },
+  { pattern: /\b(?:jpe|cli\.js)["']?\s+data\b(?=[^|;\n]*\bremove\b)(?=[^|;\n]*--confirm\b)/i, reason: "permanently deletes JPE's saved data (records, backups or cache)" }
 ];
 var NEEDS_APPROVAL = [
   { pattern: /\b(npm|pnpm|yarn|pip3?|cargo|go|gem|composer|dotnet)\s+(install|add|i|get|tool\s+install)\b/i, reason: "installs software" },
@@ -21799,7 +21879,7 @@ var context = (event, text) => ({ hookSpecificOutput: { hookEventName: event, ad
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path16 from "path";
+import path17 from "path";
 var stateSchema = external_exports.strictObject({
   startedAt: external_exports.iso.datetime(),
   promptNudged: external_exports.boolean(),
@@ -21814,11 +21894,11 @@ var stateSchema = external_exports.strictObject({
 });
 var MAX_ENTRIES = 500;
 var STALE_MS = 7 * 24 * 36e5;
-var fileKey2 = (file2) => process.platform === "win32" ? path16.normalize(file2).toLowerCase() : path16.normalize(file2);
+var fileKey2 = (file2) => process.platform === "win32" ? path17.normalize(file2).toLowerCase() : path17.normalize(file2);
 function freshState(ctx) {
   return { startedAt: ctx.now().toISOString(), promptNudged: false, stopNudged: false, edits: {}, backups: {}, checked: {}, diagnosticsRuns: 0 };
 }
-var stateFile = (ctx, sessionId) => path16.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
+var stateFile = (ctx, sessionId) => path17.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
 function parseSessionState(text) {
   try {
     const parsed = stateSchema.safeParse(JSON.parse(text));
@@ -21837,7 +21917,7 @@ async function saveState(ctx, sessionId, state) {
   await ctx.writeText(stateFile(ctx, sessionId), JSON.stringify(bounded));
 }
 async function pruneStaleStates(ctx) {
-  const dir = path16.join(ctx.stateDir(), "sessions");
+  const dir = path17.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -21847,7 +21927,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path16.join(dir, name);
+    const file2 = path17.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -21864,17 +21944,17 @@ var clip = (text) => text.length > MAX_ADDITIONAL_CONTEXT ? `${text.slice(0, MAX
 function editTarget(toolName, input2, cwd) {
   if (!EDIT_TOOLS.has(toolName)) return void 0;
   const raw = toolName === "NotebookEdit" ? input2["notebook_path"] : input2["file_path"];
-  return typeof raw === "string" && raw !== "" ? path17.resolve(cwd, raw) : void 0;
+  return typeof raw === "string" && raw !== "" ? path18.resolve(cwd, raw) : void 0;
 }
 var insideProject = (root, file2) => {
-  const rel = path17.relative(root, file2);
-  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path17.sep}`) && !path17.isAbsolute(rel);
+  const rel = path18.relative(root, file2);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path18.sep}`) && !path18.isAbsolute(rel);
 };
 var lookupFor = (ctx) => ({ platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f) => ctx.fs.exists(f) });
 var WORKING_RULES = "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.";
 var WELCOME_MESSAGE = "JPE For Claude is active. Try /jpe:verify to run this project's real checks, or /jpe:explain to get a plain-English walkthrough.";
 async function isFirstRun(ctx) {
-  const marker = path17.join(ctx.stateDir(), "welcomed");
+  const marker = path18.join(ctx.stateDir(), "welcomed");
   if (await ctx.readText(marker).catch(() => void 0) !== void 0) return false;
   await ctx.writeText(marker, ctx.now().toISOString()).catch(() => void 0);
   return true;
@@ -21908,7 +21988,11 @@ async function onSessionStart(payload, ctx) {
     WORKING_RULES
   ];
   const output2 = context("SessionStart", clip(lines.join("\n")));
-  return payload.source === "startup" && await isFirstRun(ctx) ? { ...output2, systemMessage: WELCOME_MESSAGE } : output2;
+  if (payload.source !== "startup") return output2;
+  const change = describeVersionChange(await readSeenVersion(ctx), PACKAGE_VERSION);
+  await recordSeenVersion(ctx, PACKAGE_VERSION).catch(() => void 0);
+  const notices = [change.kind === "updated" || change.kind === "changed" ? change.message : void 0, await isFirstRun(ctx) ? WELCOME_MESSAGE : void 0].filter((n) => n !== void 0);
+  return notices.length > 0 ? { ...output2, systemMessage: notices.join(" ") } : output2;
 }
 async function onSubagentStart(payload, ctx) {
   await recordAgentEvent(ctx, makeAgentEvent({ at: ctx.now(), kind: "start", agentId: payload.agent_id, agentType: payload.agent_type, sessionId: payload.session_id }));
@@ -21947,7 +22031,7 @@ async function onPreToolUse(payload, ctx) {
   if (!target) return void 0;
   let decision;
   if (mode !== "off") {
-    if (isSensitiveFileName(target)) decision = ask(`${path17.basename(target)} looks like a credentials file; check what is being written.`);
+    if (isSensitiveFileName(target)) decision = ask(`${path18.basename(target)} looks like a credentials file; check what is being written.`);
     else if (mode === "always") decision = ask('approval mode is "always".');
   }
   if (cfg.engineering.backups && insideProject(ctx.cwd, target) && !isSensitiveFileName(target) && await ctx.fs.exists(target)) {
@@ -21955,7 +22039,7 @@ async function onPreToolUse(payload, ctx) {
     const key = fileKey2(target);
     if (!state.backups[key]) {
       try {
-        const rel = path17.relative(ctx.cwd, target);
+        const rel = path18.relative(ctx.cwd, target);
         const backup = await store(ctx).create(ctx.cwd, [rel], `auto: before edit (session ${payload.session_id.slice(0, 8)})`);
         await saveState(ctx, payload.session_id, { ...state, backups: { ...state.backups, [key]: backup.id } });
       } catch {
@@ -21970,7 +22054,7 @@ async function onPostToolUse(payload, ctx) {
   const cfg = await ctx.loadConfig();
   const state = await loadState(ctx, payload.session_id);
   const key = fileKey2(target);
-  const rel = path17.relative(ctx.cwd, target).split(path17.sep).join("/");
+  const rel = path18.relative(ctx.cwd, target).split(path18.sep).join("/");
   const next = { ...state, edits: { ...state.edits, [key]: ctx.now().toISOString() } };
   const backupId = state.backups[key];
   if (backupId) await store(ctx).seal(backupId).catch(() => void 0);
@@ -22029,7 +22113,7 @@ async function onStop(payload, ctx) {
   const sourceEdits = Object.entries(state.edits).filter(([file2]) => languageForFile(file2) !== void 0);
   if (sourceEdits.length === 0) return void 0;
   const lastEdit = sourceEdits.map(([, at]) => at).sort().at(-1) ?? "";
-  const runText = await ctx.readText(path17.join(ctx.stateDir(), "run.json"));
+  const runText = await ctx.readText(path18.join(ctx.stateDir(), "run.json"));
   if (runText) {
     try {
       const at = JSON.parse(runText).at;
@@ -22040,7 +22124,7 @@ async function onStop(payload, ctx) {
   const project = await detectProject(ctx.cwd, ctx.fs);
   if ((await discoverChecks(project, ctx.fs)).length === 0) return void 0;
   await saveState(ctx, payload.session_id, { ...state, stopNudged: true });
-  const names = sourceEdits.map(([file2]) => path17.basename(file2)).slice(0, 3).join(", ");
+  const names = sourceEdits.map(([file2]) => path18.basename(file2)).slice(0, 3).join(", ");
   return { decision: "block", reason: `JPE: ${sourceEdits.length} source file(s) were edited this session (${names}${sourceEdits.length > 3 ? ", ..." : ""}) and no verification has run since. Run /jpe:verify and report the exact status word, or tell the user plainly that the work is NOT_TESTED. This reminder appears once per session.` };
 }
 
@@ -22059,8 +22143,8 @@ var HANDLERS = {
 async function debugLog(ctx, line) {
   if (!ctx) return;
   try {
-    const file2 = path18.join(ctx.stateDir(), "hook-debug.log");
-    await mkdir6(path18.dirname(file2), { recursive: true });
+    const file2 = path19.join(ctx.stateDir(), "hook-debug.log");
+    await mkdir6(path19.dirname(file2), { recursive: true });
     await appendFile3(file2, `${(/* @__PURE__ */ new Date()).toISOString()} ${redactSecrets(line)}
 `);
   } catch {

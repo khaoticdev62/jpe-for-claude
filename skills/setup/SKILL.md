@@ -26,6 +26,12 @@ node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" config path
 
 Summarise in plain English: the languages found, which language servers are ready or missing, and where configuration lives.
 
+## Version and stored data (read-only unless the user asks)
+
+- `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" about` shows the version, where things live, and the update and uninstall commands for this install. `about --check` asks GitHub whether a newer version is published (it is refused in offline mode).
+- `... data` shows everything JPE stores. `... data remove <cache|records|backups|all>` only previews. **Never add `--confirm` yourself.** Tell the user exactly what the preview says would be deleted, and run it with `--confirm` only if they ask you to after reading it. Deleting backups or `all` cannot be undone.
+- Updating and uninstalling are done by the user with `claude plugin update` and `claude plugin uninstall`; do not run them for them.
+
 ## Install a missing language server (only if the user wants it)
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" install-plan <language>` prints the install options for this operating system. It runs nothing.

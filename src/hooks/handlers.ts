@@ -2,6 +2,7 @@ import path from "node:path";
 import { store } from "../cli/commands/admin.js";
 import { makeAgentEvent } from "../agents/log.js";
 import { pruneAgentEvents, recordAgentEvent } from "../agents/store.js";
+import { describeVersionChange, PACKAGE_VERSION, readSeenVersion, recordSeenVersion } from "../lifecycle/version.js";
 import { logEvent, pruneLog } from "../obs/store.js";
 import type { CliContext } from "../cli/context.js";
 import { sha256Hex } from "../docs/cache.js";
@@ -91,7 +92,12 @@ export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: Cl
     WORKING_RULES,
   ];
   const output = context("SessionStart", clip(lines.join("\n")));
-  return payload.source === "startup" && (await isFirstRun(ctx)) ? { ...output, systemMessage: WELCOME_MESSAGE } : output;
+  if (payload.source !== "startup") return output;
+  // Claude Code installs and updates the plugin; JPE just notices, once, that the version it runs as has changed.
+  const change = describeVersionChange(await readSeenVersion(ctx), PACKAGE_VERSION);
+  await recordSeenVersion(ctx, PACKAGE_VERSION).catch(() => undefined);
+  const notices = [change.kind === "updated" || change.kind === "changed" ? change.message : undefined, (await isFirstRun(ctx)) ? WELCOME_MESSAGE : undefined].filter((n): n is string => n !== undefined);
+  return notices.length > 0 ? { ...output, systemMessage: notices.join(" ") } : output;
 }
 
 /**

@@ -14,6 +14,7 @@ const DESTRUCTIVE: ReadonlyArray<{ pattern: RegExp; reason: string }> = [
   { pattern: /\bdrop\s+(table|database|schema)\b/i, reason: "drops database objects" },
   { pattern: /\b(mkfs|format\s+[a-z]:|dd\s+if=)/i, reason: "overwrites a disk" },
   { pattern: /\bchmod\s+-R\s+777\b/i, reason: "removes file protections" },
+  { pattern: /\b(?:jpe|cli\.js)["']?\s+data\b(?=[^|;\n]*\bremove\b)(?=[^|;\n]*--confirm\b)/i, reason: "permanently deletes JPE's saved data (records, backups or cache)" },
 ];
 
 const NEEDS_APPROVAL: ReadonlyArray<{ pattern: RegExp; reason: string }> = [

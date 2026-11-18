@@ -20183,7 +20183,8 @@ var DESTRUCTIVE = [
   { pattern: /\bgit\s+branch\s+-D\b/i, reason: "force-deletes a branch" },
   { pattern: /\bdrop\s+(table|database|schema)\b/i, reason: "drops database objects" },
   { pattern: /\b(mkfs|format\s+[a-z]:|dd\s+if=)/i, reason: "overwrites a disk" },
-  { pattern: /\bchmod\s+-R\s+777\b/i, reason: "removes file protections" }
+  { pattern: /\bchmod\s+-R\s+777\b/i, reason: "removes file protections" },
+  { pattern: /\b(?:jpe|cli\.js)["']?\s+data\b(?=[^|;\n]*\bremove\b)(?=[^|;\n]*--confirm\b)/i, reason: "permanently deletes JPE's saved data (records, backups or cache)" }
 ];
 var NEEDS_APPROVAL = [
   { pattern: /\b(npm|pnpm|yarn|pip3?|cargo|go|gem|composer|dotnet)\s+(install|add|i|get|tool\s+install)\b/i, reason: "installs software" },

@@ -7,6 +7,7 @@ import { doctorCommand } from "./commands/doctor.js";
 import { impactCommand, installPlanCommand, lspCommand } from "./commands/lsp.js";
 import { researchCommand } from "./commands/research.js";
 import { agentsCommand } from "./commands/agents.js";
+import { aboutCommand, dataCommand } from "./commands/lifecycle.js";
 import { logCommand, offlineCommand } from "./commands/observe.js";
 import { settingsCommand } from "./commands/settings.js";
 import { resumeCommand, sessionsCommand, taskCommand } from "./commands/workspace.js";
@@ -39,6 +40,8 @@ const COMMANDS: Readonly<Record<string, { run: Handler; help: string }>> = {
   settings: { run: settingsCommand, help: "settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]   Every setting with its meaning, default and source; accessibility presets" },
   offline: { run: offlineCommand, help: "offline [--json]   Whether offline mode is on, who set it, what it affects, and what is cached" },
   log: { run: logCommand, help: "log [--level debug|info|warn|error] [--limit n] [--json]   JPE's own recent events (hook failures and timeouts, session starts)" },
+  about: { run: aboutCommand, help: "about [--check] [--json]   The version running, where JPE and its data live, how to update or uninstall, and (with --check) whether a newer version is published" },
+  data: { run: dataCommand, help: "data [remove <cache|records|backups|all> [--confirm]] [--json]   What JPE stores, and removing it (preview first; nothing is deleted without --confirm)" },
   agents: { run: agentsCommand, help: "agents [--json]   Agent runs Claude Code reported in this project: running or finished, how long they took, and use by type" },
   review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },
