@@ -39,6 +39,18 @@ The research engine's results: for each source, its provider, trust level, wheth
 ### `diagnostics`
 Findings from the language server (or, if it is not installed, the compiler command, labelled **NOT a language server**), grouped by file, errors first, each with `line:column`, code and message. Messages JPE recognises get a plain-English explanation and a usual fix, **labelled general guidance rather than a diagnosis of your project**. This is the one view that records something: like `jpe lsp diagnostics`, it adds what it observed to the project's evidence ledger.
 
+## Review decisions
+
+`jpe review approve|reject [--note text]` records a reviewer's decision about the uncommitted changes; `jpe review status` and `jpe review history` show where it stands.
+
+- **It records only.** Nothing is committed, staged or changed.
+- **It is tied to the exact changes.** The decision stores a fingerprint of every changed path and the hash of each file's content. If any of those files change afterwards, the decision is shown as **stale**, with the old decision named, and is never presented as covering the new state. With no changes left, an old decision is stale too. Review again, then decide again.
+- Notes are cleaned to one safe line (500 characters at most). The record keeps the latest 200 decisions, and a damaged file reads as no decisions.
+- The command center's home screen shows a Review row and a next step ("2 uncommitted files, and no review decision has been recorded for them"). A rejection of the *current* changes is the only review state that raises a notification.
+- `/jpe:review` has Claude explain the review in plain English from these facts. It never records a decision itself.
+
+In the command center pane, press `v` on the home screen to open the review: the overview, the recorded decision, notes and checklist, a button per file that opens its diff, a note box, and **Approve** (`a`) and **Reject** (`x`) buttons that call `jpe review`. Confirmation text appears only after the command line reported success; a failure is shown as a failure.
+
 ## Syntax colours
 
 Source code is coloured by four roles (keyword, string, comment, number) that are part of every theme. They are decoration: code is fully readable without colour, and the highlighter only ever colours code, never changes it (a test asserts that the highlighted text of every line equals the original, for every supported language and for hostile input). Languages: JavaScript and TypeScript, Python, Go, Rust, JSON; anything else is shown plain.
@@ -58,4 +70,4 @@ Measured contrast on each theme's background (the tests also require 4.5:1 on th
 - `change` and `review` compare against `HEAD`; a file with no committed version counts as entirely added. Review looks at the first 40 changed files.
 - The syntax highlighter is a small lexer, not a parser: unusual syntax may be left uncoloured. It cannot lose or change code.
 - Risk detection is pattern matching. It will flag test code that contains a risky pattern as data (this repository's own tests do), and it cannot see intent. That is why every risk says "possible" and the reviewer's checklist says to read the diffs.
-- The views are not yet shown inside the command center pane, and there is no `/jpe:review` skill or approve/reject control yet. Those are the next step.
+- Only the review is shown inside the command center pane so far (see below). The other views are command-line screens.

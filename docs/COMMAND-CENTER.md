@@ -41,6 +41,10 @@ The pane uses Claude Code's own keyboard handling: number keys pick an item, Tab
 
 A "Ran /jpe:verify" line appears only after Claude Code accepted the command. If it could not run, the pane says "Could not run ..." with the reason. A failed read of the project facts is shown as a failure with its reason, not as an empty or default screen.
 
+## The review screen
+
+When the project is a git repository with uncommitted changes, the home screen shows a **Review** row (where the review stands, in words) and a `v` button. Pressing it opens the review inside the pane: the decision so far, an overview table with the risks each file introduced, review notes marked *confirmed* or *heuristic*, a checklist, and a button per file that opens (and closes) its diff. A note box, **Approve** (`a`), **Reject** (`x`), **Read again** (`r`) and **Back** (`b`) finish the screen. Approve and reject only *record* a decision (see [jpe show](SHOW.md)); a decision about files that later changed is shown as stale. `/jpe:review` asks Claude to explain the same review in words.
+
 ## When there is no pane
 
 A pane is docked beside the conversation from about 110 columns when you ask for it. On a narrower window, in a headless run, or where no surface can show panes, `/jpe` prints the home screen as plain text (no colour codes, so it reads the same in a transcript). The same numbers apply.
@@ -62,7 +66,7 @@ Favourites and recent commands are stored in Claude Code's per-plugin store on y
 
 ## Verified, and not verified
 
-Verified (by tests and runs that actually happened): the module loads in a real Claude Code session; bare `/jpe` is intercepted and prints the real home screen from the real project, with no model call; `/jpe <args>` and every other command pass through untouched; the pane draws, and its buttons, number keys' targets, palette input, confirmation and favourites work, on the terminal, desktop, VS Code and mobile element tables (19 tests under `claude plugin test`); failures and unreadable facts are reported honestly.
+Verified (by tests and runs that actually happened): the module loads in a real Claude Code session; bare `/jpe` is intercepted and prints the real home screen from the real project, with no model call; `/jpe <args>` and every other command pass through untouched; the pane draws, and its buttons, number keys' targets, palette input, confirmation and favourites work, on the terminal, desktop, VS Code and mobile element tables (34 tests under `claude plugin test`, including the review screen: opening it, file diffs, approve and reject with and without a note, a note with shell characters passed as one argument, failures reported as failures, unreadable or mis-shaped data refused, and a stale decision drawn as stale); failures and unreadable facts are reported honestly.
 
 Not verified, because it needs a person looking at a real window: how the pane actually looks (layout, colours on the pane's own `#121212` surface), whether number keys press the buttons while the search box is untouched, how pressing an item behaves in a live pane (the engine's `$.command.run` was confirmed from a later event, not from a pane press), and the desktop, VS Code and mobile appearance. The pane also uses the default `jpe` theme for now rather than your `ui.theme` setting.
 

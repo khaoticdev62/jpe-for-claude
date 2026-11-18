@@ -24,6 +24,8 @@ import { heading, textLines } from "../ui/components.js";
 import type { Line } from "../ui/doc.js";
 import { paint, resolveSpanStyle } from "../ui/paint.js";
 import { DEFAULT_UI_SETTINGS, type RenderProfile, resolveProfile } from "../ui/profile.js";
+import { changeView, reviewView } from "../show/explain-views.js";
+import { parseReviewData } from "../show/review-data.js";
 
 const PANE = "jpe-center";
 const MEMORY_KEY = "center-memory";
@@ -39,6 +41,12 @@ const queryState = atom({ plugin: "jpe", key: "query" } as const, "");
 const pendingState = atom({ plugin: "jpe", key: "pending" } as const, null as { commandId: string; args: string } | null, { shape: "pending-1" });
 const noticeState = atom({ plugin: "jpe", key: "notice" } as const, "");
 const memoryState = atom({ plugin: "jpe", key: "memory" } as const, EMPTY_MEMORY as unknown, { shape: "memory-1" });
+/** Which screen the pane shows: the command center ("home") or the review of the uncommitted changes ("review"). */
+const viewState = atom({ plugin: "jpe", key: "view" } as const, "home");
+const reviewState = atom({ plugin: "jpe", key: "review" } as const, null as unknown, { shape: "review-1" });
+const reviewNoteState = atom({ plugin: "jpe", key: "reviewNote" } as const, "");
+/** The file whose diff is open in the review, or "" for none. */
+const reviewFileState = atom({ plugin: "jpe", key: "reviewFile" } as const, "");
 
 /** Notifications already shown this session, so the same finding does not toast again. */
 const toasted = new Set<string>();
@@ -84,12 +92,20 @@ async function say($: EngineInterface, text: string): Promise<void> {
   await update($, noticeState, () => text);
 }
 
+/**
+ * The one place this module starts a process: the plugin's own command line, as an argument list (no shell). The
+ * callers pass only fixed sub-commands (center hud, show review, review approve|reject); a test asserts that.
+ */
+async function runJpe($: EngineInterface, args: readonly string[], timeoutMs: number): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+  return $.process.run(["node", `${$.plugin.root}/dist/cli.js`, ...args], { timeoutMs });
+}
+
 /** Reads the project facts from the JPE command line. Returns undefined, with the reason shown, if that fails. */
 async function refreshHud($: EngineInterface): Promise<HudData | undefined> {
   if (refreshing !== undefined) return refreshing;
   refreshing = (async (): Promise<HudData | undefined> => {
     try {
-      const result = await $.process.run(["node", `${$.plugin.root}/dist/cli.js`, "center", "hud", "--json"], { timeoutMs: HUD_TIMEOUT_MS });
+      const result = await runJpe($, ["center", "hud", "--json"], HUD_TIMEOUT_MS);
       if (result.exitCode !== 0) throw new Error(result.stderr.trim() || `the command exited with code ${result.exitCode}`);
       const data = parseHud(JSON.parse(result.stdout));
       if (data === undefined) throw new Error("the project facts were in a format this version of JPE does not understand");
@@ -157,8 +173,57 @@ async function recordTyped($: EngineInterface, command: string, args: string): P
   await changeMemory($, (memory) => recordUse(memory, id, new Date(Date.now()).toISOString()));
 }
 
+const REVIEW_TIMEOUT_MS = 30_000;
+const DECISION_TIMEOUT_MS = 20_000;
+const MAX_NOTE = 500;
+
+/** Reads the review of the uncommitted changes. On failure the review is cleared and the reason shown; nothing is invented. */
+async function loadReview($: EngineInterface): Promise<void> {
+  try {
+    const result = await runJpe($, ["show", "review", "--json"], REVIEW_TIMEOUT_MS);
+    if (result.exitCode !== 0) throw new Error(result.stderr.replace(/^jpe:\s*/, "").trim() || `the command exited with code ${result.exitCode}`);
+    const data = parseReviewData(JSON.parse(result.stdout));
+    if (data === undefined) throw new Error("the review was in a format this version of JPE does not understand");
+    await update($, reviewState, () => data);
+  } catch (error) {
+    await update($, reviewState, () => null);
+    await say($, `Could not read the review: ${messageOf(error)}`);
+  }
+}
+
+async function openReview($: EngineInterface): Promise<void> {
+  await update($, viewState, () => "review");
+  await update($, reviewFileState, () => "");
+  await say($, "");
+  await loadReview($);
+}
+
+async function closeReview($: EngineInterface): Promise<void> {
+  await update($, viewState, () => "home");
+  await say($, "");
+}
+
+/**
+ * Records the reviewer's decision through `jpe review approve|reject`. It only records (nothing is committed or changed),
+ * and the confirmation message appears only after the command line reported success.
+ */
+async function decide($: EngineInterface, decision: "approve" | "reject"): Promise<void> {
+  const note = (await read($, reviewNoteState)).trim().slice(0, MAX_NOTE);
+  try {
+    const result = await runJpe($, ["review", decision, ...(note === "" ? [] : ["--note", note])], DECISION_TIMEOUT_MS);
+    if (result.exitCode !== 0) throw new Error(result.stderr.replace(/^jpe:\s*/, "").trim() || `the command exited with code ${result.exitCode}`);
+    await update($, reviewNoteState, () => "");
+    await say($, `Recorded: ${decision === "approve" ? "approved" : "rejected"}. This only records your decision; nothing was committed or changed, and it shows as stale if the files change.`);
+    background(refreshHud($));
+    await loadReview($);
+  } catch (error) {
+    await say($, `Could not record the decision: ${messageOf(error)}`);
+  }
+}
+
 /** Opens the pane, or returns the home screen as text when no pane can be shown, so `/jpe` always shows something. */
 async function openCenter($: EngineInterface, columns: number): Promise<{ text: string; isTextDisplayOnly: true }> {
+  await update($, viewState, () => "home");
   const data = await refreshHud($);
   const placed = await $.ui.open({ id: PANE, title: "JPE", focus: true, closeOnEscape: true });
   if (placed.isPlaced) {
@@ -227,6 +292,33 @@ export function register(on: On): void {
     );
     const rows = (lines: readonly Line[]): unknown[] => lines.map(row);
 
+    if ((await read($, viewState)) === "review") {
+      const review = parseReviewData(await read($, reviewState));
+      const note = await read($, reviewNoteState);
+      const openFile = await read($, reviewFileState);
+      const selected = review?.files.find((f) => f.summary.file === openFile);
+      const canDecide = review !== undefined && review.files.length > 0;
+      const top = review === undefined ? [...rows(heading("Review of uncommitted changes", profile)), ...rows(textLines(notice === "" ? "Reading the review…" : notice, columns - 2, { role: notice === "" ? "muted" : "warning" }))] : rows(reviewView(review.files, profile, { expanded: false, maxHunkLines: 30, skipped: review.skipped, showFileSections: false, ...(review.decision === undefined ? {} : { decision: review.decision }) }));
+      return (
+        <Box flexDirection="column" backgroundColor={profile.theme.background}>
+          {top}
+          {review === undefined
+            ? null
+            : review.files.slice(0, 9).map((f, i) => (
+                <Button key={`file-${i + 1}`} hotkey={String(i + 1)} label={`${i + 1}. ${openFile === f.summary.file ? "Hide" : "Show"} diff: ${f.summary.file}`} onPress={() => background(update($, reviewFileState, (current) => (current === f.summary.file ? "" : f.summary.file)))} />
+              ))}
+          {selected === undefined ? null : rows(changeView(selected.summary, profile, { maxHunkLines: 40 }))}
+          {canDecide ? <Input key="review-note" label="Note (optional)" placeholder="why you approve or reject" value={note} onInput={(v: string) => background(update($, reviewNoteState, () => v))} onSubmit={() => undefined} /> : null}
+          {canDecide ? <Button key="approve" hotkey="a" label="a  Approve these changes (only records your decision)" onPress={() => background(decide($, "approve"))} /> : null}
+          {canDecide ? <Button key="reject" hotkey="x" label="x  Reject these changes (only records your decision)" onPress={() => background(decide($, "reject"))} /> : null}
+          <Button key="refresh-review" hotkey="r" label="r  Read the review again" onPress={() => background(loadReview($))} />
+          <Button key="back" hotkey="b" label="b  Back to the command center" onPress={() => background(closeReview($))} />
+          {notice !== "" && review !== undefined ? rows(textLines(notice, columns - 2, { role: "muted" })) : null}
+          {rows(textLines("Number keys open a file's diff. A decision is about exactly these changes and shows as stale if a file changes.", columns - 2, { role: "muted" }))}
+        </Box>
+      );
+    }
+
     const now = new Date(Date.now());
     const actions = data === undefined ? [] : homeActions(data, memory);
     const entries = rankCommands(query, memory);
@@ -252,6 +344,9 @@ export function register(on: On): void {
             {rows(actionBody(a, profile))}
           </Box>
         ))}
+        {data?.review === undefined || data.review.changedFiles === 0 ? null : (
+          <Button key="open-review" hotkey="v" label={`v  Open the review of ${data.review.changedFiles} uncommitted ${data.review.changedFiles === 1 ? "file" : "files"} here`} onPress={() => background(openReview($))} />
+        )}
         {confirm}
         <Input key="palette" label="Command" placeholder="search, an item number, or a command and what to give it" value={query} onInput={(v: string) => background(update($, queryState, () => v))} onSubmit={(v: string) => background(submitQuery($, v))} />
         {query.trim() !== "" && entries.length > 0 ? (

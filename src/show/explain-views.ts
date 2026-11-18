@@ -158,6 +158,8 @@ export interface ReviewViewOptions {
   skipped: readonly string[];
   /** Where the recorded review decision stands for these changes; shown when known. */
   decision?: ReviewDecisionState;
+  /** False leaves out the per-file diff sections (the pane lists the files as buttons instead). Defaults to true. */
+  showFileSections?: boolean;
 }
 
 /** The recorded decision as a status line. A stale decision is shown as stale, never as if it still applied. */
@@ -199,6 +201,7 @@ export function reviewView(files: readonly ReviewFile[], profile: RenderProfile,
   }
   out.push(blank(), ...heading("Checklist for the reviewer", profile), ...bulletList(checklist(files), profile));
 
+  if (options.showFileSections === false) return out;
   out.push(blank(), ...heading("Changes", profile));
   files.forEach((f, i) => {
     out.push(...section({ title: `${f.summary.file}  +${f.summary.added} -${f.summary.removed}`, body: changeView(f.summary, profile, { maxHunkLines: options.maxHunkLines }), expanded: options.expanded && i < 5 }, profile));

@@ -44,9 +44,17 @@ describe("the built interface module (hooks/center.js)", () => {
 
   it("starts nothing but the JPE command line: one argv, never a shell string", async () => {
     const source = await read("src/mod/center.tsx");
+    // One process call exists, inside the helper, and it runs node on the plugin's own command line as an argument list.
     const runs = [...source.matchAll(/\$\.process\.run\(([^)]*)\)/g)];
     expect(runs).toHaveLength(1);
-    expect(runs[0]?.[1]).toContain('["node", `${$.plugin.root}/dist/cli.js`, "center", "hud", "--json"]');
+    expect(runs[0]?.[1]).toContain('["node", `${$.plugin.root}/dist/cli.js`, ...args]');
+    // Every caller passes one of these fixed sub-commands, and nothing else.
+    const calls = [...source.matchAll(/runJpe\(\$, \["(\w+)", ("\w+"|decision)(?:, ("[^"]+"))?/g)].map((m) => [m[1], m[2], m[3]].filter(Boolean).join(" "));
+    expect(calls.sort()).toEqual(['center "hud" "--json"', 'review decision', 'show "review" "--json"'].sort());
+    // A decision's argument is the sub-command itself ("approve" or "reject"), and a note is passed as its own argument.
+    expect(source).toContain('decide($, "approve")');
+    expect(source).toContain('decide($, "reject")');
+    expect(source).toContain('["--note", note]');
     expect(source).not.toMatch(/\$\.process\.spawn|\$\.fs\.|\$\.net|fetch\(/);
   });
 
@@ -58,9 +66,9 @@ describe("the built interface module (hooks/center.js)", () => {
   it("keeps every state value it uses declared in the types contract, and declares none it does not use", async () => {
     const source = await read("src/mod/center.tsx");
     const contract = await read("types/index.d.ts");
-    const used = [...source.matchAll(/\{ plugin: "jpe", key: "([a-z]+)" \}/g)].map((m) => m[1]).sort();
-    const declared = [...contract.matchAll(/^\s{6}([a-z]+): /gm)].map((m) => m[1]).sort();
-    expect(used).toEqual(["hud", "memory", "notice", "pending", "query"]);
+    const used = [...source.matchAll(/\{ plugin: "jpe", key: "([A-Za-z]+)" \}/g)].map((m) => m[1]).sort();
+    const declared = [...contract.matchAll(/^\s{6}([A-Za-z]+): /gm)].map((m) => m[1]).sort();
+    expect(used).toEqual(["hud", "memory", "notice", "pending", "query", "review", "reviewFile", "reviewNote", "view"]);
     expect(declared).toEqual(used);
   });
 

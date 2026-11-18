@@ -21,6 +21,14 @@ declare module "claude-code" {
       notice: string;
       /** Favourites and recent commands. */
       memory: Shaped<unknown>;
+      /** Which screen the pane shows: "home" or "review". */
+      view: string;
+      /** The latest review of the uncommitted changes read from `jpe show review --json`, or null. */
+      review: Shaped<unknown>;
+      /** The note typed beside the review's approve and reject buttons. */
+      reviewNote: string;
+      /** The file whose diff is open in the review, or an empty string. */
+      reviewFile: string;
     };
   }
 }

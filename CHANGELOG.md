@@ -6,6 +6,19 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-18
+
+### Added
+- Review decisions: `jpe review approve|reject [--note text]`, `status` and `history`. A decision is tied to a fingerprint of the exact changed files and their contents, so it is shown as **stale** the moment any file changes (or none remain); it records only and never commits, stages or changes anything. Notes are cleaned to one safe line, records are capped, and a damaged file reads as empty.
+- `/jpe:review` skill (12 skills): Claude explains the review in plain English from the verified facts, labels heuristics as heuristics, and never records a decision on its own or calls a change correct.
+- The command center pane has a review screen (`v` on the home screen): decision, overview, notes, checklist, a diff per file, a note box, and approve and reject buttons. The HUD, next steps and home screen show the review state; a rejected review of the current changes notifies.
+- `jpe show review` includes the decision state in its screen and its JSON.
+- 34 engine tests of the module (15 new), and 91 new vitest tests (923 in total).
+
+### Changed
+- The module starts processes through one helper that runs only `center hud`, `show review` and `review approve|reject`; a test asserts that set.
+- `show review` and the review commands share one change-listing and one decision store.
+
 ## [1.3.0] - 2026-11-17
 
 ### Added

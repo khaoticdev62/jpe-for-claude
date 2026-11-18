@@ -25638,6 +25638,7 @@ function reviewView(files, profile, options) {
     for (const n of notes) out.push(...textLines(`[${n.basis}] ${n.text}`, profile.width, { role: n.basis === "confirmed" ? "warning" : "muted" }));
   }
   out.push(blank(), ...heading("Checklist for the reviewer", profile), ...bulletList(checklist(files), profile));
+  if (options.showFileSections === false) return out;
   out.push(blank(), ...heading("Changes", profile));
   files.forEach((f3, i) => {
     out.push(...section({ title: `${f3.summary.file}  +${f3.summary.added} -${f3.summary.removed}`, body: changeView(f3.summary, profile, { maxHunkLines: options.maxHunkLines }), expanded: options.expanded && i < 5 }, profile));
