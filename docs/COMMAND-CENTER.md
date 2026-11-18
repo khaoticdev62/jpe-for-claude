@@ -41,6 +41,10 @@ The pane uses Claude Code's own keyboard handling: number keys pick an item, Tab
 
 A "Ran /jpe:verify" line appears only after Claude Code accepted the command. If it could not run, the pane says "Could not run ..." with the reason. A failed read of the project facts is shown as a failure with its reason, not as an empty or default screen.
 
+## The Agents row
+
+Once Claude Code has reported any subagent start or stop in the project, the home screen shows one **Agents** row, for example "1 running, 4 recorded". It is built from those events only (see [Agent activity](AGENTS.md)); with none recorded the row is absent rather than showing a zero.
+
 ## The review screen
 
 When the project is a git repository with uncommitted changes, the home screen shows a **Review** row (where the review stands, in words) and a `v` button. Pressing it opens the review inside the pane: the decision so far, an overview table with the risks each file introduced, review notes marked *confirmed* or *heuristic*, a checklist, and a button per file that opens (and closes) its diff. A note box, **Approve** (`a`), **Reject** (`x`), **Read again** (`r`) and **Back** (`b`) finish the screen. Approve and reject only *record* a decision (see [jpe show](SHOW.md)); a decision about files that later changed is shown as stale. `/jpe:review` asks Claude to explain the same review in words.

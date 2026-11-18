@@ -845,10 +845,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path17) {
-  if (!path17)
+function getElementAtPath(obj, path18) {
+  if (!path18)
     return obj;
-  return path17.reduce((acc, key) => acc?.[key], obj);
+  return path18.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1188,11 +1188,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path17, issues) {
+function prefixIssues(path18, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path17);
+    iss.path.unshift(path18);
     return iss;
   });
 }
@@ -1654,16 +1654,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path17 = []) => {
+  const processError = (error63, path18 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path17, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path17, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path17, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
       } else {
-        const fullpath = [...path17, ...issue2.path];
+        const fullpath = [...path18, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1702,17 +1702,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path17 = []) => {
+  const processError = (error63, path18 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path17, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path17, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path17, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
       } else {
-        const fullpath = [...path17, ...issue2.path];
+        const fullpath = [...path18, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1751,8 +1751,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path17 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path17) {
+  const path18 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path18) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18890,13 +18890,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path17 = ref.slice(1).split("/").filter(Boolean);
-  if (path17.length === 0) {
+  const path18 = ref.slice(1).split("/").filter(Boolean);
+  if (path18.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path17[0] === defsKey) {
-    const key = path17[1] === void 0 ? void 0 : decodeJSONPointerSegment(path17[1]);
+  if (path18[0] === defsKey) {
+    const key = path18[1] === void 0 ? void 0 : decodeJSONPointerSegment(path18[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -20399,8 +20399,8 @@ function createContext(overrides = {}) {
 }
 
 // src/hooks/run.ts
-import { appendFile, mkdir as mkdir4 } from "fs/promises";
-import path16 from "path";
+import { appendFile as appendFile2, mkdir as mkdir5 } from "fs/promises";
+import path17 from "path";
 
 // src/core/redact.ts
 var REDACTED = "[REDACTED_SECRET_FOUND]";
@@ -20427,7 +20427,7 @@ function redactSecrets(text) {
 }
 
 // src/hooks/handlers.ts
-import path15 from "path";
+import path16 from "path";
 
 // src/cli/commands/admin.ts
 import { copyFile } from "fs/promises";
@@ -20944,10 +20944,69 @@ function store(ctx) {
   return new BackupStore({ dir: path10.join(ctx.stateDir(), "backups"), now: ctx.now, newId: () => `bk-${ctx.now().toISOString().replace(/\D/g, "").slice(0, 14)}-${ctx.newId().slice(0, 6)}` });
 }
 
+// src/agents/log.ts
+var AGENT_EVENT_KINDS = ["start", "stop"];
+var MAX_AGENT_EVENTS = 1e3;
+var MAX_FIELD = 200;
+var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var isText = (v) => typeof v === "string" && v.length > 0 && v.length <= MAX_FIELD;
+function parseAgentEvent(line) {
+  let raw;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    return void 0;
+  }
+  if (!isRecord(raw)) return void 0;
+  const { at, kind, agentId, agentType, sessionId, finalMessageChars } = raw;
+  if (typeof at !== "string" || Number.isNaN(Date.parse(at))) return void 0;
+  if (!AGENT_EVENT_KINDS.includes(kind)) return void 0;
+  if (!isText(agentId) || !isText(agentType) || !isText(sessionId)) return void 0;
+  if (finalMessageChars !== void 0 && !(typeof finalMessageChars === "number" && Number.isInteger(finalMessageChars) && finalMessageChars >= 0)) return void 0;
+  return { at, kind, agentId, agentType, sessionId, ...finalMessageChars === void 0 ? {} : { finalMessageChars } };
+}
+function parseAgentEvents(text) {
+  return text.split(/\r?\n/).flatMap((line) => line.trim() === "" ? [] : [parseAgentEvent(line) ?? []].flat());
+}
+var serializeAgentEvent = (event) => `${JSON.stringify(event)}
+`;
+function trimAgentEvents(text) {
+  const events = parseAgentEvents(text).slice(-MAX_AGENT_EVENTS);
+  return events.length === 0 ? "" : `${events.map((e) => JSON.stringify(e)).join("\n")}
+`;
+}
+function makeAgentEvent(input2) {
+  const cut = (v) => v.slice(0, MAX_FIELD);
+  return {
+    at: input2.at.toISOString(),
+    kind: input2.kind,
+    agentId: cut(input2.agentId),
+    agentType: cut(input2.agentType) || "unknown",
+    sessionId: cut(input2.sessionId),
+    ...input2.finalMessageChars === void 0 ? {} : { finalMessageChars: input2.finalMessageChars }
+  };
+}
+
+// src/agents/store.ts
+import { appendFile, mkdir as mkdir3 } from "fs/promises";
+import path11 from "path";
+var AGENT_EVENTS_FILE = "agents.jsonl";
+var fileFor = (ctx) => path11.join(ctx.stateDir(), AGENT_EVENTS_FILE);
+async function recordAgentEvent(ctx, event) {
+  const file2 = fileFor(ctx);
+  await mkdir3(path11.dirname(file2), { recursive: true });
+  await appendFile(file2, serializeAgentEvent(event), "utf8");
+}
+async function pruneAgentEvents(ctx) {
+  const text = await ctx.readText(fileFor(ctx)).catch(() => void 0);
+  if (text === void 0 || text.split("\n").length <= 1100) return;
+  await ctx.writeText(fileFor(ctx), trimAgentEvents(text));
+}
+
 // src/docs/cache.ts
 import { createHash as createHash3 } from "crypto";
-import { mkdir as mkdir3, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path11 from "path";
+import { mkdir as mkdir4, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
+import path12 from "path";
 var sha256Hex = (text) => createHash3("sha256").update(text).digest("hex");
 var entrySchema = external_exports.strictObject({
   key: external_exports.string().regex(/^[a-f0-9]{64}$/),
@@ -21003,18 +21062,18 @@ function explainError(message) {
 }
 
 // src/lsp/diagnostics.ts
-import path13 from "path";
+import path14 from "path";
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path12 from "path";
+import path13 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path12.normalize(file2).toLowerCase() : path12.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path13.normalize(file2).toLowerCase() : path13.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path12.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path13.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -21053,7 +21112,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path12.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path13.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -21634,7 +21693,9 @@ var payloadSchemas = {
   PreToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput }),
   PostToolUse: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
   PostToolUseFailure: external_exports.looseObject({ ...base, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
-  Stop: external_exports.looseObject({ ...base, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
+  Stop: external_exports.looseObject({ ...base, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() }),
+  SubagentStart: external_exports.looseObject({ ...base, agent_id: external_exports.string().min(1).max(200), agent_type: external_exports.string().max(200) }),
+  SubagentStop: external_exports.looseObject({ ...base, agent_id: external_exports.string().min(1).max(200), agent_type: external_exports.string().max(200), last_assistant_message: external_exports.string().optional() })
 };
 var HOOK_EVENTS = Object.keys(payloadSchemas);
 function isHookEvent(name) {
@@ -21660,7 +21721,7 @@ var context = (event, text) => ({ hookSpecificOutput: { hookEventName: event, ad
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path14 from "path";
+import path15 from "path";
 var stateSchema = external_exports.strictObject({
   startedAt: external_exports.iso.datetime(),
   promptNudged: external_exports.boolean(),
@@ -21675,11 +21736,11 @@ var stateSchema = external_exports.strictObject({
 });
 var MAX_ENTRIES = 500;
 var STALE_MS = 7 * 24 * 36e5;
-var fileKey2 = (file2) => process.platform === "win32" ? path14.normalize(file2).toLowerCase() : path14.normalize(file2);
+var fileKey2 = (file2) => process.platform === "win32" ? path15.normalize(file2).toLowerCase() : path15.normalize(file2);
 function freshState(ctx) {
   return { startedAt: ctx.now().toISOString(), promptNudged: false, stopNudged: false, edits: {}, backups: {}, checked: {}, diagnosticsRuns: 0 };
 }
-var stateFile = (ctx, sessionId) => path14.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
+var stateFile = (ctx, sessionId) => path15.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
 async function loadState(ctx, sessionId) {
   const text = await ctx.readText(stateFile(ctx, sessionId));
   if (text === void 0) return freshState(ctx);
@@ -21696,7 +21757,7 @@ async function saveState(ctx, sessionId, state) {
   await ctx.writeText(stateFile(ctx, sessionId), JSON.stringify(bounded));
 }
 async function pruneStaleStates(ctx) {
-  const dir = path14.join(ctx.stateDir(), "sessions");
+  const dir = path15.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -21706,7 +21767,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path14.join(dir, name);
+    const file2 = path15.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -21723,17 +21784,17 @@ var clip = (text) => text.length > MAX_ADDITIONAL_CONTEXT ? `${text.slice(0, MAX
 function editTarget(toolName, input2, cwd) {
   if (!EDIT_TOOLS.has(toolName)) return void 0;
   const raw = toolName === "NotebookEdit" ? input2["notebook_path"] : input2["file_path"];
-  return typeof raw === "string" && raw !== "" ? path15.resolve(cwd, raw) : void 0;
+  return typeof raw === "string" && raw !== "" ? path16.resolve(cwd, raw) : void 0;
 }
 var insideProject = (root, file2) => {
-  const rel = path15.relative(root, file2);
-  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path15.sep}`) && !path15.isAbsolute(rel);
+  const rel = path16.relative(root, file2);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path16.sep}`) && !path16.isAbsolute(rel);
 };
 var lookupFor = (ctx) => ({ platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f) => ctx.fs.exists(f) });
 var WORKING_RULES = "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.";
 var WELCOME_MESSAGE = "JPE For Claude is active. Try /jpe:verify to run this project's real checks, or /jpe:explain to get a plain-English walkthrough.";
 async function isFirstRun(ctx) {
-  const marker = path15.join(ctx.stateDir(), "welcomed");
+  const marker = path16.join(ctx.stateDir(), "welcomed");
   if (await ctx.readText(marker).catch(() => void 0) !== void 0) return false;
   await ctx.writeText(marker, ctx.now().toISOString()).catch(() => void 0);
   return true;
@@ -21746,6 +21807,7 @@ async function onSessionStart(payload, ctx) {
   const checkLine = checks.length > 0 ? `Verification commands that exist: ${[...new Set(checks.map((c) => c.check))].join(", ")} (run /jpe:verify).` : "No verification commands were found: if asked whether something works, say it is NOT_TESTED rather than inventing tests.";
   if (payload.source === "compact") return context("SessionStart", clip(["JPE For Claude is still active in this project.", checkLine, WORKING_RULES].join("\n")));
   await pruneStaleStates(ctx);
+  await pruneAgentEvents(ctx).catch(() => void 0);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
   const git = await readGitState(ctx.git).catch(() => void 0);
@@ -21765,6 +21827,15 @@ async function onSessionStart(payload, ctx) {
   ];
   const output2 = context("SessionStart", clip(lines.join("\n")));
   return payload.source === "startup" && await isFirstRun(ctx) ? { ...output2, systemMessage: WELCOME_MESSAGE } : output2;
+}
+async function onSubagentStart(payload, ctx) {
+  await recordAgentEvent(ctx, makeAgentEvent({ at: ctx.now(), kind: "start", agentId: payload.agent_id, agentType: payload.agent_type, sessionId: payload.session_id }));
+  return void 0;
+}
+async function onSubagentStop(payload, ctx) {
+  const chars = payload.last_assistant_message?.length;
+  await recordAgentEvent(ctx, makeAgentEvent({ at: ctx.now(), kind: "stop", agentId: payload.agent_id, agentType: payload.agent_type, sessionId: payload.session_id, ...chars === void 0 ? {} : { finalMessageChars: chars } }));
+  return void 0;
 }
 async function onUserPrompt(payload, ctx) {
   if (!CODING_INTENT.test(payload.prompt.slice(0, 2e3))) return void 0;
@@ -21794,7 +21865,7 @@ async function onPreToolUse(payload, ctx) {
   if (!target) return void 0;
   let decision;
   if (mode !== "off") {
-    if (isSensitiveFileName(target)) decision = ask(`${path15.basename(target)} looks like a credentials file; check what is being written.`);
+    if (isSensitiveFileName(target)) decision = ask(`${path16.basename(target)} looks like a credentials file; check what is being written.`);
     else if (mode === "always") decision = ask('approval mode is "always".');
   }
   if (cfg.engineering.backups && insideProject(ctx.cwd, target) && !isSensitiveFileName(target) && await ctx.fs.exists(target)) {
@@ -21802,7 +21873,7 @@ async function onPreToolUse(payload, ctx) {
     const key = fileKey2(target);
     if (!state.backups[key]) {
       try {
-        const rel = path15.relative(ctx.cwd, target);
+        const rel = path16.relative(ctx.cwd, target);
         const backup = await store(ctx).create(ctx.cwd, [rel], `auto: before edit (session ${payload.session_id.slice(0, 8)})`);
         await saveState(ctx, payload.session_id, { ...state, backups: { ...state.backups, [key]: backup.id } });
       } catch {
@@ -21817,7 +21888,7 @@ async function onPostToolUse(payload, ctx) {
   const cfg = await ctx.loadConfig();
   const state = await loadState(ctx, payload.session_id);
   const key = fileKey2(target);
-  const rel = path15.relative(ctx.cwd, target).split(path15.sep).join("/");
+  const rel = path16.relative(ctx.cwd, target).split(path16.sep).join("/");
   const next = { ...state, edits: { ...state.edits, [key]: ctx.now().toISOString() } };
   const backupId = state.backups[key];
   if (backupId) await store(ctx).seal(backupId).catch(() => void 0);
@@ -21876,7 +21947,7 @@ async function onStop(payload, ctx) {
   const sourceEdits = Object.entries(state.edits).filter(([file2]) => languageForFile(file2) !== void 0);
   if (sourceEdits.length === 0) return void 0;
   const lastEdit = sourceEdits.map(([, at]) => at).sort().at(-1) ?? "";
-  const runText = await ctx.readText(path15.join(ctx.stateDir(), "run.json"));
+  const runText = await ctx.readText(path16.join(ctx.stateDir(), "run.json"));
   if (runText) {
     try {
       const at = JSON.parse(runText).at;
@@ -21887,7 +21958,7 @@ async function onStop(payload, ctx) {
   const project = await detectProject(ctx.cwd, ctx.fs);
   if ((await discoverChecks(project, ctx.fs)).length === 0) return void 0;
   await saveState(ctx, payload.session_id, { ...state, stopNudged: true });
-  const names = sourceEdits.map(([file2]) => path15.basename(file2)).slice(0, 3).join(", ");
+  const names = sourceEdits.map(([file2]) => path16.basename(file2)).slice(0, 3).join(", ");
   return { decision: "block", reason: `JPE: ${sourceEdits.length} source file(s) were edited this session (${names}${sourceEdits.length > 3 ? ", ..." : ""}) and no verification has run since. Run /jpe:verify and report the exact status word, or tell the user plainly that the work is NOT_TESTED. This reminder appears once per session.` };
 }
 
@@ -21899,14 +21970,16 @@ var HANDLERS = {
   PreToolUse: onPreToolUse,
   PostToolUse: onPostToolUse,
   PostToolUseFailure: onToolFailure,
-  Stop: onStop
+  Stop: onStop,
+  SubagentStart: onSubagentStart,
+  SubagentStop: onSubagentStop
 };
 async function debugLog(ctx, line) {
   if (!ctx) return;
   try {
-    const file2 = path16.join(ctx.stateDir(), "hook-debug.log");
-    await mkdir4(path16.dirname(file2), { recursive: true });
-    await appendFile(file2, `${(/* @__PURE__ */ new Date()).toISOString()} ${redactSecrets(line)}
+    const file2 = path17.join(ctx.stateDir(), "hook-debug.log");
+    await mkdir5(path17.dirname(file2), { recursive: true });
+    await appendFile2(file2, `${(/* @__PURE__ */ new Date()).toISOString()} ${redactSecrets(line)}
 `);
   } catch {
   }

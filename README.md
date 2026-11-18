@@ -46,7 +46,7 @@ Plugin skills are namespaced, so the full names are `/jpe:explain` and so on. Ba
 
 ## What is inside
 
-- **12 skills, 7 agents** (`jpe-researcher`, `jpe-explainer`, `jpe-lsp`, `jpe-verifier`, `jpe-security`, `jpe-architect`, `jpe-debugger`). Agents cannot write or edit files and have no shell; they use JPE's MCP tools.
+- **13 skills, 7 agents** (and a record of the agent runs Claude Code reports, see [docs/AGENTS.md](docs/AGENTS.md)) (`jpe-researcher`, `jpe-explainer`, `jpe-lsp`, `jpe-verifier`, `jpe-security`, `jpe-architect`, `jpe-debugger`). Agents cannot write or edit files and have no shell; they use JPE's MCP tools.
 - **A command center.** `/jpe` on its own opens a pane (or prints a text screen) with real project facts, numbered next steps, a command palette, a status-bar summary, and an "ask first" step for commands that can change things. See [docs/COMMAND-CENTER.md](docs/COMMAND-CENTER.md).
 - **6 hooks.** Session summary, a one-time workflow reminder, "ask first" for destructive or credential-related actions, automatic backup before the first edit of a file, post-edit checks (credentials, invalid JSON, language-server errors), and a one-time verification reminder before a turn ends. Every hook fails open.
 - **14 MCP tools** (read-mostly; nothing that changes settings, rolls back, installs or deletes).

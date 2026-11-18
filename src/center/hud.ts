@@ -13,8 +13,10 @@ import { detectProject } from "../project/detect.js";
 import { detectLanguages, findOnPath, listProjectFiles } from "../lsp/detect.js";
 import { readGitState } from "../project/git.js";
 import { readLastStatus } from "../verification/last-status.js";
+import { buildRuns, summarize } from "../agents/runs.js";
+import { loadAgentEvents } from "../agents/store.js";
 import { currentReviewStatus } from "../review/status.js";
-import { type GitSummary, HUD_VERSION, type HudData, type ReviewSummary, type VerificationSummary } from "./hud-data.js";
+import { type AgentsSummary, type GitSummary, HUD_VERSION, type HudData, type ReviewSummary, type VerificationSummary } from "./hud-data.js";
 
 export { HUD_VERSION, parseHud } from "./hud-data.js";
 export type { GitSummary, HudData, ReviewSummary, VerificationSummary } from "./hud-data.js";
@@ -37,6 +39,16 @@ async function readReview(ctx: CliContext): Promise<ReviewSummary | undefined> {
   try {
     const { state, fileCount } = await currentReviewStatus(ctx);
     return state.kind === "none" ? { changedFiles: fileCount, state: "none" } : { changedFiles: fileCount, state: state.kind, decision: state.decision.decision, at: state.decision.at };
+  } catch {
+    return undefined;
+  }
+}
+
+/** What the recorded agent events say. Undefined when none were ever recorded, so nothing is shown rather than a zero. */
+async function readAgents(ctx: CliContext): Promise<AgentsSummary | undefined> {
+  try {
+    const runs = buildRuns(await loadAgentEvents(ctx), ctx.now());
+    return runs.length === 0 ? undefined : summarize(runs);
   } catch {
     return undefined;
   }
@@ -68,6 +80,7 @@ export async function collectHud(ctx: CliContext): Promise<HudData> {
   }
 
   const review = await readReview(ctx);
+  const agents = await readAgents(ctx);
 
   return {
     hudVersion: HUD_VERSION,
@@ -78,5 +91,6 @@ export async function collectHud(ctx: CliContext): Promise<HudData> {
     languageServersMissing: missing,
     runtime: { offline: config.runtime.offline, approval: config.engineering.approval },
     ...(review === undefined ? {} : { review }),
+    ...(agents === undefined ? {} : { agents }),
   };
 }

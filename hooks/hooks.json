@@ -45,6 +45,20 @@
           { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hook.js", "Stop"], "timeout": 15 }
         ]
       }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hook.js", "SubagentStart"], "timeout": 10 }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hook.js", "SubagentStop"], "timeout": 10 }
+        ]
+      }
     ]
   },
   "modules": ["./center.js"]

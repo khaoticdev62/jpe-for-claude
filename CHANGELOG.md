@@ -6,6 +6,14 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-18
+
+### Added
+- Agent activity (see docs/AGENTS.md). JPE now records the start and stop events Claude Code reports for subagents (two new hooks, SubagentStart and SubagentStop), and shows them: `jpe agents [--json]`, the `/jpe:agents` skill (13 skills), a palette entry, and an Agents row on the command center's home screen.
+- It shows running, finished and "no stop seen" runs, measured durations (only where both events were seen) and per-type use. It never shows success, progress, cost or the task: Claude Code does not report them, so JPE does not guess.
+- The record holds ids, types, times and the length of the final message; never the agent's task or words. Appends are used so parallel agents lose no event; the record is trimmed to 1,000 events at session start.
+- 47 tests for the record, the run model, the screen at 20 to 200 columns, hostile agent types, the HUD row and the real hook path.
+
 ## [1.4.0] - 2026-11-18
 
 ### Added

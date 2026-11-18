@@ -1,5 +1,7 @@
 import path from "node:path";
 import { store } from "../cli/commands/admin.js";
+import { makeAgentEvent } from "../agents/log.js";
+import { pruneAgentEvents, recordAgentEvent } from "../agents/store.js";
 import type { CliContext } from "../cli/context.js";
 import { sha256Hex } from "../docs/cache.js";
 import { explainError } from "../explain/errors.js";
@@ -65,6 +67,7 @@ export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: Cl
   if (payload.source === "compact") return context("SessionStart", clip(["JPE For Claude is still active in this project.", checkLine, WORKING_RULES].join("\n")));
 
   await pruneStaleStates(ctx);
+  await pruneAgentEvents(ctx).catch(() => undefined);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
 
@@ -86,6 +89,22 @@ export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: Cl
   ];
   const output = context("SessionStart", clip(lines.join("\n")));
   return payload.source === "startup" && (await isFirstRun(ctx)) ? { ...output, systemMessage: WELCOME_MESSAGE } : output;
+}
+
+/**
+ * SubagentStart and SubagentStop: records that Claude Code reported an agent starting or stopping. It records ids, the
+ * agent type, the time and the final message's length, never the task or the agent's words, and it never affects the agent:
+ * no output, and a failure to record is swallowed (the run hook is fail-open).
+ */
+export async function onSubagentStart(payload: PayloadOf<"SubagentStart">, ctx: CliContext): Promise<HookOutput | undefined> {
+  await recordAgentEvent(ctx, makeAgentEvent({ at: ctx.now(), kind: "start", agentId: payload.agent_id, agentType: payload.agent_type, sessionId: payload.session_id }));
+  return undefined;
+}
+
+export async function onSubagentStop(payload: PayloadOf<"SubagentStop">, ctx: CliContext): Promise<HookOutput | undefined> {
+  const chars = payload.last_assistant_message?.length;
+  await recordAgentEvent(ctx, makeAgentEvent({ at: ctx.now(), kind: "stop", agentId: payload.agent_id, agentType: payload.agent_type, sessionId: payload.session_id, ...(chars === undefined ? {} : { finalMessageChars: chars }) }));
+  return undefined;
 }
 
 /** UserPromptSubmit: a one-time workflow reminder, only when the prompt looks like a coding task. */

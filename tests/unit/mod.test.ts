@@ -19,7 +19,7 @@ describe("the built interface module (hooks/center.js)", () => {
   it("is registered in hooks.json beside the command hooks, and the file exists", async () => {
     const hooks = JSON.parse(await read("hooks/hooks.json")) as { hooks: Record<string, unknown>; modules: string[] };
     expect(hooks.modules).toEqual(["./center.js"]);
-    expect(Object.keys(hooks.hooks)).toEqual(["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop"]);
+    expect(Object.keys(hooks.hooks)).toEqual(["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStart", "SubagentStop"]);
     expect((await stat(path.join(ROOT, "hooks", "center.js"))).isFile()).toBe(true);
   });
 

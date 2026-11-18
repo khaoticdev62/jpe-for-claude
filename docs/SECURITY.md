@@ -2,6 +2,10 @@
 
 JPE runs inside your Claude Code session with your permissions. This page explains what it can touch, what it refuses to do, and where its protections stop.
 
+## Agent event recording
+
+The `SubagentStart` and `SubagentStop` hooks append one JSON line per event to `agents.jsonl` in JPE's own data folder. Fields are length-limited and parsed back strictly; the agent's prompt, task and message text are never stored (a test asserts it). The hooks print nothing, never block or change an agent, and fail open. Agent ids and types are untrusted text: they are sanitised before display (a test covers escape sequences).
+
 ## What JPE never does
 
 - **Approve anything.** Hooks can only make Claude Code *ask* (`permissionDecision: "ask"`); they never allow or deny on your behalf. No agent declares a permission mode (plugin agents cannot).

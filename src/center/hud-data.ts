@@ -35,6 +35,13 @@ export interface ReviewSummary {
   at?: string;
 }
 
+/** What Claude Code has reported about agents in this project (start and stop events only). */
+export interface AgentsSummary {
+  running: number;
+  total: number;
+  noStopSeen: number;
+}
+
 export interface HudData {
   hudVersion: typeof HUD_VERSION;
   generatedAt: string;
@@ -46,6 +53,8 @@ export interface HudData {
   runtime: { offline: boolean; approval: "risk-based" | "always" | "off" };
   /** Absent when there is no git repository to compare against. */
   review?: ReviewSummary;
+  /** Absent when no agent event has ever been recorded. */
+  agents?: AgentsSummary;
 }
 
 const STATUSES: ReadonlySet<string> = new Set(["VERIFIED", "FUNCTIONAL_WITH_WARNINGS", "PARTIALLY_VERIFIED", "FAILED", "BLOCKED", "NOT_TESTED"]);
@@ -75,6 +84,11 @@ export function parseHud(raw: unknown): HudData | undefined {
     if (!["none", "current", "stale"].includes(String(review["state"]))) return undefined;
     if (review["decision"] !== undefined && !["approved", "rejected"].includes(String(review["decision"]))) return undefined;
     if (review["at"] !== undefined && typeof review["at"] !== "string") return undefined;
+  }
+  const agents = raw["agents"];
+  if (agents !== undefined) {
+    const count = (v: unknown): boolean => typeof v === "number" && Number.isInteger(v) && v >= 0;
+    if (!isRecord(agents) || !count(agents["running"]) || !count(agents["total"]) || !count(agents["noStopSeen"])) return undefined;
   }
   return raw as unknown as HudData;
 }

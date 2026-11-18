@@ -10,6 +10,7 @@ import { type Line, plain, span } from "../ui/doc.js";
 import type { RenderProfile } from "../ui/profile.js";
 import { displayWidth, inline, pad } from "../ui/text.js";
 import { CENTER_COMMANDS, type CenterCommand, findCommand } from "./commands.js";
+import { agentsSentence } from "../agents/runs.js";
 import type { HudData, ReviewSummary } from "./hud-data.js";
 import { type CenterMemory, recentIds } from "./memory.js";
 import { rankCommands } from "./palette.js";
@@ -117,6 +118,7 @@ export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[
     ["Project", project],
     ["Git", gitText(hud)],
     ...(hud.review === undefined || hud.review.changedFiles === 0 ? [] : ([["Review", reviewText(hud.review, now)]] as Array<[string, string]>)),
+    ...(hud.agents === undefined ? [] : ([["Agents", agentsSentence(hud.agents)]] as Array<[string, string]>)),
     ["Language servers", servers],
     ["Mode", mode],
   ];

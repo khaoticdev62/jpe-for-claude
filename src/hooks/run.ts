@@ -2,7 +2,7 @@ import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { CliContext } from "../cli/context.js";
 import { redactSecrets } from "../core/redact.js";
-import { onPostToolUse, onPreToolUse, onSessionStart, onStop, onToolFailure, onUserPrompt } from "./handlers.js";
+import { onPostToolUse, onPreToolUse, onSessionStart, onStop, onSubagentStart, onSubagentStop, onToolFailure, onUserPrompt } from "./handlers.js";
 import { isHookEvent, parsePayload, type HookEvent, type HookOutput } from "./payload.js";
 
 const MAX_STDIN_BYTES = 2 * 1024 * 1024;
@@ -26,6 +26,8 @@ const HANDLERS: Dispatch = {
   PostToolUse: onPostToolUse as Dispatch["PostToolUse"],
   PostToolUseFailure: onToolFailure as Dispatch["PostToolUseFailure"],
   Stop: onStop as Dispatch["Stop"],
+  SubagentStart: onSubagentStart as Dispatch["SubagentStart"],
+  SubagentStop: onSubagentStop as Dispatch["SubagentStop"],
 };
 
 async function debugLog(ctx: CliContext | undefined, line: string): Promise<void> {

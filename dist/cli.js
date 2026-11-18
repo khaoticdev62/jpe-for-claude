@@ -845,10 +845,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path30) {
-  if (!path30)
+function getElementAtPath(obj, path31) {
+  if (!path31)
     return obj;
-  return path30.reduce((acc, key) => acc?.[key], obj);
+  return path31.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1188,11 +1188,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path30, issues) {
+function prefixIssues(path31, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path30);
+    iss.path.unshift(path31);
     return iss;
   });
 }
@@ -1654,16 +1654,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path30 = []) => {
+  const processError = (error63, path31 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path30, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path31, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path31, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path31, ...issue2.path]);
       } else {
-        const fullpath = [...path30, ...issue2.path];
+        const fullpath = [...path31, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1702,17 +1702,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path30 = []) => {
+  const processError = (error63, path31 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path30, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path31, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path31, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path30, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path31, ...issue2.path]);
       } else {
-        const fullpath = [...path30, ...issue2.path];
+        const fullpath = [...path31, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1751,8 +1751,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path30 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path30) {
+  const path31 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path31) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18890,13 +18890,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path30 = ref.slice(1).split("/").filter(Boolean);
-  if (path30.length === 0) {
+  const path31 = ref.slice(1).split("/").filter(Boolean);
+  if (path31.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path30[0] === defsKey) {
-    const key = path30[1] === void 0 ? void 0 : decodeJSONPointerSegment(path30[1]);
+  if (path31[0] === defsKey) {
+    const key = path31[1] === void 0 ? void 0 : decodeJSONPointerSegment(path31[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -22103,7 +22103,7 @@ async function briefCommand(args, ctx) {
 }
 
 // src/center/hud.ts
-import path16 from "path";
+import path17 from "path";
 
 // src/project/checks.ts
 var SAFE_SCRIPT_NAME = /^[A-Za-z0-9:_-]+$/;
@@ -22522,12 +22522,122 @@ async function readLastStatus(ctx) {
   return { report: deriveStatus(parseEvidenceLines(ledgerText), meta3.required), at: meta3.at };
 }
 
+// src/agents/runs.ts
+var STALE_AFTER_MS = 30 * 60 * 1e3;
+function buildRuns(events, now) {
+  const byId = /* @__PURE__ */ new Map();
+  for (const e of events) {
+    const entry = byId.get(e.agentId) ?? { type: e.agentType, session: e.sessionId };
+    if (e.kind === "start") entry.start = e;
+    else entry.stop = e;
+    entry.type = e.agentType;
+    byId.set(e.agentId, entry);
+  }
+  const runs = [...byId].map(([agentId, { start, stop, type, session }]) => {
+    const startedMs = start === void 0 ? void 0 : Date.parse(start.at);
+    const stoppedMs = stop === void 0 ? void 0 : Date.parse(stop.at);
+    const duration3 = startedMs !== void 0 && stoppedMs !== void 0 && stoppedMs >= startedMs ? stoppedMs - startedMs : void 0;
+    const state = stop !== void 0 ? "finished" : startedMs !== void 0 && now.getTime() - startedMs <= STALE_AFTER_MS ? "running" : "no-stop-seen";
+    return {
+      agentId,
+      agentType: type,
+      sessionId: session,
+      ...start === void 0 ? {} : { startedAt: start.at },
+      ...stop === void 0 ? {} : { stoppedAt: stop.at },
+      ...duration3 === void 0 ? {} : { durationMs: duration3 },
+      state,
+      ...stop?.finalMessageChars === void 0 ? {} : { finalMessageChars: stop.finalMessageChars }
+    };
+  });
+  const when = (r) => Date.parse(r.startedAt ?? r.stoppedAt ?? "") || 0;
+  return runs.sort((a, b) => when(b) - when(a));
+}
+var summarize = (runs) => ({
+  running: runs.filter((r) => r.state === "running").length,
+  total: runs.length,
+  noStopSeen: runs.filter((r) => r.state === "no-stop-seen").length
+});
+function agentsSentence(summary) {
+  if (summary.total === 0) return "No agent activity has been recorded in this project.";
+  const parts = [`${summary.running} running`, `${summary.total} recorded`];
+  if (summary.noStopSeen > 0) parts.push(`${summary.noStopSeen} with no stop seen`);
+  return parts.join(", ");
+}
+var median = (values) => {
+  if (values.length === 0) return void 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid] : Math.round(((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2);
+};
+function buildMetrics(runs) {
+  const types = /* @__PURE__ */ new Map();
+  for (const r of runs) types.set(r.agentType, [...types.get(r.agentType) ?? [], r]);
+  return [...types].map(([agentType, list]) => {
+    const durations = list.flatMap((r) => r.durationMs === void 0 ? [] : [r.durationMs]);
+    const med = median(durations);
+    const last = list.map((r) => r.startedAt).filter((s) => s !== void 0).sort().at(-1);
+    return {
+      agentType,
+      runs: list.length,
+      running: list.filter((r) => r.state === "running").length,
+      finished: list.filter((r) => r.state === "finished").length,
+      noStopSeen: list.filter((r) => r.state === "no-stop-seen").length,
+      ...med === void 0 ? {} : { medianMs: med },
+      ...durations.length === 0 ? {} : { maxMs: Math.max(...durations) },
+      totalMs: durations.reduce((a, b) => a + b, 0),
+      ...last === void 0 ? {} : { lastStartedAt: last }
+    };
+  }).sort((a, b) => b.runs - a.runs || a.agentType.localeCompare(b.agentType));
+}
+function formatDuration(ms) {
+  if (ms < 1e3) return `${Math.round(ms)} ms`;
+  const seconds = Math.round(ms / 1e3);
+  if (seconds < 60) return `${seconds} s`;
+  return `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, "0")} s`;
+}
+
+// src/agents/store.ts
+import { appendFile, mkdir as mkdir3 } from "fs/promises";
+import path14 from "path";
+
+// src/agents/log.ts
+var AGENT_EVENT_KINDS = ["start", "stop"];
+var MAX_FIELD = 200;
+var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var isText = (v) => typeof v === "string" && v.length > 0 && v.length <= MAX_FIELD;
+function parseAgentEvent(line) {
+  let raw;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    return void 0;
+  }
+  if (!isRecord(raw)) return void 0;
+  const { at, kind, agentId, agentType, sessionId, finalMessageChars } = raw;
+  if (typeof at !== "string" || Number.isNaN(Date.parse(at))) return void 0;
+  if (!AGENT_EVENT_KINDS.includes(kind)) return void 0;
+  if (!isText(agentId) || !isText(agentType) || !isText(sessionId)) return void 0;
+  if (finalMessageChars !== void 0 && !(typeof finalMessageChars === "number" && Number.isInteger(finalMessageChars) && finalMessageChars >= 0)) return void 0;
+  return { at, kind, agentId, agentType, sessionId, ...finalMessageChars === void 0 ? {} : { finalMessageChars } };
+}
+function parseAgentEvents(text) {
+  return text.split(/\r?\n/).flatMap((line) => line.trim() === "" ? [] : [parseAgentEvent(line) ?? []].flat());
+}
+
+// src/agents/store.ts
+var AGENT_EVENTS_FILE = "agents.jsonl";
+var fileFor = (ctx) => path14.join(ctx.stateDir(), AGENT_EVENTS_FILE);
+async function loadAgentEvents(ctx) {
+  const text = await ctx.readText(fileFor(ctx)).catch(() => void 0);
+  return text === void 0 ? [] : parseAgentEvents(text);
+}
+
 // src/review/status.ts
-import path15 from "path";
+import path16 from "path";
 
 // src/review/changes.ts
 import { createHash as createHash3 } from "crypto";
-import path14 from "path";
+import path15 from "path";
 async function listChanges(ctx) {
   const state = await readGitState(ctx.git);
   if (!state.available) throw new JpeError("TOOL_UNAVAILABLE", "Git is not installed, so there is nothing to compare against.");
@@ -22541,7 +22651,7 @@ async function reviewFingerprint(ctx) {
   const { root, files } = await listChanges(ctx);
   const lines = [];
   for (const file2 of files) {
-    const content = file2.status.includes("D") ? "" : await ctx.fs.readText(path14.resolve(root, file2.path)) ?? "";
+    const content = file2.status.includes("D") ? "" : await ctx.fs.readText(path15.resolve(root, file2.path)) ?? "";
     lines.push(`${file2.status}	${file2.path}	${sha2562(content)}`);
   }
   lines.sort();
@@ -22553,7 +22663,7 @@ var DECISIONS = ["approved", "rejected"];
 var MAX_NOTE_CHARS = 500;
 var MAX_RECORDS = 200;
 var FINGERPRINT = /^[0-9a-f]{64}$/;
-var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var isRecord2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
 function parseDecision(line) {
   let raw;
   try {
@@ -22561,7 +22671,7 @@ function parseDecision(line) {
   } catch {
     return void 0;
   }
-  if (!isRecord(raw)) return void 0;
+  if (!isRecord2(raw)) return void 0;
   const { id, at, decision, fingerprint, fileCount, note } = raw;
   if (typeof id !== "string" || id.length === 0 || id.length > 64) return void 0;
   if (typeof at !== "string" || Number.isNaN(Date.parse(at))) return void 0;
@@ -22590,7 +22700,7 @@ function decisionState(decisions, currentFingerprint, changedFiles) {
 // src/review/status.ts
 var DECISIONS_FILE = "reviews.jsonl";
 async function loadDecisions(ctx) {
-  const text = await ctx.readText(path15.join(ctx.stateDir(), DECISIONS_FILE)).catch(() => void 0);
+  const text = await ctx.readText(path16.join(ctx.stateDir(), DECISIONS_FILE)).catch(() => void 0);
   return text === void 0 ? [] : parseDecisions(text);
 }
 async function currentReviewStatus(ctx) {
@@ -22621,6 +22731,14 @@ async function readReview(ctx) {
     return void 0;
   }
 }
+async function readAgents(ctx) {
+  try {
+    const runs = buildRuns(await loadAgentEvents(ctx), ctx.now());
+    return runs.length === 0 ? void 0 : summarize(runs);
+  } catch {
+    return void 0;
+  }
+}
 async function collectHud(ctx) {
   const config2 = await ctx.loadConfig();
   const project = await detectProject(ctx.cwd, ctx.fs);
@@ -22636,15 +22754,17 @@ async function collectHud(ctx) {
     if (!await findOnPath(language.server.binary, lookup2) && !missing.includes(label)) missing.push(label);
   }
   const review = await readReview(ctx);
+  const agents = await readAgents(ctx);
   return {
     hudVersion: HUD_VERSION,
     generatedAt: ctx.now().toISOString(),
-    project: { name: path16.basename(ctx.cwd) || ctx.cwd, ecosystems: project.ecosystems, ...project.packageManager === void 0 ? {} : { packageManager: project.packageManager } },
+    project: { name: path17.basename(ctx.cwd) || ctx.cwd, ecosystems: project.ecosystems, ...project.packageManager === void 0 ? {} : { packageManager: project.packageManager } },
     git,
     verification: await readVerification(ctx, checksAvailable),
     languageServersMissing: missing,
     runtime: { offline: config2.runtime.offline, approval: config2.engineering.approval },
-    ...review === void 0 ? {} : { review }
+    ...review === void 0 ? {} : { review },
+    ...agents === void 0 ? {} : { agents }
   };
 }
 
@@ -23020,6 +23140,7 @@ var CENTER_COMMANDS = [
   command("verify", "Verify", "Run the project's real tests, type checks and build, and report evidence", "Check", false, ["test", "build", "lint", "typecheck", "does it work", "check"]),
   command("status", "Status", "Show the latest verification status and what backs it", "Check", false, ["result", "last run", "evidence", "passed", "failed"]),
   command("audit", "Audit", "Review the project for risky patterns and exposed credentials", "Check", false, ["security", "secrets", "vulnerabilities", "safe", "review"]),
+  command("agents", "Agents", "See which agents Claude Code started and stopped, and how long they took", "Check", false, ["subagent", "running", "parallel", "tasks", "who is working"]),
   command("review", "Review", "Review the uncommitted changes: what changed, possible risks, and what to confirm", "Check", false, ["changes", "diff", "pull request", "approve", "reject", "look over", "before commit"], "<path>"),
   command("fix", "Fix", "Investigate a failure and repair it in small, checked steps with a backup", "Change", true, ["repair", "bug", "broken", "error", "failing", "debug"]),
   command("setup", "Setup", "Check JPE's health and set up language servers", "Manage", true, ["doctor", "install", "health", "language server", "diagnose"]),
@@ -23263,6 +23384,7 @@ function hudLines(hud, profile, now) {
     ["Project", project],
     ["Git", gitText(hud)],
     ...hud.review === void 0 || hud.review.changedFiles === 0 ? [] : [["Review", reviewText(hud.review, now)]],
+    ...hud.agents === void 0 ? [] : [["Agents", agentsSentence(hud.agents)]],
     ["Language servers", servers],
     ["Mode", mode]
   ];
@@ -23628,13 +23750,13 @@ async function centerCommand(args, ctx) {
 import os2 from "os";
 
 // src/doctor/env-checks.ts
-import { mkdir as mkdir4, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
-import path20 from "path";
+import { mkdir as mkdir5, readdir as readdir5, rm as rm2, statfs, unlink as unlink4, writeFile as writeFile4 } from "fs/promises";
+import path21 from "path";
 
 // src/docs/cache.ts
 import { createHash as createHash4 } from "crypto";
-import { mkdir as mkdir3, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path17 from "path";
+import { mkdir as mkdir4, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
+import path18 from "path";
 var sha256Hex = (text) => createHash4("sha256").update(text).digest("hex");
 var MAX_CONTENT_CHARS = 2e5;
 var entrySchema = external_exports.strictObject({
@@ -23664,7 +23786,7 @@ var DocCache = class {
     return sha256Hex([provider, library, version2 ?? "", topic.trim().toLowerCase()].join("\0"));
   }
   file(key) {
-    return path17.join(this.deps.dir, `${key}.json`);
+    return path18.join(this.deps.dir, `${key}.json`);
   }
   async put(key, drafts) {
     const stored = drafts.map((d) => ({ ...d, content: redactSecrets(d.content).slice(0, MAX_CONTENT_CHARS) }));
@@ -23676,7 +23798,7 @@ var DocCache = class {
       contentHash: hashDrafts(stored),
       drafts: stored
     };
-    await mkdir3(this.deps.dir, { recursive: true });
+    await mkdir4(this.deps.dir, { recursive: true });
     const temp = `${this.file(key)}.tmp-${process.pid}`;
     await writeFile3(temp, JSON.stringify(entry));
     await rename3(temp, this.file(key));
@@ -23712,18 +23834,18 @@ var DocCache = class {
       throw error62;
     }
     const files = await Promise.all(
-      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path17.join(this.deps.dir, n))).mtimeMs }))
+      names.filter((n) => n.endsWith(".json") || n.includes(".tmp-")).map(async (n) => ({ n, mtime: (await stat3(path18.join(this.deps.dir, n))).mtimeMs }))
     );
     files.sort((a, b) => b.mtime - a.mtime);
     const doomed = files.slice(Math.max(0, maxEntries));
-    await Promise.all(doomed.map((f3) => unlink2(path17.join(this.deps.dir, f3.n))));
+    await Promise.all(doomed.map((f3) => unlink2(path18.join(this.deps.dir, f3.n))));
     return doomed.length;
   }
 };
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path18 from "path";
+import path19 from "path";
 
 // src/hooks/payload.ts
 import { createHash as createHash5 } from "crypto";
@@ -23740,7 +23862,9 @@ var payloadSchemas = {
   PreToolUse: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput }),
   PostToolUse: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput, tool_response: external_exports.unknown().optional() }),
   PostToolUseFailure: external_exports.looseObject({ ...base2, tool_name: external_exports.string(), tool_input: toolInput, error: external_exports.string().optional(), is_interrupt: external_exports.boolean().optional() }),
-  Stop: external_exports.looseObject({ ...base2, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() })
+  Stop: external_exports.looseObject({ ...base2, stop_hook_active: external_exports.boolean().optional(), last_assistant_message: external_exports.string().optional() }),
+  SubagentStart: external_exports.looseObject({ ...base2, agent_id: external_exports.string().min(1).max(200), agent_type: external_exports.string().max(200) }),
+  SubagentStop: external_exports.looseObject({ ...base2, agent_id: external_exports.string().min(1).max(200), agent_type: external_exports.string().max(200), last_assistant_message: external_exports.string().optional() })
 };
 var HOOK_EVENTS = Object.keys(payloadSchemas);
 
@@ -23759,7 +23883,7 @@ var stateSchema = external_exports.strictObject({
 });
 var STALE_MS = 7 * 24 * 36e5;
 async function pruneStaleStates(ctx) {
-  const dir = path18.join(ctx.stateDir(), "sessions");
+  const dir = path19.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -23769,7 +23893,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path18.join(dir, name);
+    const file2 = path19.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -23779,14 +23903,14 @@ async function pruneStaleStates(ctx) {
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path19 from "path";
+import path20 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path19.normalize(file2).toLowerCase() : path19.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path20.normalize(file2).toLowerCase() : path20.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path19.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path20.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -23825,7 +23949,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path19.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path20.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -24039,7 +24163,7 @@ var LspClient = class _LspClient {
 // src/doctor/env-checks.ts
 var f = (id, area, status, title, extra = {}) => ({ id, area, status, title, ...extra });
 var lookupFor = (env) => ({ platform: env.ctx.pathEnv.platform, env: env.ctx.pathEnv.env, exists: (p) => env.ctx.fs.exists(p) });
-var cacheDir = (env) => path20.join(dataDir(env.ctx.pathEnv), "docs-cache");
+var cacheDir = (env) => path21.join(dataDir(env.ctx.pathEnv), "docs-cache");
 async function runClaude(env, args, timeoutMs) {
   const exe = await findOnPath("claude", lookupFor(env));
   if (!exe) return { ok: false, text: "" };
@@ -24085,8 +24209,8 @@ async function checkStorage(env) {
   const dir = dataDir(env.ctx.pathEnv);
   const out = [];
   try {
-    await mkdir4(dir, { recursive: true });
-    const probe = path20.join(dir, `.doctor-${process.pid}`);
+    await mkdir5(dir, { recursive: true });
+    const probe = path21.join(dir, `.doctor-${process.pid}`);
     await writeFile4(probe, "x");
     await unlink4(probe);
     out.push(f("storage", "Storage", "ok", "The local data folder is writable.", { detail: dir }));
@@ -24207,8 +24331,8 @@ async function repair(env, id) {
   const { ctx } = env;
   switch (id) {
     case "create-data-dirs":
-      await mkdir4(path20.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
-      await mkdir4(ctx.stateDir(), { recursive: true });
+      await mkdir5(path21.join(dataDir(ctx.pathEnv), "docs-cache"), { recursive: true });
+      await mkdir5(ctx.stateDir(), { recursive: true });
       return "Created the data folders.";
     case "remove-corrupt-cache": {
       const dir = cacheDir(env);
@@ -24219,7 +24343,7 @@ async function repair(env, id) {
         const isTemp = name.includes(".tmp-");
         if (!isTemp && (!name.endsWith(".json") || !/^[a-f0-9]{64}$/.test(key))) continue;
         if (isTemp || !await cache.get(key)) {
-          await rm2(path20.join(dir, name), { force: true });
+          await rm2(path21.join(dir, name), { force: true });
           removed++;
         }
       }
@@ -24240,7 +24364,7 @@ async function repair(env, id) {
 
 // src/doctor/plugin-checks.ts
 import { createInterface } from "readline";
-import path21 from "path";
+import path22 from "path";
 
 // src/doctor/frontmatter.ts
 function parseFrontmatter(text) {
@@ -24255,13 +24379,13 @@ function parseFrontmatter(text) {
 }
 
 // src/doctor/plugin-checks.ts
-var EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "setup", "config"];
+var EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "agents", "setup", "config"];
 var EXPECTED_AGENTS = ["jpe-researcher", "jpe-explainer", "jpe-lsp", "jpe-verifier", "jpe-security", "jpe-architect", "jpe-debugger"];
-var EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop"];
+var EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStart", "SubagentStop"];
 var MCP_PREFIX = "mcp__plugin_jpe_jpe__";
 var f2 = (id, status, title, extra = {}) => ({ id, area: "Plugin", status, title, ...extra });
 async function readJson(env, ...parts) {
-  const file2 = path21.join(env.pluginRoot ?? "", ...parts);
+  const file2 = path22.join(env.pluginRoot ?? "", ...parts);
   const text = await env.ctx.fs.readText(file2);
   if (text === void 0) return { error: `${parts.join("/")} is missing` };
   try {
@@ -24330,14 +24454,14 @@ async function checkPlugin(env) {
   const name = manifest.value?.name;
   out.push(manifest.error ? f2("manifest", "fail", `Plugin manifest problem: ${manifest.error}.`, { fix: "Reinstall the plugin." }) : name === "jpe" ? f2("manifest", "ok", "Plugin manifest is valid (name: jpe).") : f2("manifest", "fail", `Plugin manifest has an unexpected name (${String(name)}).`));
   for (const bundle of ["cli.js", "hook.js", "mcp.js", "package.json"]) {
-    const present = await ctx.fs.exists(path21.join(pluginRoot, "dist", bundle));
+    const present = await ctx.fs.exists(path22.join(pluginRoot, "dist", bundle));
     if (present) out.push(f2(`bundle-${bundle}`, "ok", `dist/${bundle} is present.`));
     else if (bundle === "package.json") out.push(f2(`bundle-${bundle}`, "warn", "dist/package.json is missing, so Node re-parses the bundles on every start and prints warnings.", { fix: "Reinstall a release build of the plugin." }));
     else out.push(f2(`bundle-${bundle}`, "fail", `dist/${bundle} is missing, so features that run it will not work.`, { fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
   }
   const skillProblems = [];
   for (const s of EXPECTED_SKILLS) {
-    const text = await ctx.fs.readText(path21.join(pluginRoot, "skills", s, "SKILL.md"));
+    const text = await ctx.fs.readText(path22.join(pluginRoot, "skills", s, "SKILL.md"));
     const parsed = text === void 0 ? void 0 : parseFrontmatter(text);
     if (!parsed) skillProblems.push(`${s}: missing or no front matter`);
     else if (!parsed.front["description"]) skillProblems.push(`${s}: no description`);
@@ -24351,7 +24475,7 @@ async function checkPlugin(env) {
   } else if (server.command !== "node" || server.args?.[0] !== "${CLAUDE_PLUGIN_ROOT}/dist/mcp.js") {
     out.push(f2("mcp-config", "warn", "The MCP configuration is not the standard one.", { detail: JSON.stringify(server) }));
   } else {
-    const hs = await ctx.fs.exists(path21.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path21.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
+    const hs = await ctx.fs.exists(path22.join(pluginRoot, "dist", "mcp.js")) ? await mcpHandshake(path22.join(pluginRoot, "dist", "mcp.js"), ctx.cwd) : void 0;
     if (!hs) out.push(f2("mcp-start", "fail", "The MCP server bundle is missing, so it could not be started."));
     else if (!hs.ok) out.push(f2("mcp-start", "fail", `The JPE MCP server did not answer a real handshake (${hs.detail}).`, { fix: "Run `node dist/mcp.js` manually to see the error." }));
     else {
@@ -24361,7 +24485,7 @@ async function checkPlugin(env) {
   }
   const agentProblems = [];
   for (const a of EXPECTED_AGENTS) {
-    const text = await ctx.fs.readText(path21.join(pluginRoot, "agents", `${a}.md`));
+    const text = await ctx.fs.readText(path22.join(pluginRoot, "agents", `${a}.md`));
     const parsed = text === void 0 ? void 0 : parseFrontmatter(text);
     if (!parsed) {
       agentProblems.push(`${a}: missing or no front matter`);
@@ -24387,10 +24511,10 @@ async function checkPlugin(env) {
   const modules = hooksJson.value?.modules;
   const moduleRegistered = Array.isArray(modules) && modules.includes("./center.js");
   if (!moduleRegistered) out.push(f2("interface-module", "warn", "The command center interface is not registered in hooks/hooks.json, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall the plugin." }));
-  else if (!await ctx.fs.exists(path21.join(pluginRoot, "hooks", "center.js"))) out.push(f2("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
-  else if (!await ctx.fs.exists(path21.join(pluginRoot, "types", "index.d.ts"))) out.push(f2("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
+  else if (!await ctx.fs.exists(path22.join(pluginRoot, "hooks", "center.js"))) out.push(f2("interface-module", "warn", "hooks/center.js is missing, so /jpe shows the text menu instead of the pane.", { area: "Interface", fix: "Reinstall a release build of the plugin, or run `npm run build` in a source checkout." }));
+  else if (!await ctx.fs.exists(path22.join(pluginRoot, "types", "index.d.ts"))) out.push(f2("interface-module", "warn", "types/index.d.ts is missing, which Claude Code needs to accept the command center interface.", { area: "Interface", fix: "Reinstall the plugin." }));
   else out.push(f2("interface-module", "ok", "The command center interface module is installed.", { area: "Interface" }));
-  const hookJs = path21.join(pluginRoot, "dist", "hook.js");
+  const hookJs = path22.join(pluginRoot, "dist", "hook.js");
   if (await ctx.fs.exists(hookJs)) {
     try {
       const payload = JSON.stringify({ session_id: "doctor-check", cwd: ctx.cwd, hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "rm -rf doctor-smoke-test" } });
@@ -24505,15 +24629,15 @@ Report exported to ${exportTo} (home folder replaced by ~, credentials redacted)
 }
 
 // src/cli/commands/lsp.ts
-import { appendFile, mkdir as mkdir5, readFile as readFile6 } from "fs/promises";
-import path23 from "path";
+import { appendFile as appendFile2, mkdir as mkdir6, readFile as readFile6 } from "fs/promises";
+import path24 from "path";
 
 // src/lsp/diagnostics.ts
-import path22 from "path";
+import path23 from "path";
 var count = (list, severity) => list.filter((d) => d.severity === severity).length;
 function parseCompilerOutput(output2, cwd) {
   const found = [];
-  const abs = (f3) => path22.resolve(cwd, f3.trim());
+  const abs = (f3) => path23.resolve(cwd, f3.trim());
   const lines = output2.split(/\r?\n/);
   lines.forEach((line, i) => {
     let m = /^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s+([A-Za-z]+\d+)?:?\s*(.*)$/.exec(line);
@@ -24584,7 +24708,7 @@ function recordLspEvidence(ledger, report) {
 function lookupFor2(ctx) {
   return { platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f3) => ctx.fs.exists(f3) };
 }
-var rel = (ctx, file2) => path23.relative(ctx.cwd, file2).split(path23.sep).join("/") || file2;
+var rel = (ctx, file2) => path24.relative(ctx.cwd, file2).split(path24.sep).join("/") || file2;
 function formatDiagnostics(ctx, report) {
   return [
     `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} \u2014 ${report.server}`,
@@ -24630,9 +24754,9 @@ async function collectDiagnostics(inputs, ctx) {
   const report = binary ? await collectLspDiagnostics(language, { command: binary, args: language.server.args, rootDir: ctx.cwd, files, readFile: (f3) => readFile6(f3, "utf8"), startupTimeoutMs: cfg.lsp.diagnosticsTimeoutMs, maxWaitMs: cfg.lsp.diagnosticsTimeoutMs }) : await collectCliDiagnostics(language, { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs });
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   recordLspEvidence(ledger, report);
-  const ledgerFile = path23.join(ctx.stateDir(), "ledger.jsonl");
-  await mkdir5(path23.dirname(ledgerFile), { recursive: true });
-  await appendFile(ledgerFile, `${ledger.toJsonLines()}
+  const ledgerFile = path24.join(ctx.stateDir(), "ledger.jsonl");
+  await mkdir6(path24.dirname(ledgerFile), { recursive: true });
+  await appendFile2(ledgerFile, `${ledger.toJsonLines()}
 `);
   const notes = binary ? [] : [`The ${language.server.binary} language server is not installed, so these results were NOT verified by LSP. See \`jpe install-plan ${language.id}\`.`];
   return { report, notes };
@@ -24711,7 +24835,7 @@ async function installPlanCommand(args, ctx) {
 }
 
 // src/cli/commands/research.ts
-import path26 from "path";
+import path27 from "path";
 
 // src/security/untrusted.ts
 var INJECTION_PATTERNS = [
@@ -24841,7 +24965,7 @@ function formatReport(report) {
 }
 
 // src/docs/providers/local-package.ts
-import path24 from "path";
+import path25 from "path";
 var pkgSchema = external_exports.looseObject({
   name: external_exports.string().optional(),
   version: external_exports.string().optional(),
@@ -24881,8 +25005,8 @@ var localPackageProvider = {
   async fetch(request, ctx) {
     if (request.ecosystem !== "node") return { results: [], notes: ["Local package inspection currently supports npm packages only."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const dir = path24.join(ctx.projectRoot, "node_modules", request.library);
-    const pkgText = await ctx.fs.readText(path24.join(dir, "package.json"));
+    const dir = path25.join(ctx.projectRoot, "node_modules", request.library);
+    const pkgText = await ctx.fs.readText(path25.join(dir, "package.json"));
     const parsed = pkgText === void 0 ? void 0 : pkgSchema.safeParse(safeJson(pkgText));
     if (!parsed?.success) return { results: [], notes: [`${request.library} is not installed in node_modules, so it could not be inspected locally.`] };
     const pkg = parsed.data;
@@ -24898,7 +25022,7 @@ var localPackageProvider = {
     ].filter(Boolean).join("\n");
     results.push({ ...base3, kind: "metadata", title: `${request.library}@${version2 ?? "?"} (installed package)`, content: meta3 });
     for (const name of ["README.md", "readme.md", "Readme.md"]) {
-      const readme = await ctx.fs.readText(path24.join(dir, name));
+      const readme = await ctx.fs.readText(path25.join(dir, name));
       if (readme !== void 0) {
         results.push({ ...base3, kind: "reference", title: `${request.library} README (installed copy)`, content: focusOnTopic(readme, request.topic, MAX_README_CHARS) });
         break;
@@ -24934,15 +25058,15 @@ function topicWords(topic) {
   return topic.toLowerCase().split(/[^a-z0-9_$]+/).filter((w) => w.length >= 3);
 }
 function declarationCandidates(fromFile, spec) {
-  const base3 = path24.resolve(path24.dirname(fromFile), spec);
+  const base3 = path25.resolve(path25.dirname(fromFile), spec);
   const mapped = base3.replace(/\.(c|m)?js$/, (_m, k) => `.d.${k ?? ""}ts`);
-  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path24.join(base3, "index.d.ts"), path24.join(base3, "index.d.cts")])];
+  return [.../* @__PURE__ */ new Set([mapped, `${base3}.d.ts`, `${base3}.d.cts`, `${base3}.d.mts`, path25.join(base3, "index.d.ts"), path25.join(base3, "index.d.cts")])];
 }
 async function collectDeclarations(packageDir, entry, entryText, topic, read) {
   const words2 = topicWords(topic);
   const mentions2 = (text) => words2.some((w) => text.toLowerCase().includes(w));
   if (words2.length === 0 || mentions2(entryText)) return { content: focusOnTopic(entryText, topic, MAX_TYPES_CHARS), topicFound: words2.length > 0, files: 1 };
-  const seen = /* @__PURE__ */ new Set([path24.normalize(entry)]);
+  const seen = /* @__PURE__ */ new Set([path25.normalize(entry)]);
   const queue = [{ file: entry, text: entryText }];
   const excerpts = [];
   let used = 0;
@@ -24950,10 +25074,10 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
     const current = queue.shift();
     for (const m of current.text.matchAll(REEXPORT)) {
       for (const candidate of declarationCandidates(current.file, m[1] ?? "")) {
-        const normal = path24.normalize(candidate);
+        const normal = path25.normalize(candidate);
         if (seen.has(normal)) continue;
         try {
-          resolveInside(packageDir, path24.relative(packageDir, normal));
+          resolveInside(packageDir, path25.relative(packageDir, normal));
         } catch {
           continue;
         }
@@ -24962,7 +25086,7 @@ async function collectDeclarations(packageDir, entry, entryText, topic, read) {
         seen.add(normal);
         queue.push({ file: normal, text });
         if (mentions2(text) && used < MAX_TYPES_CHARS) {
-          const excerpt2 = `// ${path24.relative(packageDir, normal).split(path24.sep).join("/")}
+          const excerpt2 = `// ${path25.relative(packageDir, normal).split(path25.sep).join("/")}
 ${focusOnTopic(text, topic, Math.min(8e3, MAX_TYPES_CHARS - used))}`;
           excerpts.push(excerpt2);
           used += excerpt2.length;
@@ -25092,7 +25216,7 @@ var osvProvider = {
 };
 
 // src/docs/providers/repo-release.ts
-import path25 from "path";
+import path26 from "path";
 var MAX_NOTES_CHARS = 8e3;
 var pkgSchema2 = external_exports.looseObject({ repository: external_exports.union([external_exports.string(), external_exports.looseObject({ url: external_exports.string().optional() })]).optional() });
 var releaseSchema = external_exports.looseObject({ name: external_exports.string().nullable().optional(), tag_name: external_exports.string().optional(), body: external_exports.string().nullable().optional(), html_url: external_exports.string().optional() });
@@ -25107,7 +25231,7 @@ var repoReleaseProvider = {
     if (request.ecosystem !== "node") return { results: [], notes: ["Release-note lookup currently supports npm packages only."] };
     if (!request.version) return { results: [], notes: ["An exact version is needed to find its release notes."] };
     if (!NPM_NAME.test(request.library)) return { results: [], notes: [`"${request.library.slice(0, 60)}" is not a valid npm package name.`] };
-    const pkgText = await ctx.fs.readText(path25.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
+    const pkgText = await ctx.fs.readText(path26.join(ctx.projectRoot, "node_modules", request.library, "package.json"));
     let repoField;
     if (pkgText !== void 0) {
       try {
@@ -25170,7 +25294,7 @@ async function runResearch(args, ctx) {
     { library, ...exact ? { version: exact } : {}, topic: flagString(args, "topic") ?? library, ecosystem: dep?.ecosystem ?? project.ecosystems[0] ?? "node" },
     {
       providers,
-      cache: new DocCache({ dir: path26.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
+      cache: new DocCache({ dir: path27.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
       context: { fs: ctx.fs, projectRoot: ctx.cwd, net: ctx.net, extraHosts, requestTimeoutMs: cfg.docs.requestTimeoutMs },
       offline: cfg.runtime.offline || flagBool(args, "offline"),
       now: ctx.now
@@ -25185,17 +25309,79 @@ async function researchCommand(args, ctx) {
   return 0;
 }
 
+// src/agents/views.ts
+var SHOWN_RUNS = 15;
+var ID_CHARS = 8;
+var STATE_WORD = { running: "running", finished: "finished", "no-stop-seen": "no stop seen" };
+var shortId = (id) => inline(id).slice(0, ID_CHARS);
+function agentsView(runs, metrics, now, profile) {
+  const out = [...heading("Agent activity", profile)];
+  const summary = summarize(runs);
+  out.push(...statusBadge(summary.running > 0 ? "info" : "inactive", agentsSentence(summary), profile));
+  if (runs.length === 0) {
+    out.push(blank(), ...textLines("Nothing is recorded yet. When Claude Code starts or stops a subagent in this project, JPE records the event here; it never invents activity.", profile.width));
+    return out;
+  }
+  out.push(
+    blank(),
+    ...table(
+      {
+        columns: [{ header: "Agent", min: 8 }, { header: "State", min: 8 }, { header: "Started", min: 8 }, { header: "Took", align: "right", min: 6 }, { header: "Id", min: 4 }],
+        rows: runs.slice(0, SHOWN_RUNS).map((r) => [inline(r.agentType), STATE_WORD[r.state], r.startedAt === void 0 ? "unknown" : formatAge(r.startedAt, now), r.durationMs === void 0 ? "-" : formatDuration(r.durationMs), shortId(r.agentId)])
+      },
+      profile
+    )
+  );
+  if (runs.length > SHOWN_RUNS) out.push(...textLines(`${runs.length - SHOWN_RUNS} older runs are not shown.`, profile.width, { role: "muted" }));
+  out.push(blank(), ...heading("By agent type", profile));
+  out.push(
+    ...table(
+      {
+        columns: [{ header: "Agent", min: 8 }, { header: "Runs", align: "right", min: 4 }, { header: "Running", align: "right", min: 7 }, { header: "Finished", align: "right", min: 8 }, { header: "Typical", align: "right", min: 7 }, { header: "Longest", align: "right", min: 7 }],
+        rows: metrics.map((m) => [inline(m.agentType), String(m.runs), String(m.running), String(m.finished), m.medianMs === void 0 ? "-" : formatDuration(m.medianMs), m.maxMs === void 0 ? "-" : formatDuration(m.maxMs)])
+      },
+      profile
+    )
+  );
+  out.push(
+    blank(),
+    ...bulletList(
+      [
+        "These are the start and stop events Claude Code reported. They do not say whether an agent's work was right, or whether it succeeded.",
+        'A run with no stop event after 30 minutes is shown as "no stop seen": it may have been interrupted, or the event may not have arrived. JPE does not call it failed.',
+        'Times are measured between the two events; "Typical" is the median of finished runs.'
+      ],
+      profile
+    )
+  );
+  return out;
+}
+
+// src/cli/commands/agents.ts
+async function agentsCommand(args, ctx) {
+  const now = ctx.now();
+  const runs = buildRuns(await loadAgentEvents(ctx), now);
+  const metrics = buildMetrics(runs);
+  if (flagBool(args, "json")) {
+    ctx.out(JSON.stringify({ summary: { ...summarize(runs), sentence: agentsSentence(summarize(runs)) }, runs, metrics }, null, 2));
+    return 0;
+  }
+  const { profile } = await renderContext(args, ctx);
+  ctx.out(paint(agentsView(runs, metrics, now, profile), profile));
+  return 0;
+}
+
 // src/cli/commands/review.ts
-import { mkdir as mkdir6 } from "fs/promises";
-import path27 from "path";
+import { mkdir as mkdir7 } from "fs/promises";
+import path28 from "path";
 var HISTORY_SHOWN = 20;
 var SHORT = 8;
-var decisionsFile = (ctx) => path27.join(ctx.stateDir(), DECISIONS_FILE);
+var decisionsFile = (ctx) => path28.join(ctx.stateDir(), DECISIONS_FILE);
 async function record2(ctx, decision, note) {
   const { fingerprint, fileCount } = await reviewFingerprint(ctx);
   if (fileCount === 0) throw new JpeError("INVALID_INPUT", "There are no uncommitted changes to review, so there is nothing to approve or reject.");
   const entry = { id: ctx.newId(), at: ctx.now().toISOString(), decision, fingerprint, fileCount, ...note === "" ? {} : { note } };
-  await mkdir6(path27.dirname(decisionsFile(ctx)), { recursive: true });
+  await mkdir7(path28.dirname(decisionsFile(ctx)), { recursive: true });
   await ctx.writeText(decisionsFile(ctx), appendDecision(await loadDecisions(ctx), entry));
   return entry;
 }
@@ -25255,7 +25441,7 @@ async function reviewCommand(args, ctx) {
 }
 
 // src/cli/commands/show.ts
-import path28 from "path";
+import path29 from "path";
 
 // src/ui/highlight.ts
 var EXTENSIONS = {
@@ -25826,7 +26012,7 @@ async function reviewFiles(ctx) {
     const rel2 = changed.path;
     const deleted = changed.status.includes("D");
     const added = changed.status.includes("?") || changed.status.includes("A");
-    const after = deleted ? "" : await ctx.fs.readText(path28.resolve(root, rel2));
+    const after = deleted ? "" : await ctx.fs.readText(path29.resolve(root, rel2));
     if (after === void 0) {
       skipped.push(`${rel2} (not readable as text)`);
       continue;
@@ -25876,7 +26062,7 @@ async function showCommand(args, ctx) {
   }
   if (view === "impact") {
     const run2 = await computeImpact(rest[0], Number(flagString(args, "line")), Number(flagString(args, "column")), ctx);
-    const rel3 = (file2) => path28.relative(ctx.cwd, file2).split(path28.sep).join("/") || file2;
+    const rel3 = (file2) => path29.relative(ctx.cwd, file2).split(path29.sep).join("/") || file2;
     return emit({ report: run2.report, notes: run2.notes }, () => impactView(run2.report, rel3(run2.abs), run2.notes, rel3, profile));
   }
   if (view === "docs") {
@@ -25885,7 +26071,7 @@ async function showCommand(args, ctx) {
     return emit({ versionNote, report: { ...report, results: report.results.map((r) => ({ ...r, content: r.content.slice(0, 4e3) })) } }, () => docsView(report, versionNote, profile, { expanded, ...find === void 0 ? {} : { find } }));
   }
   const run = await collectDiagnostics(rest, ctx);
-  const rel2 = (file2) => path28.relative(ctx.cwd, file2).split(path28.sep).join("/") || file2;
+  const rel2 = (file2) => path29.relative(ctx.cwd, file2).split(path29.sep).join("/") || file2;
   return emit(run, () => diagnosticsView(run.report, run.notes, rel2, profile, { expanded }));
 }
 
@@ -26003,7 +26189,7 @@ async function uiCommand(args, ctx) {
 }
 
 // src/cli/commands/verify.ts
-import path29 from "path";
+import path30 from "path";
 
 // src/verification/runner.ts
 import { createHash as createHash6 } from "crypto";
@@ -26137,12 +26323,12 @@ async function verifyCommand(args, ctx) {
   const deps = { run: ctx.run, cwd: ctx.cwd, timeoutMs: cfg.engineering.commandTimeoutMs };
   if (flagBool(args, "baseline")) {
     const baseline2 = await captureBaseline(checks, deps);
-    await ctx.writeText(path29.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
+    await ctx.writeText(path30.join(dir, "baseline.json"), JSON.stringify(Object.fromEntries(baseline2)));
     ctx.out(["Baseline saved (results before changes; not evidence for the change itself):", ...[...baseline2].map(([cmd, r]) => `  ${r.result === "pass" ? "passing" : "FAILING"}: ${cmd}`)].join("\n"));
     return 0;
   }
   let baseline;
-  const saved = await ctx.readText(path29.join(dir, "baseline.json"));
+  const saved = await ctx.readText(path30.join(dir, "baseline.json"));
   if (saved) {
     const parsed = baselineSchema.safeParse(JSON.parse(saved));
     if (parsed.success) baseline = new Map(Object.entries(parsed.data));
@@ -26150,9 +26336,9 @@ async function verifyCommand(args, ctx) {
   const ledger = new EvidenceLedger({ now: ctx.now, newId: ctx.newId });
   const outcomes = await runChecks(checks, { ...deps, ledger }, baseline);
   const required2 = [...new Set(checks.map((c) => c.check))];
-  await ctx.writeText(path29.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
+  await ctx.writeText(path30.join(dir, "ledger.jsonl"), `${ledger.toJsonLines()}
 `);
-  await ctx.writeText(path29.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
+  await ctx.writeText(path30.join(dir, "run.json"), JSON.stringify({ at: ctx.now().toISOString(), required: required2 }));
   const report = deriveStatus(ledger.entries, required2);
   const extra = [
     ...warnings.map((w) => `WARNING: ${w}`),
@@ -26187,6 +26373,7 @@ var COMMANDS = {
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
   center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
+  agents: { run: agentsCommand, help: "agents [--json]   Agent runs Claude Code reported in this project: running or finished, how long they took, and use by type" },
   review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },
   ui: { run: uiCommand, help: "ui [preview|keys] [--theme t] [--color c] [--unicode on|off] [--width n] [--density d] [--motion m] [--screen-reader] [--json]   Terminal capabilities and a live sample of the JPE design system" },

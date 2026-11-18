@@ -19,6 +19,8 @@ export const payloadSchemas = {
   PostToolUse: z.looseObject({ ...base, tool_name: z.string(), tool_input: toolInput, tool_response: z.unknown().optional() }),
   PostToolUseFailure: z.looseObject({ ...base, tool_name: z.string(), tool_input: toolInput, error: z.string().optional(), is_interrupt: z.boolean().optional() }),
   Stop: z.looseObject({ ...base, stop_hook_active: z.boolean().optional(), last_assistant_message: z.string().optional() }),
+  SubagentStart: z.looseObject({ ...base, agent_id: z.string().min(1).max(200), agent_type: z.string().max(200) }),
+  SubagentStop: z.looseObject({ ...base, agent_id: z.string().min(1).max(200), agent_type: z.string().max(200), last_assistant_message: z.string().optional() }),
 } as const;
 
 export type HookEvent = keyof typeof payloadSchemas;
