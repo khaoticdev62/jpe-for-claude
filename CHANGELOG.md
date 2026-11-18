@@ -6,6 +6,21 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-18
+
+### Added
+- Event log (see docs/OBSERVABILITY.md): JPE now records hook failures and timeouts, and session starts, in a bounded, redacted per-project log, and `jpe log [--level] [--limit] [--json]` shows it. Hooks fail open by design, so a broken hook used to leave no trace; now it does. Prompts, file contents, command output and stack traces are never recorded.
+- `jpe offline [--json]`: whether offline mode is on, who set it, which documentation sources it affects, and what is cached.
+- The Doctor reads the log: it warns when hooks failed in the last 24 hours and reports unreadable entries.
+- 33 new tests (1103 in total), including a spy that counts network calls with offline on and off.
+
+### Changed
+- Offline mode is now enforced at the network handle as well as in the engine: when it is on, the handle given to documentation sources refuses every request and lookup, so a source that forgot to check could still not reach out.
+
+### Fixed
+- `runtime.logLevel` was a setting that nothing read. It now controls the event log, and its description says so.
+- A damaged settings file silently disabled every hook with no trace; it is now recorded, and `jpe log` still opens when the settings cannot be read.
+
 ## [1.8.0] - 2026-11-18
 
 ### Added

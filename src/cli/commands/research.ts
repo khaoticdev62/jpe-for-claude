@@ -3,6 +3,7 @@ import { dataDir } from "../../config/paths.js";
 import { JpeError } from "../../core/errors.js";
 import { DocCache } from "../../docs/cache.js";
 import { formatReport, type ResearchReport, researchDocs } from "../../docs/engine.js";
+import { blockedNetDeps } from "../../docs/net.js";
 import { localPackageProvider } from "../../docs/providers/local-package.js";
 import { officialProvider } from "../../docs/providers/official.js";
 import { osvProvider } from "../../docs/providers/osv.js";
@@ -12,7 +13,7 @@ import { detectProject } from "../../project/detect.js";
 import { flagBool, flagString, type ParsedArgs } from "../args.js";
 import type { CliContext } from "../context.js";
 
-const PROVIDERS: Record<string, DocProvider> = {
+export const PROVIDERS: Record<string, DocProvider> = {
   "local-package": localPackageProvider,
   official: officialProvider,
   "repo-release": repoReleaseProvider,
@@ -50,13 +51,15 @@ export async function runResearch(args: ParsedArgs, ctx: CliContext): Promise<Re
 
   const extraHosts = cfg.docs.additionalProviders.map((p) => new URL(p.baseUrl).hostname.toLowerCase());
   const providers = cfg.docs.providers.flatMap((name) => (PROVIDERS[name] ? [PROVIDERS[name]] : []));
+  // Offline is enforced twice: the engine skips network sources, and the network handle itself refuses, so a source that forgot to check could still not reach out.
+  const offline = cfg.runtime.offline || flagBool(args, "offline");
   const report = await researchDocs(
     { library, ...(exact ? { version: exact } : {}), topic: flagString(args, "topic") ?? library, ecosystem: dep?.ecosystem ?? project.ecosystems[0] ?? "node" },
     {
       providers,
       cache: new DocCache({ dir: path.join(dataDir(ctx.pathEnv), "docs-cache"), now: ctx.now, ttlHours: cfg.docs.cacheTtlHours }),
-      context: { fs: ctx.fs, projectRoot: ctx.cwd, net: ctx.net, extraHosts, requestTimeoutMs: cfg.docs.requestTimeoutMs },
-      offline: cfg.runtime.offline || flagBool(args, "offline"),
+      context: { fs: ctx.fs, projectRoot: ctx.cwd, net: offline ? blockedNetDeps() : ctx.net, extraHosts, requestTimeoutMs: cfg.docs.requestTimeoutMs },
+      offline,
       now: ctx.now,
     },
   );

@@ -1,3 +1,4 @@
+import { defaultConfig } from "../../config/defaults.js";
 import { uiSettingsSchema } from "../../config/schema.js";
 import { JpeError } from "../../core/errors.js";
 import { type Capabilities, detectCapabilities, MAX_COLUMNS, MIN_COLUMNS } from "../../ui/capabilities.js";
@@ -32,8 +33,8 @@ export function settingsFor(args: ParsedArgs, saved: UiSettings): UiSettings {
 }
 
 /** What a command needs to draw: what the terminal can do, and the settings and flags resolved into one profile. */
-export async function renderContext(args: ParsedArgs, ctx: CliContext): Promise<{ caps: Capabilities; profile: RenderProfile }> {
-  const config = await ctx.loadConfig();
+export async function renderContext(args: ParsedArgs, ctx: CliContext, options: { defaultsIfSettingsUnreadable?: boolean } = {}): Promise<{ caps: Capabilities; profile: RenderProfile }> {
+  const config = options.defaultsIfSettingsUnreadable ? await ctx.loadConfig().catch(() => defaultConfig()) : await ctx.loadConfig();
   const terminal = ctx.terminal();
   const caps = detectCapabilities({ env: ctx.pathEnv.env, platform: ctx.pathEnv.platform, isTTY: terminal.isTTY, columns: terminal.columns, rows: terminal.rows });
   const width = parseWidth(flagString(args, "width"));

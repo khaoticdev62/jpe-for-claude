@@ -2,6 +2,10 @@
 
 JPE runs inside your Claude Code session with your permissions. This page explains what it can touch, what it refuses to do, and where its protections stop.
 
+## Event log and offline mode
+
+The event log (`events.jsonl`) holds a level, a source, a time and one line of text per entry. Secrets are removed from every line, control and bidirectional characters are replaced, and lines are cut to 300 characters; stored lines are cleaned again when read, so a hand-edited file cannot inject anything. Prompts, file contents, command output and stack traces are never written. In offline mode the network handle passed to documentation sources refuses every request and lookup (a test counts calls), in addition to the engine skipping network sources.
+
 ## Agent event recording
 
 The `SubagentStart` and `SubagentStop` hooks append one JSON line per event to `agents.jsonl` in JPE's own data folder. Fields are length-limited and parsed back strictly; the agent's prompt, task and message text are never stored (a test asserts it). The hooks print nothing, never block or change an agent, and fail open. Agent ids and types are untrusted text: they are sanitised before display (a test covers escape sequences).

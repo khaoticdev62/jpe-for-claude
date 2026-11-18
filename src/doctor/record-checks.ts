@@ -1,5 +1,7 @@
 import path from "node:path";
 import { parseAgentEvents } from "../agents/log.js";
+import { parseLog } from "../obs/log.js";
+import { LOG_FILE } from "../obs/store.js";
 import { AGENT_EVENTS_FILE } from "../agents/store.js";
 import { parseDecisions } from "../review/decisions.js";
 import { DECISIONS_FILE } from "../review/status.js";
@@ -20,6 +22,7 @@ interface LineRecord {
 
 const LINE_RECORDS: readonly LineRecord[] = [
   { id: "agents-record", file: AGENT_EVENTS_FILE, label: "agent activity", readable: (t) => parseAgentEvents(t).length },
+  { id: "log-record", file: LOG_FILE, label: "event log", readable: (t) => parseLog(t).length },
   { id: "review-record", file: DECISIONS_FILE, label: "review decisions", readable: (t) => parseDecisions(t).length },
 ];
 
@@ -41,6 +44,15 @@ export async function checkRecords(env: DoctorEnv): Promise<Finding[]> {
         ? f(rec.id, "ok", `The ${rec.label} record is readable (${lines} ${lines === 1 ? "entry" : "entries"}).`)
         : f(rec.id, "warn", `${lines - readable} of ${lines} entries in the ${rec.label} record cannot be read and are skipped.`, { detail: path.join(ctx.stateDir(), rec.file), fix: "They are ignored, so nothing is broken. If it keeps happening, report it; deleting that file starts the record again." }),
     );
+  }
+  const RECENT_MS = 24 * 3_600_000;
+  const logText = await ctx.fs.readText(path.join(ctx.stateDir(), LOG_FILE));
+  if (logText !== undefined) {
+    const since = ctx.now().getTime() - RECENT_MS;
+    const failures = parseLog(logText).filter((e) => e.level === "error" && Date.parse(e.at) >= since);
+    if (failures.length > 0) {
+      out.push(f("hook-failures", "warn", `JPE's hooks failed ${failures.length} ${failures.length === 1 ? "time" : "times"} in the last 24 hours, so JPE added nothing to those steps. The latest: ${failures.at(-1)?.message ?? ""}`, { fix: "Run `jpe log --level error` to see them. A damaged settings file is a common cause: `jpe doctor` checks it." }));
+    }
   }
   try {
     const last = await readLastStatus(ctx);

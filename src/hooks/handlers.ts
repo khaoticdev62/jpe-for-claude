@@ -2,6 +2,7 @@ import path from "node:path";
 import { store } from "../cli/commands/admin.js";
 import { makeAgentEvent } from "../agents/log.js";
 import { pruneAgentEvents, recordAgentEvent } from "../agents/store.js";
+import { logEvent, pruneLog } from "../obs/store.js";
 import type { CliContext } from "../cli/context.js";
 import { sha256Hex } from "../docs/cache.js";
 import { explainError } from "../explain/errors.js";
@@ -68,6 +69,8 @@ export async function onSessionStart(payload: PayloadOf<"SessionStart">, ctx: Cl
 
   await pruneStaleStates(ctx);
   await pruneAgentEvents(ctx).catch(() => undefined);
+  await pruneLog(ctx).catch(() => undefined);
+  await logEvent(ctx, "info", "hook:SessionStart", `session started (${payload.source ?? "startup"})`);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
 

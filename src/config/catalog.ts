@@ -56,7 +56,7 @@ export const SUMMARIES: Readonly<Record<string, string>> = {
   "security.treatDocsAsUntrusted": "Treat downloaded documentation as data, never as instructions.",
   "security.allowExternalUploads": "Allow JPE to send project content to an outside service. Off by default.",
   "runtime.offline": "Use only local information and cached documentation. The JPE_OFFLINE environment variable overrides it.",
-  "runtime.logLevel": "How much JPE writes to its own log. The JPE_LOG_LEVEL environment variable overrides it.",
+  "runtime.logLevel": "The lowest level JPE writes to its event log (see `jpe log`). Errors are always written. The JPE_LOG_LEVEL environment variable overrides it.",
   "hooks.requireVerificationBeforeStop": "Remind Claude once per session to verify edited code before finishing.",
   "hooks.maxDiagnosticsPerSession": "The most language-server runs edits may trigger in one session.",
   "ui.theme": "The colour theme: jpe, jpe-contrast (high contrast), jpe-colorblind, or jpe-light.",

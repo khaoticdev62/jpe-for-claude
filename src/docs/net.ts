@@ -73,6 +73,14 @@ export function defaultNetDeps(): NetDeps {
   };
 }
 
+/** A network handle that refuses every request. Used in offline mode so that nothing can reach the network by mistake. */
+export function blockedNetDeps(): NetDeps {
+  const refuse = (): never => {
+    throw new JpeError("PROVIDER_FAILED", "Offline mode is on, so no network request was made.");
+  };
+  return { fetch: async () => refuse(), resolve: async () => refuse() };
+}
+
 /** True for loopback, private, link-local, carrier-grade NAT, multicast and other non-public addresses. */
 export function isPrivateAddress(address: string): boolean {
   const lower = address.toLowerCase();

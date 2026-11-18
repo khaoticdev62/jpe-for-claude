@@ -845,10 +845,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path18) {
-  if (!path18)
+function getElementAtPath(obj, path19) {
+  if (!path19)
     return obj;
-  return path18.reduce((acc, key) => acc?.[key], obj);
+  return path19.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1188,11 +1188,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path18, issues) {
+function prefixIssues(path19, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path18);
+    iss.path.unshift(path19);
     return iss;
   });
 }
@@ -1654,16 +1654,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path18 = []) => {
+  const processError = (error63, path19 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path19, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
       } else {
-        const fullpath = [...path18, ...issue2.path];
+        const fullpath = [...path19, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1702,17 +1702,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path18 = []) => {
+  const processError = (error63, path19 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path18, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path19, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path18, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path19, ...issue2.path]);
       } else {
-        const fullpath = [...path18, ...issue2.path];
+        const fullpath = [...path19, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1751,8 +1751,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path18 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path18) {
+  const path19 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path19) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18890,13 +18890,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path18 = ref.slice(1).split("/").filter(Boolean);
-  if (path18.length === 0) {
+  const path19 = ref.slice(1).split("/").filter(Boolean);
+  if (path19.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path18[0] === defsKey) {
-    const key = path18[1] === void 0 ? void 0 : decodeJSONPointerSegment(path18[1]);
+  if (path19[0] === defsKey) {
+    const key = path19[1] === void 0 ? void 0 : decodeJSONPointerSegment(path19[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -20399,8 +20399,8 @@ function createContext(overrides = {}) {
 }
 
 // src/hooks/run.ts
-import { appendFile as appendFile2, mkdir as mkdir5 } from "fs/promises";
-import path17 from "path";
+import { appendFile as appendFile3, mkdir as mkdir6 } from "fs/promises";
+import path18 from "path";
 
 // src/core/redact.ts
 var REDACTED = "[REDACTED_SECRET_FOUND]";
@@ -20426,15 +20426,93 @@ function redactSecrets(text) {
   return out;
 }
 
+// src/obs/store.ts
+import { appendFile, mkdir as mkdir2 } from "fs/promises";
+import path5 from "path";
+
+// src/obs/log.ts
+var LOG_LEVELS = ["debug", "info", "warn", "error"];
+var MAX_LOG_ENTRIES = 500;
+var MAX_MESSAGE_CHARS = 300;
+var MAX_SOURCE_CHARS = 60;
+var rank = (level) => LOG_LEVELS.indexOf(level);
+var shouldLog = (configured, level) => level === "error" || rank(level) >= rank(configured);
+var isLevel = (v) => typeof v === "string" && LOG_LEVELS.includes(v);
+function cleanLogText(raw, max) {
+  const redacted = redactSecrets(raw);
+  return Array.from(redacted).map((ch) => {
+    const code = ch.codePointAt(0) ?? 0;
+    return code <= 31 || code >= 127 && code <= 159 || code >= 8234 && code <= 8238 || code >= 8294 && code <= 8297 ? " " : ch;
+  }).join("").replace(/\s+/g, " ").trim().slice(0, max);
+}
+function makeLogEntry(input2) {
+  return { at: input2.at.toISOString(), level: input2.level, source: cleanLogText(input2.source, MAX_SOURCE_CHARS) || "jpe", message: cleanLogText(input2.message, MAX_MESSAGE_CHARS) };
+}
+var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function parseLogEntry(line) {
+  let raw;
+  try {
+    raw = JSON.parse(line);
+  } catch {
+    return void 0;
+  }
+  if (!isRecord(raw)) return void 0;
+  const { at, level, source, message } = raw;
+  if (typeof at !== "string" || Number.isNaN(Date.parse(at)) || !isLevel(level) || typeof source !== "string" || source === "" || typeof message !== "string") return void 0;
+  return { at, level, source: cleanLogText(source, MAX_SOURCE_CHARS), message: cleanLogText(message, MAX_MESSAGE_CHARS) };
+}
+function parseLog(text) {
+  return text.split(/\r?\n/).flatMap((line) => line.trim() === "" ? [] : [parseLogEntry(line) ?? []].flat());
+}
+var serializeLogEntry = (entry) => `${JSON.stringify(entry)}
+`;
+function trimLog(text) {
+  const entries = parseLog(text).slice(-MAX_LOG_ENTRIES);
+  return entries.length === 0 ? "" : `${entries.map((e) => JSON.stringify(e)).join("\n")}
+`;
+}
+
+// src/obs/store.ts
+var LOG_FILE = "events.jsonl";
+var PRUNE_ABOVE_LINES = 600;
+var LOG_DEADLINE_MS = 500;
+var fileFor = (ctx) => path5.join(ctx.stateDir(), LOG_FILE);
+async function logEvent(ctx, level, source, message) {
+  let timer;
+  const giveUp = new Promise((resolve) => {
+    timer = setTimeout(resolve, LOG_DEADLINE_MS);
+  });
+  try {
+    await Promise.race([writeEvent(ctx, level, source, message), giveUp]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+async function writeEvent(ctx, level, source, message) {
+  try {
+    const configured = await ctx.loadConfig().then((c) => c.runtime.logLevel, () => "info");
+    if (!shouldLog(configured, level)) return;
+    const file2 = fileFor(ctx);
+    await mkdir2(path5.dirname(file2), { recursive: true });
+    await appendFile(file2, serializeLogEntry(makeLogEntry({ at: ctx.now(), level, source, message })), "utf8");
+  } catch {
+  }
+}
+async function pruneLog(ctx) {
+  const text = await ctx.readText(fileFor(ctx)).catch(() => void 0);
+  if (text === void 0 || text.split("\n").length <= PRUNE_ABOVE_LINES) return;
+  await ctx.writeText(fileFor(ctx), trimLog(text));
+}
+
 // src/hooks/handlers.ts
-import path16 from "path";
+import path17 from "path";
 
 // src/cli/commands/admin.ts
 import { copyFile } from "fs/promises";
-import path10 from "path";
+import path11 from "path";
 
 // src/explain/analyze.ts
-import path5 from "path";
+import path6 from "path";
 
 // src/security/scan.ts
 var SENSITIVE_NAME = /^(\.env(\..+)?|id_(rsa|dsa|ecdsa|ed25519)|.+\.(pem|p12|pfx|key)|credentials\.json|\.npmrc|\.pypirc|\.netrc)$/i;
@@ -20456,10 +20534,10 @@ function scanText(text, file2) {
 
 // src/lsp/detect.ts
 import { readdir } from "fs/promises";
-import path7 from "path";
+import path8 from "path";
 
 // src/lsp/registry.ts
-import path6 from "path";
+import path7 from "path";
 var tsServer = {
   binary: "typescript-language-server",
   args: ["--stdio"],
@@ -20639,7 +20717,7 @@ function clangLanguage(id, name, extensions) {
 var BY_ID = new Map(LANGUAGES.map((l) => [l.id, l]));
 var BY_EXTENSION = new Map(LANGUAGES.flatMap((l) => Object.keys(l.extensions).map((ext) => [ext, l])));
 function languageForFile(file2) {
-  const ext = path6.extname(file2).toLowerCase();
+  const ext = path7.extname(file2).toLowerCase();
   const language = BY_EXTENSION.get(ext);
   const languageId = language?.extensions[ext];
   return language && languageId ? { language, languageId } : void 0;
@@ -20662,9 +20740,9 @@ async function walkFiles(root, limit = MAX_FILES) {
     for (const entry of entries) {
       if (found.length >= limit) return;
       if (entry.isDirectory()) {
-        if (!SKIP_DIRS.has(entry.name) && !entry.name.startsWith(".")) await visit2(path7.join(dir, entry.name), depth + 1);
+        if (!SKIP_DIRS.has(entry.name) && !entry.name.startsWith(".")) await visit2(path8.join(dir, entry.name), depth + 1);
       } else if (entry.isFile()) {
-        found.push(path7.relative(root, path7.join(dir, entry.name)));
+        found.push(path8.relative(root, path8.join(dir, entry.name)));
       }
     }
   }
@@ -20695,8 +20773,8 @@ async function findOnPath(binary, lookup2) {
   const win = lookup2.platform === "win32";
   const raw = lookup2.env["PATH"] ?? lookup2.env["Path"] ?? "";
   const dirs = raw.split(win ? ";" : ":").filter((d) => d !== "");
-  const exts = win && path7.extname(binary) === "" ? (lookup2.env["PATHEXT"] ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
-  const join = win ? path7.win32.join : path7.posix.join;
+  const exts = win && path8.extname(binary) === "" ? (lookup2.env["PATHEXT"] ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
+  const join = win ? path8.win32.join : path8.posix.join;
   for (const dir of dirs) {
     for (const ext of exts) {
       const candidate = join(dir, binary + ext);
@@ -20708,41 +20786,41 @@ async function findOnPath(binary, lookup2) {
 
 // src/recovery/backup.ts
 import { createHash as createHash2 } from "crypto";
-import { mkdir as mkdir2, readFile as readFile3, readdir as readdir2, rename as rename2, rm, stat as stat2, unlink, writeFile as writeFile2 } from "fs/promises";
-import path9 from "path";
+import { mkdir as mkdir3, readFile as readFile3, readdir as readdir2, rename as rename2, rm, stat as stat2, unlink, writeFile as writeFile2 } from "fs/promises";
+import path10 from "path";
 
 // src/security/paths.ts
 import { realpath } from "fs/promises";
-import path8 from "path";
+import path9 from "path";
 function reject(message) {
   throw new JpeError("PATH_REJECTED", message);
 }
 function isInside(root, target) {
-  const rel = path8.relative(root, target);
+  const rel = path9.relative(root, target);
   if (rel === "") return true;
-  if (path8.isAbsolute(rel)) return false;
-  return rel !== ".." && !rel.startsWith(`..${path8.sep}`);
+  if (path9.isAbsolute(rel)) return false;
+  return rel !== ".." && !rel.startsWith(`..${path9.sep}`);
 }
 function resolveInside(root, candidate) {
   if (candidate.includes("\0") || root.includes("\0")) reject("The path contains an invalid character.");
-  const absRoot = path8.resolve(root);
-  const abs = path8.resolve(absRoot, candidate);
+  const absRoot = path9.resolve(root);
+  const abs = path9.resolve(absRoot, candidate);
   if (!isInside(absRoot, abs)) reject("That path points outside the project folder, so JPE will not touch it.");
   return abs;
 }
 async function resolveInsideReal(root, candidate) {
   const abs = resolveInside(root, candidate);
-  const realRoot = await realpath(path8.resolve(root));
+  const realRoot = await realpath(path9.resolve(root));
   let existing = abs;
   for (; ; ) {
     try {
       const realExisting = await realpath(existing);
-      const full = path8.join(realExisting, path8.relative(existing, abs));
+      const full = path9.join(realExisting, path9.relative(existing, abs));
       if (!isInside(realRoot, full)) reject("That path resolves outside the project folder through a link, so JPE will not touch it.");
       return full;
     } catch (error62) {
       if (error62 instanceof JpeError) throw error62;
-      const parent = path8.dirname(existing);
+      const parent = path9.dirname(existing);
       if (parent === existing) reject("The path could not be resolved.");
       existing = parent;
     }
@@ -20778,7 +20856,7 @@ async function readIfExists(file2) {
   }
 }
 async function writeAtomic2(file2, data) {
-  await mkdir2(path9.dirname(file2), { recursive: true });
+  await mkdir3(path10.dirname(file2), { recursive: true });
   const temp = `${file2}.jpe-tmp-${process.pid}`;
   await writeFile2(temp, data);
   await rename2(temp, file2);
@@ -20793,10 +20871,10 @@ var BackupStore = class {
   deps;
   backupDir(id) {
     assertId(id);
-    return path9.join(this.deps.dir, id);
+    return path10.join(this.deps.dir, id);
   }
   async readManifest(id) {
-    const text = await readIfExists(path9.join(this.backupDir(id), "manifest.json"));
+    const text = await readIfExists(path10.join(this.backupDir(id), "manifest.json"));
     if (!text) throw new JpeError("INVALID_INPUT", `No backup named "${id}" was found.`);
     let raw;
     try {
@@ -20809,7 +20887,7 @@ var BackupStore = class {
     return parsed.data;
   }
   async writeManifest(manifest) {
-    await writeAtomic2(path9.join(this.backupDir(manifest.id), "manifest.json"), Buffer.from(JSON.stringify(manifest, null, 2)));
+    await writeAtomic2(path10.join(this.backupDir(manifest.id), "manifest.json"), Buffer.from(JSON.stringify(manifest, null, 2)));
   }
   /** Copies the listed project files (as they are right now) into a new backup. */
   async create(projectRoot, relativePaths, label) {
@@ -20819,7 +20897,7 @@ var BackupStore = class {
     const seen = /* @__PURE__ */ new Set();
     for (const rel of relativePaths) {
       const abs = await resolveInsideReal(projectRoot, rel);
-      const key = path9.relative(projectRoot, abs).split(path9.sep).join("/");
+      const key = path10.relative(projectRoot, abs).split(path10.sep).join("/");
       if (seen.has(key)) continue;
       seen.add(key);
       if (isSensitiveFileName(abs)) {
@@ -20838,10 +20916,10 @@ var BackupStore = class {
       if (!info.isFile()) throw new JpeError("INVALID_INPUT", `"${key}" is not a regular file.`);
       if (info.size > MAX_FILE_BYTES2) throw new JpeError("INVALID_INPUT", `"${key}" is too large to back up.`);
       const data = await readFile3(abs);
-      await writeAtomic2(path9.join(dir, "files", String(files.length)), data);
+      await writeAtomic2(path10.join(dir, "files", String(files.length)), data);
       files.push({ path: key, existed: true, size: data.length, sha256: sha256(data) });
     }
-    const manifest = { id, createdAt: this.deps.now().toISOString(), projectRoot: path9.resolve(projectRoot), label, sealed: false, files };
+    const manifest = { id, createdAt: this.deps.now().toISOString(), projectRoot: path10.resolve(projectRoot), label, sealed: false, files };
     await this.writeManifest(manifest);
     return manifest;
   }
@@ -20864,7 +20942,7 @@ var BackupStore = class {
     const problems = [];
     for (const [index, rec] of manifest.files.entries()) {
       if (!rec.existed) continue;
-      const data = await readIfExists(path9.join(this.backupDir(id), "files", String(index)));
+      const data = await readIfExists(path10.join(this.backupDir(id), "files", String(index)));
       if (!data) problems.push(`${rec.path}: stored copy is missing.`);
       else if (sha256(data) !== rec.sha256) problems.push(`${rec.path}: stored copy was altered.`);
     }
@@ -20900,7 +20978,7 @@ var BackupStore = class {
         result.removed.push(rec.path);
         continue;
       }
-      const data = await readIfExists(path9.join(this.backupDir(id), "files", String(index)));
+      const data = await readIfExists(path10.join(this.backupDir(id), "files", String(index)));
       if (!data || sha256(data) !== rec.sha256) {
         result.problems.push(`${rec.path}: the stored copy is missing or damaged, so it was not restored.`);
         continue;
@@ -20941,14 +21019,14 @@ var BackupStore = class {
 
 // src/cli/commands/admin.ts
 function store(ctx) {
-  return new BackupStore({ dir: path10.join(ctx.stateDir(), "backups"), now: ctx.now, newId: () => `bk-${ctx.now().toISOString().replace(/\D/g, "").slice(0, 14)}-${ctx.newId().slice(0, 6)}` });
+  return new BackupStore({ dir: path11.join(ctx.stateDir(), "backups"), now: ctx.now, newId: () => `bk-${ctx.now().toISOString().replace(/\D/g, "").slice(0, 14)}-${ctx.newId().slice(0, 6)}` });
 }
 
 // src/agents/log.ts
 var AGENT_EVENT_KINDS = ["start", "stop"];
 var MAX_AGENT_EVENTS = 1e3;
 var MAX_FIELD = 200;
-var isRecord = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var isRecord2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
 var isText = (v) => typeof v === "string" && v.length > 0 && v.length <= MAX_FIELD;
 function parseAgentEvent(line) {
   let raw;
@@ -20957,7 +21035,7 @@ function parseAgentEvent(line) {
   } catch {
     return void 0;
   }
-  if (!isRecord(raw)) return void 0;
+  if (!isRecord2(raw)) return void 0;
   const { at, kind, agentId, agentType, sessionId, finalMessageChars } = raw;
   if (typeof at !== "string" || Number.isNaN(Date.parse(at))) return void 0;
   if (!AGENT_EVENT_KINDS.includes(kind)) return void 0;
@@ -20988,25 +21066,25 @@ function makeAgentEvent(input2) {
 }
 
 // src/agents/store.ts
-import { appendFile, mkdir as mkdir3 } from "fs/promises";
-import path11 from "path";
+import { appendFile as appendFile2, mkdir as mkdir4 } from "fs/promises";
+import path12 from "path";
 var AGENT_EVENTS_FILE = "agents.jsonl";
-var fileFor = (ctx) => path11.join(ctx.stateDir(), AGENT_EVENTS_FILE);
+var fileFor2 = (ctx) => path12.join(ctx.stateDir(), AGENT_EVENTS_FILE);
 async function recordAgentEvent(ctx, event) {
-  const file2 = fileFor(ctx);
-  await mkdir3(path11.dirname(file2), { recursive: true });
-  await appendFile(file2, serializeAgentEvent(event), "utf8");
+  const file2 = fileFor2(ctx);
+  await mkdir4(path12.dirname(file2), { recursive: true });
+  await appendFile2(file2, serializeAgentEvent(event), "utf8");
 }
 async function pruneAgentEvents(ctx) {
-  const text = await ctx.readText(fileFor(ctx)).catch(() => void 0);
+  const text = await ctx.readText(fileFor2(ctx)).catch(() => void 0);
   if (text === void 0 || text.split("\n").length <= 1100) return;
-  await ctx.writeText(fileFor(ctx), trimAgentEvents(text));
+  await ctx.writeText(fileFor2(ctx), trimAgentEvents(text));
 }
 
 // src/docs/cache.ts
 import { createHash as createHash3 } from "crypto";
-import { mkdir as mkdir4, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
-import path12 from "path";
+import { mkdir as mkdir5, readFile as readFile4, readdir as readdir3, rename as rename3, stat as stat3, unlink as unlink2, writeFile as writeFile3 } from "fs/promises";
+import path13 from "path";
 var sha256Hex = (text) => createHash3("sha256").update(text).digest("hex");
 var entrySchema = external_exports.strictObject({
   key: external_exports.string().regex(/^[a-f0-9]{64}$/),
@@ -21062,18 +21140,18 @@ function explainError(message) {
 }
 
 // src/lsp/diagnostics.ts
-import path14 from "path";
+import path15 from "path";
 
 // src/lsp/client.ts
 import { readFile as readFile5 } from "fs/promises";
-import path13 from "path";
+import path14 from "path";
 import { pathToFileURL } from "url";
 var SEVERITY = { 1: "error", 2: "warning", 3: "info", 4: "hint" };
-var fileKey = (file2) => process.platform === "win32" ? path13.normalize(file2).toLowerCase() : path13.normalize(file2);
+var fileKey = (file2) => process.platform === "win32" ? path14.normalize(file2).toLowerCase() : path14.normalize(file2);
 var toUri = (file2) => pathToFileURL(file2).toString();
 var fromUri = (uri) => {
   try {
-    return new URL(uri).protocol === "file:" ? path13.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
+    return new URL(uri).protocol === "file:" ? path14.normalize(decodeURIComponent(new URL(uri).pathname).replace(/^\/([A-Za-z]:)/, "$1")) : uri;
   } catch {
     return uri;
   }
@@ -21112,7 +21190,7 @@ var LspClient = class _LspClient {
         {
           processId: process.pid,
           rootUri: toUri(options.rootDir),
-          workspaceFolders: [{ uri: toUri(options.rootDir), name: path13.basename(options.rootDir) }],
+          workspaceFolders: [{ uri: toUri(options.rootDir), name: path14.basename(options.rootDir) }],
           capabilities: {
             workspace: { configuration: true, workspaceFolders: true },
             textDocument: {
@@ -21721,7 +21799,7 @@ var context = (event, text) => ({ hookSpecificOutput: { hookEventName: event, ad
 
 // src/hooks/state.ts
 import { readdir as readdir4, stat as stat4, unlink as unlink3 } from "fs/promises";
-import path15 from "path";
+import path16 from "path";
 var stateSchema = external_exports.strictObject({
   startedAt: external_exports.iso.datetime(),
   promptNudged: external_exports.boolean(),
@@ -21736,11 +21814,11 @@ var stateSchema = external_exports.strictObject({
 });
 var MAX_ENTRIES = 500;
 var STALE_MS = 7 * 24 * 36e5;
-var fileKey2 = (file2) => process.platform === "win32" ? path15.normalize(file2).toLowerCase() : path15.normalize(file2);
+var fileKey2 = (file2) => process.platform === "win32" ? path16.normalize(file2).toLowerCase() : path16.normalize(file2);
 function freshState(ctx) {
   return { startedAt: ctx.now().toISOString(), promptNudged: false, stopNudged: false, edits: {}, backups: {}, checked: {}, diagnosticsRuns: 0 };
 }
-var stateFile = (ctx, sessionId) => path15.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
+var stateFile = (ctx, sessionId) => path16.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
 function parseSessionState(text) {
   try {
     const parsed = stateSchema.safeParse(JSON.parse(text));
@@ -21759,7 +21837,7 @@ async function saveState(ctx, sessionId, state) {
   await ctx.writeText(stateFile(ctx, sessionId), JSON.stringify(bounded));
 }
 async function pruneStaleStates(ctx) {
-  const dir = path15.join(ctx.stateDir(), "sessions");
+  const dir = path16.join(ctx.stateDir(), "sessions");
   let names;
   try {
     names = await readdir4(dir);
@@ -21769,7 +21847,7 @@ async function pruneStaleStates(ctx) {
   const cutoff = ctx.now().getTime() - STALE_MS;
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
-    const file2 = path15.join(dir, name);
+    const file2 = path16.join(dir, name);
     try {
       if ((await stat4(file2)).mtimeMs < cutoff) await unlink3(file2);
     } catch {
@@ -21786,17 +21864,17 @@ var clip = (text) => text.length > MAX_ADDITIONAL_CONTEXT ? `${text.slice(0, MAX
 function editTarget(toolName, input2, cwd) {
   if (!EDIT_TOOLS.has(toolName)) return void 0;
   const raw = toolName === "NotebookEdit" ? input2["notebook_path"] : input2["file_path"];
-  return typeof raw === "string" && raw !== "" ? path16.resolve(cwd, raw) : void 0;
+  return typeof raw === "string" && raw !== "" ? path17.resolve(cwd, raw) : void 0;
 }
 var insideProject = (root, file2) => {
-  const rel = path16.relative(root, file2);
-  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path16.sep}`) && !path16.isAbsolute(rel);
+  const rel = path17.relative(root, file2);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${path17.sep}`) && !path17.isAbsolute(rel);
 };
 var lookupFor = (ctx) => ({ platform: ctx.pathEnv.platform, env: ctx.pathEnv.env, exists: (f) => ctx.fs.exists(f) });
 var WORKING_RULES = "Working rules: explain in plain English before and after substantial changes; report verification only from commands actually run, using the exact status word; never claim zero errors.";
 var WELCOME_MESSAGE = "JPE For Claude is active. Try /jpe:verify to run this project's real checks, or /jpe:explain to get a plain-English walkthrough.";
 async function isFirstRun(ctx) {
-  const marker = path16.join(ctx.stateDir(), "welcomed");
+  const marker = path17.join(ctx.stateDir(), "welcomed");
   if (await ctx.readText(marker).catch(() => void 0) !== void 0) return false;
   await ctx.writeText(marker, ctx.now().toISOString()).catch(() => void 0);
   return true;
@@ -21810,6 +21888,8 @@ async function onSessionStart(payload, ctx) {
   if (payload.source === "compact") return context("SessionStart", clip(["JPE For Claude is still active in this project.", checkLine, WORKING_RULES].join("\n")));
   await pruneStaleStates(ctx);
   await pruneAgentEvents(ctx).catch(() => void 0);
+  await pruneLog(ctx).catch(() => void 0);
+  await logEvent(ctx, "info", "hook:SessionStart", `session started (${payload.source ?? "startup"})`);
   if (cfg.engineering.backups) await store(ctx).prune(100).catch(() => []);
   await saveState(ctx, payload.session_id, freshState(ctx));
   const git = await readGitState(ctx.git).catch(() => void 0);
@@ -21867,7 +21947,7 @@ async function onPreToolUse(payload, ctx) {
   if (!target) return void 0;
   let decision;
   if (mode !== "off") {
-    if (isSensitiveFileName(target)) decision = ask(`${path16.basename(target)} looks like a credentials file; check what is being written.`);
+    if (isSensitiveFileName(target)) decision = ask(`${path17.basename(target)} looks like a credentials file; check what is being written.`);
     else if (mode === "always") decision = ask('approval mode is "always".');
   }
   if (cfg.engineering.backups && insideProject(ctx.cwd, target) && !isSensitiveFileName(target) && await ctx.fs.exists(target)) {
@@ -21875,7 +21955,7 @@ async function onPreToolUse(payload, ctx) {
     const key = fileKey2(target);
     if (!state.backups[key]) {
       try {
-        const rel = path16.relative(ctx.cwd, target);
+        const rel = path17.relative(ctx.cwd, target);
         const backup = await store(ctx).create(ctx.cwd, [rel], `auto: before edit (session ${payload.session_id.slice(0, 8)})`);
         await saveState(ctx, payload.session_id, { ...state, backups: { ...state.backups, [key]: backup.id } });
       } catch {
@@ -21890,7 +21970,7 @@ async function onPostToolUse(payload, ctx) {
   const cfg = await ctx.loadConfig();
   const state = await loadState(ctx, payload.session_id);
   const key = fileKey2(target);
-  const rel = path16.relative(ctx.cwd, target).split(path16.sep).join("/");
+  const rel = path17.relative(ctx.cwd, target).split(path17.sep).join("/");
   const next = { ...state, edits: { ...state.edits, [key]: ctx.now().toISOString() } };
   const backupId = state.backups[key];
   if (backupId) await store(ctx).seal(backupId).catch(() => void 0);
@@ -21949,7 +22029,7 @@ async function onStop(payload, ctx) {
   const sourceEdits = Object.entries(state.edits).filter(([file2]) => languageForFile(file2) !== void 0);
   if (sourceEdits.length === 0) return void 0;
   const lastEdit = sourceEdits.map(([, at]) => at).sort().at(-1) ?? "";
-  const runText = await ctx.readText(path16.join(ctx.stateDir(), "run.json"));
+  const runText = await ctx.readText(path17.join(ctx.stateDir(), "run.json"));
   if (runText) {
     try {
       const at = JSON.parse(runText).at;
@@ -21960,7 +22040,7 @@ async function onStop(payload, ctx) {
   const project = await detectProject(ctx.cwd, ctx.fs);
   if ((await discoverChecks(project, ctx.fs)).length === 0) return void 0;
   await saveState(ctx, payload.session_id, { ...state, stopNudged: true });
-  const names = sourceEdits.map(([file2]) => path16.basename(file2)).slice(0, 3).join(", ");
+  const names = sourceEdits.map(([file2]) => path17.basename(file2)).slice(0, 3).join(", ");
   return { decision: "block", reason: `JPE: ${sourceEdits.length} source file(s) were edited this session (${names}${sourceEdits.length > 3 ? ", ..." : ""}) and no verification has run since. Run /jpe:verify and report the exact status word, or tell the user plainly that the work is NOT_TESTED. This reminder appears once per session.` };
 }
 
@@ -21979,9 +22059,9 @@ var HANDLERS = {
 async function debugLog(ctx, line) {
   if (!ctx) return;
   try {
-    const file2 = path17.join(ctx.stateDir(), "hook-debug.log");
-    await mkdir5(path17.dirname(file2), { recursive: true });
-    await appendFile2(file2, `${(/* @__PURE__ */ new Date()).toISOString()} ${redactSecrets(line)}
+    const file2 = path18.join(ctx.stateDir(), "hook-debug.log");
+    await mkdir6(path18.dirname(file2), { recursive: true });
+    await appendFile3(file2, `${(/* @__PURE__ */ new Date()).toISOString()} ${redactSecrets(line)}
 `);
   } catch {
   }
@@ -21989,6 +22069,7 @@ async function debugLog(ctx, line) {
 async function runHook(eventName, deps) {
   if (!isHookEvent(eventName)) return;
   let ctx;
+  const startedAt = Date.now();
   try {
     const raw = await deps.readStdin();
     if (raw.length > MAX_STDIN_BYTES) return;
@@ -22003,11 +22084,14 @@ async function runHook(eventName, deps) {
     if (timer) clearTimeout(timer);
     if (result === "timeout") {
       if (deps.debug) await debugLog(ctx, `${eventName} timed out after ${deps.deadlineMs}ms`);
+      await logEvent(ctx, "warn", `hook:${eventName}`, `timed out after ${deps.deadlineMs} ms, so JPE added nothing to this step`);
       return;
     }
     if (result) deps.write(JSON.stringify(result));
     if (deps.debug) await debugLog(ctx, `${eventName} ok${result ? ` output=${JSON.stringify(result).slice(0, 200)}` : " (no output)"}`);
+    await logEvent(ctx, "debug", `hook:${eventName}`, `finished in ${Date.now() - startedAt} ms${result ? " with output" : " with no output"}`);
   } catch (error62) {
+    if (ctx) await logEvent(ctx, "error", `hook:${eventName}`, `failed, so JPE added nothing to this step: ${isJpeError(error62) ? `${error62.code}: ${error62.userMessage}` : `unexpected ${error62 instanceof Error ? error62.name : "error"}: ${error62 instanceof Error ? error62.message : String(error62)}`}`);
     if (deps.debug) await debugLog(ctx, `${eventName} failed open: ${error62 instanceof Error ? error62.message : String(error62)}`);
   }
 }

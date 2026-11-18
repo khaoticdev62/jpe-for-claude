@@ -1,7 +1,9 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { CliContext } from "../cli/context.js";
+import { isJpeError } from "../core/errors.js";
 import { redactSecrets } from "../core/redact.js";
+import { logEvent } from "../obs/store.js";
 import { onPostToolUse, onPreToolUse, onSessionStart, onStop, onSubagentStart, onSubagentStop, onToolFailure, onUserPrompt } from "./handlers.js";
 import { isHookEvent, parsePayload, type HookEvent, type HookOutput } from "./payload.js";
 
@@ -48,6 +50,7 @@ async function debugLog(ctx: CliContext | undefined, line: string): Promise<void
 export async function runHook(eventName: string, deps: HookRunDeps): Promise<void> {
   if (!isHookEvent(eventName)) return;
   let ctx: CliContext | undefined;
+  const startedAt = Date.now();
   try {
     const raw = await deps.readStdin();
     if (raw.length > MAX_STDIN_BYTES) return;
@@ -64,11 +67,14 @@ export async function runHook(eventName: string, deps: HookRunDeps): Promise<voi
 
     if (result === "timeout") {
       if (deps.debug) await debugLog(ctx, `${eventName} timed out after ${deps.deadlineMs}ms`);
+      await logEvent(ctx, "warn", `hook:${eventName}`, `timed out after ${deps.deadlineMs} ms, so JPE added nothing to this step`);
       return;
     }
     if (result) deps.write(JSON.stringify(result));
     if (deps.debug) await debugLog(ctx, `${eventName} ok${result ? ` output=${JSON.stringify(result).slice(0, 200)}` : " (no output)"}`);
+    await logEvent(ctx, "debug", `hook:${eventName}`, `finished in ${Date.now() - startedAt} ms${result ? " with output" : " with no output"}`);
   } catch (error) {
+    if (ctx) await logEvent(ctx, "error", `hook:${eventName}`, `failed, so JPE added nothing to this step: ${isJpeError(error) ? `${error.code}: ${error.userMessage}` : `unexpected ${error instanceof Error ? error.name : "error"}: ${error instanceof Error ? error.message : String(error)}`}`);
     if (deps.debug) await debugLog(ctx, `${eventName} failed open: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
