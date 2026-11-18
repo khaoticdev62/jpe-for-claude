@@ -17,12 +17,12 @@ import type { CliContext } from "../context.js";
 
 type Plain = Record<string, unknown>;
 
-function scopeFile(args: ParsedArgs, ctx: CliContext): string {
+export function scopeFile(args: ParsedArgs, ctx: CliContext): string {
   return flagBool(args, "project") ? projectConfigPath(ctx.cwd) : globalConfigPath(ctx.pathEnv);
 }
 
 /** Writes a validated config file for one scope, keeping a timestamped copy of the file it replaces. */
-async function writeScope(ctx: CliContext, file: string, content: Plain): Promise<string[]> {
+export async function writeScope(ctx: CliContext, file: string, content: Plain): Promise<string[]> {
   const notes: string[] = [];
   if ((await ctx.readText(file)) !== undefined) {
     const backup = `${file}.bak-${ctx.now().toISOString().replace(/[:.]/g, "-")}`;

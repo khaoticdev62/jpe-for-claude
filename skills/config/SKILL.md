@@ -1,6 +1,6 @@
 ---
 description: Shows, changes, exports and imports JPE settings (explanation depth, documentation sources, repair limits, offline mode). Changes are validated and keep a backup of the previous file.
-argument-hint: "[show | set <section.setting> <value> | export | import <file>]"
+argument-hint: "[show | settings | preset <name> | set <section.setting> <value> | unset <setting> | export | import <file>]"
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,10 @@ Request: `$ARGUMENTS`
 
 ## Commands
 
-- Show the effective settings: `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" config show`
+- See every setting with what it means, its allowed values, its default and where its current value comes from (default, your settings, this project, or the environment): `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" settings --width 100`. One setting in detail: `settings ui.motion`.
+- Put a setting back to its default: `settings unset <section.setting>` (add `--project` for the project file).
+- Accessibility and appearance presets: `settings preset` lists them. `settings preset <name>` only shows what would change; `settings preset <name> --apply` makes the change (add `--project` for this project only). Presets: screen-reader, high-contrast, colorblind, low-motion, ascii, plain, default.
+- Show the raw effective settings: `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" config show`
 - Where the files live: `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" config path`
 - Change one setting for the user (global): `node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" config set <section.setting> <value>`; for just this project add `--project`. Example: `config set explanation.depth deep`.
 - Export (secret-looking fields are never exported): `config export --out jpe-config.json`
@@ -22,4 +25,5 @@ Request: `$ARGUMENTS`
 2. Only change the setting the user asked about. Environment overrides: `JPE_OFFLINE=1` and `JPE_LOG_LEVEL` take priority over files.
 3. Never put API keys or tokens in configuration. If the user offers one, refuse and explain that secrets belong in environment variables.
 4. This only changes JPE's own settings. Do not edit Claude Code's `settings.json` or permissions.
-5. After a change, run `config show` and tell the user what the effective value is now.
+5. After a change, run `settings <setting>` (or `config show`) and tell the user what the effective value is now and where it comes from.
+6. Run a preview (`settings preset <name>`) and tell the user exactly what would change before using `--apply`. Apply a preset only when the user has asked for it. Presets touch only appearance and accessibility settings.

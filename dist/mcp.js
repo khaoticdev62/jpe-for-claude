@@ -36681,7 +36681,7 @@ function redactSecrets(text2) {
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.7.0",
+  version: "1.8.0",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",
@@ -42484,6 +42484,281 @@ async function agentsCommand(args, ctx) {
   return 0;
 }
 
+// src/config/catalog.ts
+var isPlain2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+var GROUP_TITLES = {
+  explanation: "Explanations",
+  docs: "Documentation",
+  lsp: "Language servers",
+  engineering: "Engineering",
+  security: "Security",
+  runtime: "Runtime",
+  hooks: "Hooks",
+  ui: "Interface and accessibility"
+};
+var SUMMARIES = {
+  "explanation.timing": "When JPE has Claude explain a change: before it, after it, or both.",
+  "explanation.depth": "How detailed explanations are. Adaptive picks brief or deep from how complex the code is.",
+  "explanation.format": "Whether explanations are written as prose, as structured sections, or a mix.",
+  "explanation.translateJargon": "Explain technical terms in plain English, keeping the real term in parentheses.",
+  "explanation.examples": "Whether explanations include examples: always, only when useful, or never.",
+  "explanation.explainChanges": "Have Claude explain what a code change does and why.",
+  "explanation.explainArchitecture": "Have Claude explain how parts of the project fit together.",
+  "explanation.teachConcepts": "Have Claude teach a programming concept when one comes up.",
+  "docs.providers": "Where documentation is looked up, in the order tried.",
+  "docs.additionalProviders": "Extra documentation sources you define, each an https address. They never hold credentials.",
+  "docs.cacheTtlHours": "How many hours a downloaded documentation page is trusted before it is fetched again.",
+  "docs.requestTimeoutMs": "How long, in milliseconds, to wait for a documentation source before giving up.",
+  "docs.showSources": "Always show where documentation came from.",
+  "lsp.autoDetect": "Find the language servers your project would use.",
+  "lsp.offerInstall": "Offer to install a missing language server (never installs without your yes).",
+  "lsp.continuousDiagnostics": "Check for compiler and language-server errors after each file Claude edits.",
+  "lsp.diagnosticsTimeoutMs": "How long, in milliseconds, one diagnostics run may take.",
+  "engineering.planning": "Whether Claude is reminded to plan before a change: adaptive, always, or never.",
+  "engineering.maxRepairAttempts": "How many times /jpe:fix may try to repair a failure before stopping.",
+  "engineering.commandTimeoutMs": "How long, in milliseconds, one verification command may run.",
+  "engineering.backups": "Back up each file before Claude first edits it.",
+  "engineering.rollback": "Allow restoring files from those backups.",
+  "engineering.approval": "When JPE asks first: risk-based (destructive or sensitive actions), always (every command and edit), or off (Claude Code's own rules only).",
+  "security.scanForCredentials": "Look for credential-shaped text in files Claude edits.",
+  "security.treatDocsAsUntrusted": "Treat downloaded documentation as data, never as instructions.",
+  "security.allowExternalUploads": "Allow JPE to send project content to an outside service. Off by default.",
+  "runtime.offline": "Use only local information and cached documentation. The JPE_OFFLINE environment variable overrides it.",
+  "runtime.logLevel": "How much JPE writes to its own log. The JPE_LOG_LEVEL environment variable overrides it.",
+  "hooks.requireVerificationBeforeStop": "Remind Claude once per session to verify edited code before finishing.",
+  "hooks.maxDiagnosticsPerSession": "The most language-server runs edits may trigger in one session.",
+  "ui.theme": "The colour theme: jpe, jpe-contrast (high contrast), jpe-colorblind, or jpe-light.",
+  "ui.color": "Colour depth. Auto detects your terminal; none turns colour off.",
+  "ui.unicode": "Use Unicode symbols and box drawing, or plain ASCII only. Auto detects your terminal.",
+  "ui.density": "How tightly screens are laid out. Auto uses compact in narrow or short terminals.",
+  "ui.motion": "Animation and movement. Reduced removes it. Auto follows your system's reduced-motion hint.",
+  "ui.screenReader": "Linear output with no borders or symbols, every status spelled in words. It cannot be detected, so you turn it on.",
+  "ui.navigation": "Keyboard style: standard arrows, vim keys, or both.",
+  "ui.shortcuts": "Your own key bindings, by action. Invalid or conflicting keys are reported and ignored."
+};
+function describeAllowed(node2) {
+  if (node2.enum !== void 0) return node2.enum.map(String).join(" | ");
+  switch (node2.type) {
+    case "boolean":
+      return "true | false";
+    case "integer":
+    case "number":
+      return `whole number from ${node2.minimum ?? "any"} to ${node2.maximum ?? "any"}`;
+    case "array": {
+      const inner = node2.items?.enum;
+      return inner === void 0 ? `list${node2.maxItems === void 0 ? "" : ` of up to ${node2.maxItems}`}` : `list of: ${inner.map(String).join(", ")}`;
+    }
+    case "object":
+      return node2.propertyNames?.enum === void 0 ? "a set of named values" : `set of: ${node2.propertyNames.enum.map(String).join(", ")}`;
+    default:
+      return node2.type ?? "text";
+  }
+}
+var valueAt = (config2, key) => key.split(".").reduce((acc, k) => isPlain2(acc) ? acc[k] : void 0, config2);
+function describeSettings() {
+  const schema = external_exports.toJSONSchema(configSchema, { io: "input" });
+  const defaults = defaultConfig();
+  const out = [];
+  for (const [section2, node2] of Object.entries(schema.properties ?? {})) {
+    if (node2.properties === void 0) continue;
+    for (const [name, leaf] of Object.entries(node2.properties)) {
+      const key = `${section2}.${name}`;
+      out.push({ key, section: section2, group: GROUP_TITLES[section2] ?? section2, summary: SUMMARIES[key] ?? "", allowed: describeAllowed(leaf), default: valueAt(defaults, key) });
+    }
+  }
+  return out;
+}
+var effectiveValue = (config2, key) => valueAt(config2, key);
+function formatValue(value) {
+  if (Array.isArray(value)) return value.length === 0 ? "none" : value.map((v) => typeof v === "string" ? v : JSON.stringify(v)).join(", ");
+  if (isPlain2(value)) return Object.keys(value).length === 0 ? "none" : JSON.stringify(value);
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+function settingSources(layers) {
+  const sources = {};
+  const order = [["global", layers.global], ["project", layers.project], ["environment", layers.environment]];
+  for (const [source, layer] of order) {
+    if (layer === void 0) continue;
+    for (const [section2, node2] of Object.entries(layer)) {
+      if (!isPlain2(node2)) continue;
+      for (const name of Object.keys(node2)) sources[`${section2}.${name}`] = source;
+    }
+  }
+  return sources;
+}
+var isSettingKey = (key) => describeSettings().some((s) => s.key === key);
+function unsetPath(layer, key) {
+  const [section2, name] = key.split(".");
+  if (section2 === void 0 || name === void 0) return { ...layer };
+  const node2 = layer[section2];
+  if (!isPlain2(node2) || !(name in node2)) return { ...layer };
+  const { [name]: _removed, ...rest } = node2;
+  const { [section2]: _section, ...others } = layer;
+  return Object.keys(rest).length === 0 ? others : { ...others, [section2]: rest };
+}
+var UI_APPEARANCE = ["ui.theme", "ui.color", "ui.unicode", "ui.density", "ui.motion", "ui.screenReader", "ui.navigation"];
+var PRESETS = [
+  { name: "screen-reader", summary: "Linear text with no borders or symbols, status spelled in words, no colour and no motion.", set: { "ui.screenReader": true, "ui.color": "none", "ui.motion": "reduced" }, unset: [] },
+  { name: "high-contrast", summary: "The high-contrast theme.", set: { "ui.theme": "jpe-contrast" }, unset: [] },
+  { name: "colorblind", summary: "A theme that does not rely on telling red from green.", set: { "ui.theme": "jpe-colorblind" }, unset: [] },
+  { name: "low-motion", summary: "No animation or movement.", set: { "ui.motion": "reduced" }, unset: [] },
+  { name: "ascii", summary: "Plain ASCII characters instead of Unicode symbols and box drawing.", set: { "ui.unicode": "off" }, unset: [] },
+  { name: "plain", summary: "No colour, no Unicode and no motion: for logs, old terminals and pipes.", set: { "ui.color": "none", "ui.unicode": "off", "ui.motion": "reduced" }, unset: [] },
+  { name: "default", summary: "Put every appearance setting back to its default (your key bindings are kept).", set: {}, unset: UI_APPEARANCE }
+];
+var findPreset = (name) => PRESETS.find((p) => p.name === name);
+function applyPreset(layer, preset) {
+  let out = { ...layer };
+  for (const key of preset.unset) out = unsetPath(out, key);
+  for (const [key, value] of Object.entries(preset.set)) {
+    const [section2, name] = key.split(".");
+    const node2 = isPlain2(out[section2]) ? out[section2] : {};
+    out = { ...out, [section2]: { ...node2, [name]: value } };
+  }
+  return out;
+}
+function validateLayer(layer) {
+  const check2 = partialConfigSchema.safeParse(layer);
+  if (!check2.success) return check2.error.issues.map((i) => `${i.path.map(String).join(".")}: ${i.message}`).join("; ");
+  return void 0;
+}
+
+// src/settings/views.ts
+var SOURCE_WORDS = { default: "default", global: "your setting", project: "this project", environment: "environment" };
+function settingsView(rows, profile) {
+  const out = [...heading("Settings", profile)];
+  const changed = rows.filter((r) => r.source !== "default").length;
+  out.push(...textLines(`${rows.length} settings; ${changed === 0 ? "all at their defaults" : `${changed} changed from the default`}.`, profile.width));
+  const groups = [...new Set(rows.map((r) => r.group))];
+  for (const group of groups) {
+    out.push(blank(), ...heading(group, profile));
+    out.push(
+      ...table(
+        { columns: [{ header: "Setting", min: 12 }, { header: "Value", min: 8 }, { header: "From", min: 7 }], rows: rows.filter((r) => r.group === group).map((r) => [r.key, formatValue(r.value), SOURCE_WORDS[r.source]]) },
+        profile
+      )
+    );
+  }
+  out.push(blank(), ...bulletList(["`jpe settings <setting>` explains one, for example `jpe settings ui.theme`.", "`jpe config set <setting> <value>` changes one; `jpe settings unset <setting>` puts it back to its default.", "`jpe settings preset` lists accessibility and appearance presets."], profile));
+  return out;
+}
+function settingDetailView(row, profile) {
+  return [
+    ...heading(row.key, profile),
+    ...textLines(row.summary, profile.width),
+    blank(),
+    ...keyValues(
+      [
+        ["Current", formatValue(row.value)],
+        ["From", SOURCE_WORDS[row.source]],
+        ["Default", formatValue(row.default)],
+        ["Allowed", inline(row.allowed)]
+      ],
+      profile
+    ),
+    blank(),
+    ...textLines(`Change it: jpe config set ${row.key} <value>   (add --project for this project only)`, profile.width, { role: "muted" }),
+    ...textLines(`Put it back: jpe settings unset ${row.key}`, profile.width, { role: "muted" })
+  ];
+}
+function presetListView(presets, profile) {
+  return [
+    ...heading("Presets", profile),
+    ...bulletList(presets.map((p) => `${p.name}: ${p.summary}`), profile),
+    blank(),
+    ...textLines("`jpe settings preset <name>` shows exactly what would change. Add --apply to make the change (add --project for this project only).", profile.width, { role: "muted" })
+  ];
+}
+function presetPreviewView(preset, changes, applied, backedUp, scope, profile) {
+  const out = [...heading(`Preset: ${preset.name}`, profile), ...textLines(preset.summary, profile.width), blank()];
+  const real = changes.filter((c) => formatValue(c.from) !== formatValue(c.to));
+  if (real.length === 0) {
+    out.push(...textLines("Nothing would change: every setting in this preset already has that value.", profile.width));
+    return out;
+  }
+  out.push(...table({ columns: [{ header: "Setting", min: 12 }, { header: "Now", min: 6 }, { header: applied ? "Changed to" : "Would become", min: 8 }], rows: real.map((c) => [c.key, formatValue(c.from), c.toDefault ? `${formatValue(c.to)} (default)` : formatValue(c.to)]) }, profile));
+  out.push(blank(), ...textLines(applied ? `Applied to ${scope}.${backedUp ? " The previous file was kept as a backup." : ""}` : "Nothing has been changed. Run again with --apply to make this change.", profile.width, { role: "muted" }));
+  return out;
+}
+
+// src/cli/commands/settings.ts
+var USAGE = "Usage: jpe settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]";
+async function readLayer2(ctx, file2) {
+  const text2 = await ctx.readText(file2);
+  if (text2 === void 0) return void 0;
+  try {
+    return migrateConfig(JSON.parse(text2));
+  } catch {
+    throw new JpeError("INVALID_CONFIG", `The configuration file ${file2} is not valid JSON, so it was not changed. Fix or remove it, then try again.`);
+  }
+}
+async function rowsFor(ctx) {
+  const config2 = await ctx.loadConfig();
+  const sources = settingSources({ global: await readLayer2(ctx, globalConfigPath(ctx.pathEnv)), project: await readLayer2(ctx, projectConfigPath(ctx.cwd)), environment: envOverrides(ctx.pathEnv.env) });
+  return describeSettings().map((s) => ({ ...s, value: effectiveValue(config2, s.key), source: sources[s.key] ?? "default" }));
+}
+async function writeChecked(ctx, file2, layer) {
+  const problem = validateLayer(layer);
+  if (problem !== void 0) throw new JpeError("INVALID_CONFIG", `That change is not allowed, so nothing was written: ${problem}`);
+  return writeScope(ctx, file2, { ...layer, schemaVersion: 1 });
+}
+async function settingsCommand(args, ctx) {
+  const [sub, target] = args.positionals;
+  const json2 = flagBool(args, "json");
+  const { profile } = await renderContext(args, ctx);
+  const project = flagBool(args, "project");
+  const scopeName = project ? "this project's settings" : "your settings";
+  if (sub === void 0) {
+    const rows = await rowsFor(ctx);
+    ctx.out(json2 ? JSON.stringify(rows, null, 2) : paint(settingsView(rows, profile), profile));
+    return 0;
+  }
+  if (sub === "unset") {
+    if (target === void 0 || !isSettingKey(target)) throw new JpeError("INVALID_INPUT", `"${target ?? ""}" is not a setting. Run \`jpe settings\` to see them all. ${USAGE}`);
+    const file2 = scopeFile(args, ctx);
+    const layer = await readLayer2(ctx, file2) ?? {};
+    const updated = unsetPath(layer, target);
+    if (JSON.stringify(updated) === JSON.stringify(layer)) {
+      ctx.out(paint(statusBadge("info", `${target} is not set in ${scopeName}, so there is nothing to remove. It may come from another place: run \`jpe settings ${target}\`.`, profile), profile));
+      return 0;
+    }
+    const notes = await writeChecked(ctx, file2, updated);
+    ctx.out([paint(statusBadge("success", `${target} is back to its default in ${scopeName}.`, profile), profile), ...notes].join("\n"));
+    return 0;
+  }
+  if (sub === "preset") {
+    if (target === void 0) {
+      ctx.out(json2 ? JSON.stringify(PRESETS, null, 2) : paint(presetListView(PRESETS, profile), profile));
+      return 0;
+    }
+    const preset = findPreset(target);
+    if (preset === void 0) throw new JpeError("INVALID_INPUT", `There is no preset called "${target}". Run \`jpe settings preset\` to list them.`);
+    const file2 = scopeFile(args, ctx);
+    const layer = await readLayer2(ctx, file2) ?? {};
+    const updated = applyPreset(layer, preset);
+    const problem = validateLayer(updated);
+    if (problem !== void 0) throw new JpeError("INVALID_CONFIG", `That preset cannot be applied: ${problem}`);
+    const config2 = await ctx.loadConfig();
+    const defaults = new Map(describeSettings().map((s) => [s.key, s.default]));
+    const keys = [...Object.keys(preset.set), ...preset.unset];
+    const changes = keys.map((key) => {
+      const toDefault = preset.unset.includes(key);
+      return { key, from: effectiveValue(config2, key), to: toDefault ? defaults.get(key) : preset.set[key], toDefault };
+    });
+    const apply = flagBool(args, "apply");
+    const notes = apply && JSON.stringify(updated) !== JSON.stringify(layer) ? await writeChecked(ctx, file2, updated) : [];
+    ctx.out(json2 ? JSON.stringify({ preset: preset.name, applied: apply, changes }, null, 2) : [paint(presetPreviewView(preset, changes, apply, notes.length > 0, scopeName, profile), profile), ...notes].join("\n"));
+    return 0;
+  }
+  if (isSettingKey(sub)) {
+    const row = (await rowsFor(ctx)).find((r) => r.key === sub);
+    if (row === void 0) throw new JpeError("INVALID_INPUT", USAGE);
+    ctx.out(json2 ? JSON.stringify(row, null, 2) : paint(settingDetailView(row, profile), profile));
+    return 0;
+  }
+  throw new JpeError("INVALID_INPUT", `"${sub}" is not a setting or a settings command. ${USAGE}`);
+}
+
 // src/workspace/views.ts
 var SHOWN_SESSIONS = 10;
 var SHOWN_DONE = 5;
@@ -42534,7 +42809,7 @@ function resumeView(hud, sessions, tasks, now, profile) {
 }
 
 // src/cli/commands/workspace.ts
-var USAGE = "Usage: jpe task <add <text> | list [--all] | done <number> | remove <number>> [--json]";
+var USAGE2 = "Usage: jpe task <add <text> | list [--all] | done <number> | remove <number>> [--json]";
 async function taskCommand(args, ctx) {
   const sub = args.positionals[0] ?? "list";
   const json2 = flagBool(args, "json");
@@ -42548,7 +42823,7 @@ async function taskCommand(args, ctx) {
   }
   if (sub === "add") {
     const added = addTask(tasks, { id: ctx.newId(), text: args.positionals.slice(1).join(" "), at: now });
-    if (added === void 0) throw new JpeError("INVALID_INPUT", `Nothing to add: give the task some text, and note the list holds at most 200 tasks. ${USAGE}`);
+    if (added === void 0) throw new JpeError("INVALID_INPUT", `Nothing to add: give the task some text, and note the list holds at most 200 tasks. ${USAGE2}`);
     await saveTasks(ctx, added.tasks);
     ctx.out(json2 ? JSON.stringify(added.task, null, 2) : paint(statusBadge("success", `Added task ${openTasks(added.tasks).length}: ${added.task.text}`, profile), profile));
     return 0;
@@ -42556,12 +42831,12 @@ async function taskCommand(args, ctx) {
   if (sub === "done" || sub === "remove") {
     const ref = args.positionals[1] ?? "";
     const result = sub === "done" ? completeTask(tasks, ref, now) : removeTask(tasks, ref);
-    if (result === void 0) throw new JpeError("INVALID_INPUT", `No open task matches "${ref}". Run \`jpe task list\` and use the number in the # column. ${USAGE}`);
+    if (result === void 0) throw new JpeError("INVALID_INPUT", `No open task matches "${ref}". Run \`jpe task list\` and use the number in the # column. ${USAGE2}`);
     await saveTasks(ctx, result.tasks);
     ctx.out(json2 ? JSON.stringify(result.task, null, 2) : paint(statusBadge("success", `${sub === "done" ? "Marked done" : "Removed"}: ${result.task.text}`, profile), profile));
     return 0;
   }
-  throw new JpeError("INVALID_INPUT", USAGE);
+  throw new JpeError("INVALID_INPUT", USAGE2);
 }
 async function sessionsCommand(args, ctx) {
   const sessions = await listSessions(ctx);
@@ -43193,7 +43468,7 @@ function diagnosticsView(report, notes, rel2, profile, options) {
 
 // src/cli/commands/show.ts
 var VIEWS = ["file", "change", "review", "impact", "docs", "diagnostics"];
-var USAGE2 = `Usage: jpe show <${VIEWS.join("|")}> ...
+var USAGE3 = `Usage: jpe show <${VIEWS.join("|")}> ...
   file <path>              a file's code with possible risks marked, beside its structure
   change <path>            one file's uncommitted change as a diff
   review                   every uncommitted change: overview, notes, checklist, diffs
@@ -43242,7 +43517,7 @@ async function reviewFiles(ctx) {
 }
 async function showCommand(args, ctx) {
   const view = args.positionals[0];
-  if (view === void 0 || !VIEWS.includes(view)) throw new JpeError("INVALID_INPUT", USAGE2);
+  if (view === void 0 || !VIEWS.includes(view)) throw new JpeError("INVALID_INPUT", USAGE3);
   const { profile } = await renderContext(args, ctx);
   const json2 = flagBool(args, "json");
   const expanded = !flagBool(args, "collapse");
@@ -43589,6 +43864,7 @@ var COMMANDS = {
   resume: { run: resumeCommand, help: "resume [--json]   Where you left off: project facts, the last session and your open tasks" },
   sessions: { run: sessionsCommand, help: "sessions [--json]   Recent sessions JPE recorded (when they started, files edited and backed up)" },
   task: { run: taskCommand, help: "task add <text> | list [--all] | done <number> | remove <number> [--json]   Your task list for this project" },
+  settings: { run: settingsCommand, help: "settings [<setting> | unset <setting> | preset [<name>] [--apply]] [--project] [--json]   Every setting with its meaning, default and source; accessibility presets" },
   agents: { run: agentsCommand, help: "agents [--json]   Agent runs Claude Code reported in this project: running or finished, how long they took, and use by type" },
   review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },

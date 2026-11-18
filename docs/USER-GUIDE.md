@@ -54,7 +54,7 @@ JPE makes Claude Code explain its work in plain English and back its claims with
 
 Run `jpe ui` to see what JPE detected about your terminal, why, and a live sample of every theme element; `jpe ui keys` lists the keyboard shortcuts. Details: [Design system](DESIGN-SYSTEM.md).
 
-Change one with `jpe config set <setting> <value>` (add `--project` for this project only).
+Change one with `jpe config set <setting> <value>` (add `--project` for this project only). `jpe settings` lists every setting with what it means and where its value comes from, `jpe settings unset <setting>` puts one back to its default, and `jpe settings preset` offers accessibility presets such as screen-reader and high-contrast (previewed first, applied only with `--apply`). Details: [Settings](SETTINGS.md).
 
 ## Undoing changes
 

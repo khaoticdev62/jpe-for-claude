@@ -6,6 +6,18 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-18
+
+### Added
+- Settings center (see docs/SETTINGS.md): `jpe settings` lists every setting with its plain-English meaning, allowed values, default and where the current value comes from (default, your setting, this project, environment); `jpe settings <setting>` explains one; `jpe settings unset <setting>` returns one to its default.
+- Accessibility and appearance presets: `jpe settings preset` (screen-reader, high-contrast, colorblind, low-motion, ascii, plain, default). A preset shows exactly what would change and writes only with `--apply`; it touches only `ui.*` appearance settings; the replaced file is kept as a backup. `/jpe:config` now uses these and previews before applying.
+- Setting names, allowed values and defaults are read from the schema; a test fails if a setting has no summary or a summary names a setting that no longer exists.
+- 49 new tests (1069 in total).
+
+### Fixed
+- The preset list truncated descriptions with an ellipsis at narrow widths; it now wraps them.
+- Intermittent `unit-test: failed` under `jpe verify`: the width-by-settings matrix test in `ui-render.test.ts` timed out at vitest's 5 s default when the whole suite ran in parallel on a busy machine (it takes about 2 s alone). The time allowed is now 30 s for every test; no assertion was changed.
+
 ## [1.7.0] - 2026-11-18
 
 ### Added
