@@ -61,4 +61,4 @@ Change one with `jpe config set <setting> <value>` (add `--project` for this pro
 
 ## When something seems off
 
-Run `/jpe:setup` (or `node <plugin>/dist/cli.js doctor`). It really starts each part of JPE and tells you in plain English what works and what to do about what does not.
+Run `/jpe:setup` (or `node <plugin>/dist/cli.js doctor`). It really starts each part of JPE and tells you in plain English what works and what to do about what does not. It also checks that JPE's saved records (agent activity, review decisions, the last verification) can be read, and that the built code matches the plugin version.

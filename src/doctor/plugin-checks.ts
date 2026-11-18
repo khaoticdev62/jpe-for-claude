@@ -24,7 +24,7 @@ async function readJson(env: DoctorEnv, ...parts: string[]): Promise<{ value?: u
 }
 
 /** One MCP stdio conversation: initialize, then tools/list. Uses plain JSON lines, so no SDK is needed here. */
-export async function mcpHandshake(serverJs: string, cwd: string, timeoutMs = 10_000): Promise<{ ok: boolean; serverName?: string; tools: string[]; detail: string }> {
+export async function mcpHandshake(serverJs: string, cwd: string, timeoutMs = 10_000): Promise<{ ok: boolean; serverName?: string; serverVersion?: string; tools: string[]; detail: string }> {
   let child: ReturnType<typeof spawnSafely>;
   try {
     child = spawnSafely(process.execPath, [serverJs], { cwd });
@@ -33,6 +33,7 @@ export async function mcpHandshake(serverJs: string, cwd: string, timeoutMs = 10
   }
   return new Promise((resolve) => {
     let serverName: string | undefined;
+    let serverVersion: string | undefined;
     let done = false;
     const finish = (r: { ok: boolean; tools: string[]; detail: string }): void => {
       if (done) return;
@@ -40,23 +41,24 @@ export async function mcpHandshake(serverJs: string, cwd: string, timeoutMs = 10
       clearTimeout(timer);
       killTree(child);
       // Wait (briefly) for the process to be really gone so it cannot keep the folder locked.
-      const grace = setTimeout(() => resolve({ ...r, ...(serverName ? { serverName } : {}) }), 2000);
+      const grace = setTimeout(() => resolve({ ...r, ...(serverName ? { serverName } : {}), ...(serverVersion ? { serverVersion } : {}) }), 2000);
       child.once("close", () => {
         clearTimeout(grace);
-        resolve({ ...r, ...(serverName ? { serverName } : {}) });
+        resolve({ ...r, ...(serverName ? { serverName } : {}), ...(serverVersion ? { serverVersion } : {}) });
       });
       if (child.exitCode !== null) {
         clearTimeout(grace);
-        resolve({ ...r, ...(serverName ? { serverName } : {}) });
+        resolve({ ...r, ...(serverName ? { serverName } : {}), ...(serverVersion ? { serverVersion } : {}) });
       }
     };
     const timer = setTimeout(() => finish({ ok: false, tools: [], detail: `no answer within ${timeoutMs / 1000}s` }), timeoutMs);
     const send = (m: object): void => void child.stdin?.write(`${JSON.stringify({ jsonrpc: "2.0", ...m })}\n`);
     createInterface({ input: child.stdout as NodeJS.ReadableStream }).on("line", (line) => {
       try {
-        const msg = JSON.parse(line) as { id?: number; result?: { serverInfo?: { name?: string }; tools?: Array<{ name: string }> } };
+        const msg = JSON.parse(line) as { id?: number; result?: { serverInfo?: { name?: string; version?: string }; tools?: Array<{ name: string }> } };
         if (msg.id === 1) {
           serverName = msg.result?.serverInfo?.name;
+          serverVersion = msg.result?.serverInfo?.version;
           send({ method: "notifications/initialized" });
           send({ id: 2, method: "tools/list", params: {} });
         } else if (msg.id === 2) {
@@ -107,7 +109,7 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
     else if (!parsed.front["description"]) skillProblems.push(`${s}: no description`);
     else if (s === "jpe" && parsed.front["name"] !== "jpe") skillProblems.push("jpe: the entry skill must be named jpe so bare /jpe works");
   }
-  out.push(skillProblems.length === 0 ? f("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and eleven sub-commands).`) : f("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
+  out.push(skillProblems.length === 0 ? f("skills", "ok", `All ${EXPECTED_SKILLS.length} skills are present (/jpe and ${EXPECTED_SKILLS.length - 1} sub-commands).`) : f("skills", "fail", "Some skills are missing or damaged.", { detail: skillProblems.join("; "), fix: "Reinstall the plugin." }));
 
   // MCP server first, so agent tool lists can be cross-checked against what it really offers.
   // The server is declared inline in plugin.json. A root .mcp.json is not used: Claude Code would also load it as a
@@ -125,6 +127,10 @@ export async function checkPlugin(env: DoctorEnv): Promise<Finding[]> {
     else if (!hs.ok) out.push(f("mcp-start", "fail", `The JPE MCP server did not answer a real handshake (${hs.detail}).`, { fix: "Run `node dist/mcp.js` manually to see the error." }));
     else {
       serverTools = hs.tools;
+      const manifest = (await readJson(env, ".claude-plugin", "plugin.json")).value as { version?: unknown } | undefined;
+      if (hs.serverVersion !== undefined && typeof manifest?.version === "string" && hs.serverVersion !== manifest.version) {
+        out.push(f("build-version", "warn", `The built code is version ${hs.serverVersion} but the plugin manifest says ${manifest.version}, so dist/ is out of date.`, { fix: "Run `npm run build` (in a source checkout) or reinstall the plugin." }));
+      }
       out.push(f("mcp-start", "ok", `The JPE MCP server started and offers ${hs.tools.length} tools (handshake completed).`, { area: "MCP" }));
     }
   }

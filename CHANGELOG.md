@@ -6,6 +6,16 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-18
+
+### Added
+- Doctor: a **Records** check reads JPE's own saved records for the project (agent activity, review decisions, the last verification) and reports how many entries cannot be read. A damaged line was already skipped when reading; now it is noticed. Absent records produce no finding.
+- Doctor: a **build-version** check compares the version the built MCP server reports with the plugin manifest, and warns when `dist/` is out of date.
+
+### Fixed
+- The Doctor's skills line said "eleven sub-commands" regardless of the real count; it now counts them.
+- 6 new tests (24 in the Doctor suite).
+
 ## [1.5.0] - 2026-11-18
 
 ### Added

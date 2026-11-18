@@ -2,6 +2,7 @@ import os from "node:os";
 import { redactSecrets } from "../core/redact.js";
 import { checkBackups, checkCache, checkConfig, checkLanguageServers, checkNetwork, checkOffline, checkProject, checkRuntime, checkStorage, repair } from "./env-checks.js";
 import { checkPlugin } from "./plugin-checks.js";
+import { checkRecords } from "./record-checks.js";
 import { ORDER, type DoctorEnv, type DoctorReport, type Finding, type FindingStatus, type RepairId } from "./types.js";
 
 /** Runs every check. A check that crashes is reported as a failed check instead of stopping the report. */
@@ -11,6 +12,7 @@ export async function runDoctor(env: DoctorEnv): Promise<DoctorReport> {
     ["plugin", () => checkPlugin(env)],
     ["config", () => checkConfig(env)],
     ["storage", () => checkStorage(env)],
+    ["records", () => checkRecords(env)],
     ["project", () => checkProject(env)],
     ["language servers", () => checkLanguageServers(env)],
     ["documentation cache", () => checkCache(env)],

@@ -251,3 +251,64 @@ describe("report hygiene", () => {
     expect(text).toContain("jpe doctor --repair");
   });
 });
+
+describe("saved records", () => {
+  const stateFile = (name: string): string => path.join(ctxFor().stateDir(), name);
+  const write = async (name: string, text: string): Promise<void> => {
+    await mkdir(path.dirname(stateFile(name)), { recursive: true });
+    await writeFile(stateFile(name), text);
+  };
+  const GOOD_AGENT = JSON.stringify({ at: "2026-03-04T12:00:00.000Z", kind: "start", agentId: "a1", agentType: "Explore", sessionId: "s1" });
+  const records = async (): Promise<Finding[]> => (await runDoctor(envFor(undefined))).findings.filter((x) => x.area === "Records");
+
+  it("says nothing about records that do not exist yet", async () => {
+    expect(await records()).toEqual([]);
+  });
+
+  it("reports a readable record as ok, with its size", async () => {
+    await write("agents.jsonl", `${GOOD_AGENT}\n${GOOD_AGENT}\n`);
+    const [hit] = await records();
+    expect(hit).toMatchObject({ id: "agents-record", status: "ok" });
+    expect(hit?.title).toContain("2 entries");
+  });
+
+  it("warns, with counts, when some lines cannot be read, and says nothing is broken", async () => {
+    await write("agents.jsonl", `${GOOD_AGENT}\nnot json\n{"kind":"start"}\n`);
+    const [hit] = await records();
+    expect(hit?.status).toBe("warn");
+    expect(hit?.title).toContain("2 of 3 entries");
+    expect(hit?.fix).toContain("nothing is broken");
+  });
+
+  it("checks the review decisions record the same way", async () => {
+    await write("reviews.jsonl", "garbage\n");
+    const hit = (await records()).find((x) => x.id === "review-record");
+    expect(hit?.status).toBe("warn");
+    expect(hit?.title).toContain("1 of 1 entries");
+  });
+
+  it("warns when the saved verification record is damaged, never crashing", async () => {
+    await write("ledger.jsonl", "{}\n");
+    await write("run.json", "{ not json");
+    const hit = (await records()).find((x) => x.id === "verification-record");
+    expect(hit?.status).toBe("warn");
+    expect(hit?.fix).toContain("/jpe:verify");
+  });
+});
+
+describe.skipIf(!built)("build matches manifest", () => {
+  it("warns when the built code and the manifest disagree on the version", async () => {
+    const plugin = path.join(base, "plugin");
+    await mkdir(plugin, { recursive: true });
+    for (const d of [".claude-plugin", "dist", "skills", "agents", "hooks", "types"]) await cp(path.join(ROOT, d), path.join(plugin, d), { recursive: true });
+    const manifestFile = path.join(plugin, ".claude-plugin", "plugin.json");
+    const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+    expect(byIdOrUndefined(await runDoctor(envFor(plugin)), "build-version")).toBeUndefined();
+    await writeFile(manifestFile, JSON.stringify({ ...manifest, version: "0.0.1" }));
+    const hit = byIdOrUndefined(await runDoctor(envFor(plugin)), "build-version");
+    expect(hit?.status).toBe("warn");
+    expect(hit?.title).toContain("0.0.1");
+  }, 90_000);
+});
+
+const byIdOrUndefined = (r: DoctorReport, id: string): Finding | undefined => r.findings.find((x) => x.id === id);
