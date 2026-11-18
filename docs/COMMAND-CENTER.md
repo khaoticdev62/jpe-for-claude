@@ -41,6 +41,10 @@ The pane uses Claude Code's own keyboard handling: number keys pick an item, Tab
 
 A "Ran /jpe:verify" line appears only after Claude Code accepted the command. If it could not run, the pane says "Could not run ..." with the reason. A failed read of the project facts is shown as a failure with its reason, not as an empty or default screen.
 
+## The Tasks row
+
+When you have open tasks (see [Workspace](WORKSPACE.md)) the home screen shows one **Tasks** row, for example "3 open". With none, the row is absent. `/jpe resume` opens the full picture.
+
 ## The Agents row
 
 Once Claude Code has reported any subagent start or stop in the project, the home screen shows one **Agents** row, for example "1 running, 4 recorded". It is built from those events only (see [Agent activity](AGENTS.md)); with none recorded the row is absent rather than showing a zero.

@@ -5,7 +5,7 @@ import { runCommand, spawnSafely, killTree } from "../security/run.js";
 import { parseFrontmatter } from "./frontmatter.js";
 import type { DoctorEnv, Finding } from "./types.js";
 
-export const EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "agents", "setup", "config"] as const;
+export const EXPECTED_SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "agents", "resume", "setup", "config"] as const;
 export const EXPECTED_AGENTS = ["jpe-researcher", "jpe-explainer", "jpe-lsp", "jpe-verifier", "jpe-security", "jpe-architect", "jpe-debugger"] as const;
 const EXPECTED_HOOK_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStart", "SubagentStop"] as const;
 const MCP_PREFIX = "mcp__plugin_jpe_jpe__";

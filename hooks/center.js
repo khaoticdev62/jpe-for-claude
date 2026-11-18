@@ -20,6 +20,7 @@ var CENTER_COMMANDS = [
   command("verify", "Verify", "Run the project's real tests, type checks and build, and report evidence", "Check", false, ["test", "build", "lint", "typecheck", "does it work", "check"]),
   command("status", "Status", "Show the latest verification status and what backs it", "Check", false, ["result", "last run", "evidence", "passed", "failed"]),
   command("audit", "Audit", "Review the project for risky patterns and exposed credentials", "Check", false, ["security", "secrets", "vulnerabilities", "safe", "review"]),
+  command("resume", "Resume", "Where you left off: project facts, the last session and your open tasks", "Manage", false, ["continue", "pick up", "last time", "where was i", "tasks", "todo"]),
   command("agents", "Agents", "See which agents Claude Code started and stopped, and how long they took", "Check", false, ["subagent", "running", "parallel", "tasks", "who is working"]),
   command("review", "Review", "Review the uncommitted changes: what changed, possible risks, and what to confirm", "Check", false, ["changes", "diff", "pull request", "approve", "reject", "look over", "before commit"], "<path>"),
   command("fix", "Fix", "Investigate a failure and repair it in small, checked steps with a backup", "Change", true, ["repair", "bug", "broken", "error", "failing", "debug"]),
@@ -693,6 +694,7 @@ function hudLines(hud, profile, now) {
     ["Project", project],
     ["Git", gitText(hud)],
     ...hud.review === void 0 || hud.review.changedFiles === 0 ? [] : [["Review", reviewText(hud.review, now)]],
+    ...(hud.openTasks ?? 0) === 0 ? [] : [["Tasks", `${hud.openTasks} open`]],
     ...hud.agents === void 0 ? [] : [["Agents", agentsSentence(hud.agents)]],
     ["Language servers", servers],
     ["Mode", mode]
@@ -776,6 +778,8 @@ function parseHud(raw) {
     if (review["decision"] !== void 0 && !["approved", "rejected"].includes(String(review["decision"]))) return void 0;
     if (review["at"] !== void 0 && typeof review["at"] !== "string") return void 0;
   }
+  const openTasks = raw["openTasks"];
+  if (openTasks !== void 0 && !(typeof openTasks === "number" && Number.isInteger(openTasks) && openTasks > 0)) return void 0;
   const agents = raw["agents"];
   if (agents !== void 0) {
     const count = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;

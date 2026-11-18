@@ -64,7 +64,7 @@ describe.skipIf(!built)("a healthy installation", () => {
     expect(code).toBe(0);
     const text = out.join("\n");
     expect(text).toContain("JPE Doctor:");
-    expect(text).toContain("[OK  ] All 13 skills are present");
+    expect(text).toContain("[OK  ] All 14 skills are present");
   }, 60_000);
 
   it("exports a shareable report with the home folder replaced and credentials redacted", async () => {

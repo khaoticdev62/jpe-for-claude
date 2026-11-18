@@ -30,16 +30,49 @@ export function freshState(ctx: CliContext): SessionState {
 
 const stateFile = (ctx: CliContext, sessionId: string): string => path.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
 
+/** A saved session state, or undefined when the text is not a valid one. Never throws. */
+export function parseSessionState(text: string): SessionState | undefined {
+  try {
+    const parsed = stateSchema.safeParse(JSON.parse(text));
+    return parsed.success ? parsed.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Loads this session's state, or a fresh one when missing or damaged. */
 export async function loadState(ctx: CliContext, sessionId: string): Promise<SessionState> {
   const text = await ctx.readText(stateFile(ctx, sessionId));
-  if (text === undefined) return freshState(ctx);
+  return (text === undefined ? undefined : parseSessionState(text)) ?? freshState(ctx);
+}
+
+export interface SessionSummary {
+  /** The session's file name without its extension. */
+  id: string;
+  startedAt: string;
+  filesEdited: number;
+  backups: number;
+}
+
+/**
+ * The sessions JPE still has a record of, newest first. States are removed a week after they were last written, so this is
+ * recent history only. Damaged files are skipped rather than shown as sessions that never happened.
+ */
+export async function listSessions(ctx: Pick<CliContext, "stateDir" | "readText">): Promise<SessionSummary[]> {
+  const dir = path.join(ctx.stateDir(), "sessions");
+  let names: string[];
   try {
-    const parsed = stateSchema.safeParse(JSON.parse(text));
-    return parsed.success ? parsed.data : freshState(ctx);
+    names = await readdir(dir);
   } catch {
-    return freshState(ctx);
+    return [];
   }
+  const out: SessionSummary[] = [];
+  for (const name of names.filter((n) => n.endsWith(".json"))) {
+    const text = await ctx.readText(path.join(dir, name)).catch(() => undefined);
+    const state = text === undefined ? undefined : parseSessionState(text);
+    if (state !== undefined) out.push({ id: name.slice(0, -".json".length), startedAt: state.startedAt, filesEdited: Object.keys(state.edits).length, backups: Object.keys(state.backups).length });
+  }
+  return out.sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt));
 }
 
 const trim = (record: Record<string, string>): Record<string, string> => Object.fromEntries(Object.entries(record).slice(-MAX_ENTRIES));

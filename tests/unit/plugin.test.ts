@@ -25,7 +25,7 @@ async function load(file: string): Promise<Doc> {
   return { file, front, body: m[2] ?? "" };
 }
 
-const SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "agents", "setup", "config"];
+const SKILLS = ["jpe", "explain", "research", "verify", "fix", "impact", "learn", "status", "audit", "review", "agents", "resume", "setup", "config"];
 const AGENTS = ["jpe-researcher", "jpe-explainer", "jpe-lsp", "jpe-verifier", "jpe-security", "jpe-architect", "jpe-debugger"];
 
 describe("plugin manifest", () => {
@@ -38,7 +38,7 @@ describe("plugin manifest", () => {
 });
 
 describe("skills", () => {
-  it("has exactly the thirteen required commands", async () => {
+  it("has exactly the fourteen required commands", async () => {
     const dirs = (await readdir(path.join(root, "skills"), { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
     expect(dirs.sort()).toEqual([...SKILLS].sort());
   });

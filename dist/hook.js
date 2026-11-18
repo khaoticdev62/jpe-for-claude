@@ -21741,15 +21741,17 @@ function freshState(ctx) {
   return { startedAt: ctx.now().toISOString(), promptNudged: false, stopNudged: false, edits: {}, backups: {}, checked: {}, diagnosticsRuns: 0 };
 }
 var stateFile = (ctx, sessionId) => path15.join(ctx.stateDir(), "sessions", `${safeSessionId(sessionId)}.json`);
-async function loadState(ctx, sessionId) {
-  const text = await ctx.readText(stateFile(ctx, sessionId));
-  if (text === void 0) return freshState(ctx);
+function parseSessionState(text) {
   try {
     const parsed = stateSchema.safeParse(JSON.parse(text));
-    return parsed.success ? parsed.data : freshState(ctx);
+    return parsed.success ? parsed.data : void 0;
   } catch {
-    return freshState(ctx);
+    return void 0;
   }
+}
+async function loadState(ctx, sessionId) {
+  const text = await ctx.readText(stateFile(ctx, sessionId));
+  return (text === void 0 ? void 0 : parseSessionState(text)) ?? freshState(ctx);
 }
 var trim = (record2) => Object.fromEntries(Object.entries(record2).slice(-MAX_ENTRIES));
 async function saveState(ctx, sessionId, state) {

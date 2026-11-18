@@ -7,6 +7,7 @@ import { doctorCommand } from "./commands/doctor.js";
 import { impactCommand, installPlanCommand, lspCommand } from "./commands/lsp.js";
 import { researchCommand } from "./commands/research.js";
 import { agentsCommand } from "./commands/agents.js";
+import { resumeCommand, sessionsCommand, taskCommand } from "./commands/workspace.js";
 import { reviewCommand } from "./commands/review.js";
 import { showCommand } from "./commands/show.js";
 import { uiCommand } from "./commands/ui.js";
@@ -30,6 +31,9 @@ const COMMANDS: Readonly<Record<string, { run: Handler; help: string }>> = {
   scan: { run: scanCommand, help: "scan [paths...]   Look for credentials (values are never printed)" },
   audit: { run: auditCommand, help: "audit   Static review for risky patterns" },
   center: { run: centerCommand, help: "center [home|palette <query>|hud] [--json] [display flags]   The command center: project facts, next steps and the command palette, as text" },
+  resume: { run: resumeCommand, help: "resume [--json]   Where you left off: project facts, the last session and your open tasks" },
+  sessions: { run: sessionsCommand, help: "sessions [--json]   Recent sessions JPE recorded (when they started, files edited and backed up)" },
+  task: { run: taskCommand, help: "task add <text> | list [--all] | done <number> | remove <number> [--json]   Your task list for this project" },
   agents: { run: agentsCommand, help: "agents [--json]   Agent runs Claude Code reported in this project: running or finished, how long they took, and use by type" },
   review: { run: reviewCommand, help: "review approve|reject [--note text] | status | history [--json]   Record a review decision about the uncommitted changes (it records only, and goes stale if the files change)" },
   show: { run: showCommand, help: "show file <path> | change <path> | review | impact <file> | docs <library> | diagnostics <files...> [--collapse] [--all] [--find text] [--json] [display flags]   Rich views of what JPE found" },

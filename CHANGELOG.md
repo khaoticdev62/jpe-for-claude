@@ -6,6 +6,18 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-18
+
+### Added
+- Workspace (see docs/WORKSPACE.md): `jpe resume` (project facts, the last session and open tasks in one screen), `jpe sessions` (recent sessions from the per-session records JPE already kept), and `jpe task add|list|done|remove` (your own task list for the project).
+- `/jpe:resume` skill (14 skills) and a palette entry. The command center home screen shows a Tasks row when there are open tasks.
+- A session is described only by what JPE saw (start time, files edited and backed up); JPE does not claim to know what it was about. Tasks change only when asked; the skill never marks one done on its own.
+- Task text is cleaned to one safe line; a full list refuses a new task rather than dropping an open one; a damaged task file reads as empty.
+- 43 new tests (1020 in total).
+
+### Changed
+- Session state parsing is now strict and shared (`parseSessionState`), so a damaged session file is skipped by the new listing instead of appearing as a fresh session.
+
 ## [1.6.0] - 2026-11-18
 
 ### Added

@@ -118,6 +118,7 @@ export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[
     ["Project", project],
     ["Git", gitText(hud)],
     ...(hud.review === undefined || hud.review.changedFiles === 0 ? [] : ([["Review", reviewText(hud.review, now)]] as Array<[string, string]>)),
+    ...((hud.openTasks ?? 0) === 0 ? [] : ([["Tasks", `${hud.openTasks} open`]] as Array<[string, string]>)),
     ...(hud.agents === undefined ? [] : ([["Agents", agentsSentence(hud.agents)]] as Array<[string, string]>)),
     ["Language servers", servers],
     ["Mode", mode],

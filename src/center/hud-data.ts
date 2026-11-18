@@ -55,6 +55,8 @@ export interface HudData {
   review?: ReviewSummary;
   /** Absent when no agent event has ever been recorded. */
   agents?: AgentsSummary;
+  /** How many tasks the person has open. Absent when there are none. */
+  openTasks?: number;
 }
 
 const STATUSES: ReadonlySet<string> = new Set(["VERIFIED", "FUNCTIONAL_WITH_WARNINGS", "PARTIALLY_VERIFIED", "FAILED", "BLOCKED", "NOT_TESTED"]);
@@ -85,6 +87,8 @@ export function parseHud(raw: unknown): HudData | undefined {
     if (review["decision"] !== undefined && !["approved", "rejected"].includes(String(review["decision"]))) return undefined;
     if (review["at"] !== undefined && typeof review["at"] !== "string") return undefined;
   }
+  const openTasks = raw["openTasks"];
+  if (openTasks !== undefined && !(typeof openTasks === "number" && Number.isInteger(openTasks) && openTasks > 0)) return undefined;
   const agents = raw["agents"];
   if (agents !== undefined) {
     const count = (v: unknown): boolean => typeof v === "number" && Number.isInteger(v) && v >= 0;

@@ -16,6 +16,8 @@ import { readLastStatus } from "../verification/last-status.js";
 import { buildRuns, summarize } from "../agents/runs.js";
 import { loadAgentEvents } from "../agents/store.js";
 import { currentReviewStatus } from "../review/status.js";
+import { loadTasks } from "../tasks/store.js";
+import { openTasks } from "../tasks/tasks.js";
 import { type AgentsSummary, type GitSummary, HUD_VERSION, type HudData, type ReviewSummary, type VerificationSummary } from "./hud-data.js";
 
 export { HUD_VERSION, parseHud } from "./hud-data.js";
@@ -81,6 +83,7 @@ export async function collectHud(ctx: CliContext): Promise<HudData> {
 
   const review = await readReview(ctx);
   const agents = await readAgents(ctx);
+  const open = openTasks(await loadTasks(ctx)).length;
 
   return {
     hudVersion: HUD_VERSION,
@@ -92,5 +95,6 @@ export async function collectHud(ctx: CliContext): Promise<HudData> {
     runtime: { offline: config.runtime.offline, approval: config.engineering.approval },
     ...(review === undefined ? {} : { review }),
     ...(agents === undefined ? {} : { agents }),
+    ...(open === 0 ? {} : { openTasks: open }),
   };
 }
