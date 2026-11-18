@@ -121,7 +121,7 @@ describe("collectHud reads the real decision state", () => {
     porcelain = " M a.js\0";
   });
   afterEach(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("reports no decision, then a current approval, then a stale one once the file changes", async () => {

@@ -49,21 +49,15 @@ Everything is stored locally in the plugin's data folder (`CLAUDE_PLUGIN_DATA`, 
 
 The command center runs as a module inside Claude Code's plugin sandbox (`hooks/center.js`): no Node, no file access, no network access of its own. Its only reach outside is what the plugin interface grants it, and it uses three things: it runs the plugin's own command line through one helper, as an argument list with no shell (`center hud --json` and `show review --json`, both read-only, and `review approve|reject`, which only records a decision; the note is passed as its own argument, so shell characters in it are inert, and a test asserts the set of sub-commands it can run), it reads and writes its own small per-plugin store (favourites and command history: command names and times only), and it asks Claude Code to run a JPE command. It never runs a command that can change things (`fix`, `setup`, `config`) without an explicit yes in the pane, and it cannot bypass Claude Code's own permission prompts, because running a command goes through Claude Code.
 
-Everything it displays that came from outside (a project name, a git branch, a verification reason, an error message) passes the same sanitising as the command line before it is drawn. The data it reads from the command line is validated (`parseHud`) and refused if the version or shape is not exactly what it expects. Tests assert that the built bundle imports nothing but the engine's own module and uses no Node feature, and that it starts exactly one process with exactly one argument list.
+Everything it displays that came from outside (a project name, a git branch, a verification reason, an error message) passes the same sanitising as the command line before it is drawn. The data it reads from the command line is validated (`parseHud`) and refused if the version or shape is not exactly what it expects. Tests assert that the built bundle imports nothing but the engine's own module and uses no Node feature, that one helper is the only place it starts a process (always as an argument list, never a shell string), and that the only sub-commands it can run are the fixed set listed above.
 
-## Known dependency advisories
+## Dependency advisories
 
-| Advisory | Package | Affects | Status |
-|---|---|---|---|
-| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (ReDoS through single-branch repeated extglobs, high) | `picomatch` `<=4.0.7`, reached through `tsup`, `vitest`, `vite`, `tinyglobby`, `fdir`, `sucrase` | Build and test tooling only | **Open, no patched release exists** (checked 2026-11-17: 4.0.7 is the latest version and is listed as vulnerable). |
+**None open.** On 2026-11-18, `npm audit` reports 0 vulnerabilities across all dependencies (development tools included), `npm audit --omit=dev` reports 0, and `jpe verify` on this project reports `VERIFIED`. The lockfile pins `picomatch` 4.0.7.
 
-Why this does not reach users: `picomatch` is not a runtime dependency, is not in `npm ls --omit=dev`, and does not appear in any `dist/` bundle. It only runs on a developer machine or CI runner, matching glob patterns that this repository writes itself, so an attacker would need to control those patterns. CI audits production dependencies (`npm audit --omit=dev`), which reports 0 vulnerabilities.
+History: until 2026-11-17 the advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (ReDoS through repeated extglobs, high) was reported against `picomatch` 4.0.7, reached only through build and test tooling (`tsup`, `vitest`, `vite`), never a runtime dependency and never in a `dist/` bundle. During that time `jpe verify` reported `FAILED` on its dependency-audit step, which was accurate. The version in the lockfile did not change; the advisory database stopped listing it as affected. JPE did not independently confirm why, so treat the reason as unknown and re-run `npm audit` rather than relying on this note.
 
-Why it is not "fixed" by downgrading: the suggested `npm audit fix --force` moves `vitest` and `tsup` to older major versions that still depend on `picomatch`, so it removes no exposure and loses fixes.
-
-Consequence: `jpe verify` reports `FAILED` for this project because its dependency-audit step also counts dev dependencies. That is accurate until upstream ships a patch.
-
-Re-check: Dependabot (`.github/dependabot.yml`) opens a pull request as soon as a patched `picomatch` exists. Then run `npm update picomatch` and `npm audit`, and delete this entry.
+Dependabot (`.github/dependabot.yml`) keeps watching. If an advisory appears, record it here with what it affects and why it does or does not reach users.
 
 ## Reporting a vulnerability
 

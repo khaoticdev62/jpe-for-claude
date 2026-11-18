@@ -108,7 +108,7 @@ const MAX_SHOWN_CHARS = 4000;
 export function formatReport(report: ResearchReport): string {
   const { request } = report;
   const lines: string[] = [
-    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} — topic: ${request.topic}`,
+    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} - topic: ${request.topic}`,
     report.offline ? "MODE: offline. Network sources were not contacted." : "MODE: online.",
     report.hasFreshSource ? "" : "WARNING: nothing was freshly verified in this run. Do not treat the material below as confirmed current.",
     "",

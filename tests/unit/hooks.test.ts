@@ -48,7 +48,7 @@ beforeEach(async () => {
   clock = 0;
 });
 afterEach(async () => {
-  await rm(base, { recursive: true, force: true });
+  await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 /** Puts a fake `typescript-language-server` (backed by the protocol test server) on a private PATH. */

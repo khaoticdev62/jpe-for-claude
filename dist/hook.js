@@ -21087,7 +21087,7 @@ import path13 from "path";
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.10.0",
+  version: "1.10.1",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",

@@ -19,7 +19,7 @@ const rel = (ctx: CliContext, file: string): string => path.relative(ctx.cwd, fi
 
 function formatDiagnostics(ctx: CliContext, report: DiagnosticsReport): string[] {
   return [
-    `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} — ${report.server}`,
+    `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} - ${report.server}`,
     `Errors: ${report.errors}, warnings: ${report.warnings}`,
     ...report.diagnostics.slice(0, 50).map((d) => `  ${rel(ctx, d.file)}:${d.line}:${d.column} ${d.severity}${d.code ? ` ${d.code}` : ""}: ${d.message}`),
     ...(report.diagnostics.length > 50 ? [`  ...and ${report.diagnostics.length - 50} more`] : []),
@@ -39,7 +39,7 @@ async function statusSub(ctx: CliContext): Promise<number> {
   const lines = ["Languages and their language servers:"];
   for (const { language, files: count } of languages) {
     const status = await checkServer(language, { lookup, run: ctx.run, cwd: ctx.cwd, timeoutMs: 10_000 });
-    lines.push(`- ${language.name} (${count} files): ${status.state.toUpperCase()} — ${status.detail}`);
+    lines.push(`- ${language.name} (${count} files): ${status.state.toUpperCase()} - ${status.detail}`);
     if (status.state === "missing" && !seen.has(language.server.binary)) {
       seen.add(language.server.binary);
       if (language.server.nativePlugin) lines.push(`    Claude Code plugin: ${language.server.nativePlugin} (install the ${language.server.binary} binary first, then /plugin install ${language.server.nativePlugin}@claude-plugins-official)`);

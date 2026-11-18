@@ -21546,7 +21546,7 @@ var MAX_SHOWN_CHARS = 4e3;
 function formatReport(report) {
   const { request } = report;
   const lines = [
-    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} \u2014 topic: ${request.topic}`,
+    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} - topic: ${request.topic}`,
     report.offline ? "MODE: offline. Network sources were not contacted." : "MODE: online.",
     report.hasFreshSource ? "" : "WARNING: nothing was freshly verified in this run. Do not treat the material below as confirmed current.",
     ""
@@ -23450,7 +23450,8 @@ var UNICODE_SYMBOLS = {
   barEmpty: "\u2591",
   ellipsis: "\u2026",
   bullet: "\u2022",
-  arrow: "\u2192"
+  arrow: "\u2192",
+  dot: "\xB7"
 };
 var ASCII_SYMBOLS = {
   status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
@@ -23459,7 +23460,8 @@ var ASCII_SYMBOLS = {
   barEmpty: "-",
   ellipsis: "...",
   bullet: "*",
-  arrow: "->"
+  arrow: "->",
+  dot: "-"
 };
 var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
 

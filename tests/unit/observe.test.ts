@@ -113,7 +113,7 @@ describe("the offline guarantee", () => {
       calls = 0;
     });
     afterEach(async () => {
-      await rm(base, { recursive: true, force: true });
+      await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     });
 
     it("makes no network call at all when offline is set by the environment", async () => {

@@ -49,7 +49,7 @@ export function logView(entries: readonly LogEntry[], now: Date, minimum: LogLev
   if (entries.length === 0) {
     out.push(...textLines(total === 0 ? "Nothing has been logged for this project yet. A failed or timed-out hook is recorded here, so no entry is good news." : `No entries at level ${minimum} or above. ${total} lower-level ${total === 1 ? "entry is" : "entries are"} recorded: add --level debug to see them.`, profile.width));
   } else {
-    out.push(...bulletList(entries.map((e) => `${formatAge(e.at, now)} · ${LEVEL_MARK[e.level]} · ${inline(e.source)}: ${inline(e.message)}`), profile));
+    out.push(...bulletList(entries.map((e) => `${formatAge(e.at, now)} ${profile.symbols.dot} ${LEVEL_MARK[e.level]} ${profile.symbols.dot} ${inline(e.source)}: ${inline(e.message)}`), profile));
   }
   out.push(blank(), ...bulletList([`Logging level is ${configured}: entries below it are not written. Errors are always written.`, "The log holds hook failures and timeouts and session starts, with secrets removed. It never holds prompts, file contents or command output.", "Only the latest 500 entries are kept."], profile));
   return out;

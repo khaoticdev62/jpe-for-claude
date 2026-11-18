@@ -50,7 +50,7 @@ beforeEach(async () => {
   err = [];
 });
 afterEach(async () => {
-  await rm(base, { recursive: true, force: true });
+  await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 describe("jpe ui", () => {

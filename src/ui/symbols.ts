@@ -22,6 +22,8 @@ export interface SymbolSet {
   ellipsis: string;
   bullet: string;
   arrow: string;
+  /** Between short facts on one line (for example `Project - node`). */
+  dot: string;
 }
 
 export const UNICODE_SYMBOLS: SymbolSet = {
@@ -32,6 +34,7 @@ export const UNICODE_SYMBOLS: SymbolSet = {
   ellipsis: "…",
   bullet: "•",
   arrow: "→",
+  dot: "·",
 };
 
 export const ASCII_SYMBOLS: SymbolSet = {
@@ -42,6 +45,7 @@ export const ASCII_SYMBOLS: SymbolSet = {
   ellipsis: "...",
   bullet: "*",
   arrow: "->",
+  dot: "-",
 };
 
 export const symbolsFor = (unicode: boolean): SymbolSet => (unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS);

@@ -197,7 +197,7 @@ describe("recording and the command", () => {
     tick = 0;
   });
   afterEach(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   const common = (name: string, extra: Record<string, unknown>) => ({ session_id: "sess-1", cwd: project, hook_event_name: name, ...extra });
@@ -310,7 +310,7 @@ describe("the command center's agents facts", () => {
       await writeFile(path.join(ctx.stateDir(), AGENT_EVENTS_FILE), serializeAgentEvent(ev({ at: at(0) })));
       expect((await collectHud(ctx)).agents).toEqual({ running: 1, total: 1, noStopSeen: 0 });
     } finally {
-      await rm(dir, { recursive: true, force: true });
+      await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     }
   });
 });

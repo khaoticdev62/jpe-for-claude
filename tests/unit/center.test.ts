@@ -454,7 +454,7 @@ describe("collectHud (real files, real evidence)", () => {
     await mkdir(project);
   });
   afterEach(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   const ctxFor = (over: Partial<CliContext> = {}): CliContext =>
     createContext({

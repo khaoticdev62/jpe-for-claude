@@ -108,11 +108,11 @@ function reviewText(review: ReviewSummary, now: Date): string {
 /** The HUD facts as lines. The verification status is never cut: it wraps instead (see verificationBadge). */
 export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[] {
   const label = (text: string): Line => [span(text, { role: "muted" })];
-  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === undefined ? "" : ` (${hud.project.packageManager})`)].join(" · ");
+  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === undefined ? "" : ` (${hud.project.packageManager})`)].join(` ${profile.symbols.dot} `);
   const v = hud.verification;
   const age = v.at === undefined ? "never run" : `last run ${formatAge(v.at, now)}`;
   const servers = hud.languageServersMissing.length === 0 ? "all found" : `missing: ${hud.languageServersMissing.join(", ")}`;
-  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} · approvals: ${hud.runtime.approval}`;
+  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} ${profile.symbols.dot} approvals: ${hud.runtime.approval}`;
 
   const rows: Array<[string, string]> = [
     ["Project", project],
@@ -142,7 +142,7 @@ export function hudLines(hud: HudData, profile: RenderProfile, now: Date): Line[
 /** The notes and reason beneath an action's heading: whether it asks first, what kind of item it is, and why it is listed. */
 export function actionBody(a: HomeAction, profile: RenderProfile): Line[] {
   const indent = (lines: readonly Line[]): Line[] => lines.map((l): Line => [span("   "), ...l]);
-  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(" · ");
+  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(` ${profile.symbols.dot} `);
   const why = a.basis === undefined ? a.detail : `${a.detail} (${a.basis})`;
   const width = Math.max(8, profile.width - 3);
   return [...indent(notes === "" ? [] : textLines(notes, width, { role: "muted" })), ...indent(textLines(why, width, { role: "muted" }))];

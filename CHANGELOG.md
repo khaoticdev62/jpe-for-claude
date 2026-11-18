@@ -6,6 +6,20 @@ All notable changes to JPE For Claude are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-11-18
+
+Final hardening pass. No new features.
+
+### Fixed
+- **ASCII and screen-reader modes leaked a Unicode middle dot** on the command center's home screen (the project line, the mode line and each next step) and in the event log view. There is now a `dot` entry in the symbol sets (`.` becomes `-` in ASCII mode), and three older plain-text reports use a plain hyphen instead of an em dash.
+- **The intermittent `unit-test: failed` under `jpe verify`** is explained and fixed. Two causes: a heavy test timing out at the 5 s default (fixed in 1.8.0), and, found now from a captured error, `EBUSY: resource busy or locked` when a test removed its temporary folder while Windows still held a lock from a language server that had just shut down. All 29 temporary-folder cleanups in the tests now retry. Assertions are unchanged. Eight consecutive full runs pass.
+- Four guides (workspace, settings, offline and log, lifecycle) were written but never linked from the README; `jpe checks` and `jpe scan` appeared in no guide. All are now documented.
+- `docs/SECURITY.md` said the `picomatch` advisory was open with no patched release. `npm audit` now reports 0 vulnerabilities for all dependencies and `jpe verify` reports `VERIFIED`; the section now says so, records the history, and says plainly that the reason the advisory database changed is unknown. A stale sentence about the interface module starting "exactly one process" is corrected too.
+
+### Added
+- `docs/RELEASE-READINESS.md`: how to re-run every check, what is verified and with what evidence, what has not been verified (the pane on a real screen, live subagent events, Linux and macOS, CI, the installed copy), known limits, and a release checklist.
+- Tests that guard the above: an accessibility sweep (every screen from the last six releases, in Unicode, ASCII, screen-reader and both modes, at two widths: ASCII screens contain only ASCII, screen-reader screens have no box or symbol glyphs, nothing overflows; it fails when the fix above is removed) and documentation checks (every command mentioned, every guide linked, every relative link resolves).
+
 ## [1.10.0] - 2026-11-18
 
 ### Added

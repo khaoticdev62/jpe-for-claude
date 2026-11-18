@@ -176,7 +176,7 @@ describe("DocCache", () => {
     now = new Date("2026-01-01T00:00:00Z");
   });
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   const draft = { provider: "p", kind: "reference" as const, title: "t", content: "hello token=supersecretvalue1", trust: "official" as const };
 
@@ -358,7 +358,7 @@ describe("researchDocs", () => {
     dir = await mkdtemp(path.join(tmpdir(), "jpe-eng-"));
   });
   afterEach(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   const now = () => new Date("2026-02-01T00:00:00Z");
   const net = fakeNet({});

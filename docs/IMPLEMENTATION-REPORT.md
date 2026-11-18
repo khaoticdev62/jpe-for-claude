@@ -58,7 +58,7 @@ Done after 1.0.0: repository published (public), tag v1.0.0 and release assets a
 
 1. Run the manual CI workflow for Linux and macOS evidence. A first dispatch was refused by GitHub (account billing lock), so no job started.
 2. Live-test the remaining agents and the alias forwarding to an installed plugin.
-3. `npm audit` reports 7 high findings, all in dev build tools (picomatch ReDoS via vitest, tsup, vite). `npm audit --omit=dev` reports 0, so nothing in the shipped bundle is affected. The suggested fixes are major-version downgrades; revisit when upstream releases a patched picomatch.
+3. `npm audit` reports 7 high findings, all in dev build tools (picomatch ReDoS via vitest, tsup, vite). `npm audit --omit=dev` reports 0, so nothing in the shipped bundle is affected. The suggested fixes are major-version downgrades; revisit when upstream releases a patched picomatch. *(Historical, as of 1.0. Resolved by 2026-11-18: `npm audit` reports 0 across all dependencies; see [SECURITY.md](SECURITY.md).)*
 
 ## Installation
 

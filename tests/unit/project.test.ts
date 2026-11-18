@@ -144,7 +144,7 @@ describe("git state", () => {
       dir = await mkdtemp(path.join(tmpdir(), "jpe-git-"));
     });
     afterAll(async () => {
-      await rm(dir, { recursive: true, force: true });
+      await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     });
 
     it("reports not-a-repo outside git", async () => {

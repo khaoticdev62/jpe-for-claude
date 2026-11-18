@@ -59,7 +59,7 @@ describe("detection", () => {
     await writeFile(path.join(dir, "node_modules", "dep", "i.js"), "x");
   });
   afterAll(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   it("walks without entering dependency folders, and prefers git's list when available", async () => {
     expect((await walkFiles(dir)).map((f) => f.replaceAll("\\", "/"))).toEqual(["src/a.ts"]);
@@ -100,7 +100,7 @@ describe("LspClient against a real protocol server", () => {
     await writeFile(file, "class Thing {\n  run() {}\n}\nconst BAD = 1;\n");
   });
   afterAll(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("completes the handshake, answers server questions, and returns published diagnostics (empty-then-real)", async () => {
@@ -160,7 +160,7 @@ describe("diagnostics collection", () => {
     await writeFile(file, "ok\nBAD here\n");
   });
   afterAll(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   const ts = getLanguage("typescript");
 
@@ -262,7 +262,7 @@ describe.skipIf(!realTs)("real typescript-language-server", () => {
     await writeFile(path.join(dir, "bad.ts"), 'export const n: number = "not a number";\nexport function add(a: number, b: number): number { return a + b; }\n');
   });
   afterAll(async () => {
-    await rm(dir, { recursive: true, force: true });
+    await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("reports the genuine type error, hover text and symbols", async () => {

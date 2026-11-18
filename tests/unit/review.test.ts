@@ -157,7 +157,7 @@ beforeEach(async () => {
   await write("src/b.js", "export const b = 1;\n");
 });
 afterEach(async () => {
-  await rm(base, { recursive: true, force: true });
+  await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 describe("the review fingerprint", () => {

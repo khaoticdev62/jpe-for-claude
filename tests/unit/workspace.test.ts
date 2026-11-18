@@ -202,7 +202,7 @@ describe("saved sessions, records and commands", () => {
     idn = 0;
   });
   afterEach(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("parseSessionState refuses anything that is not a valid state", () => {

@@ -23,7 +23,7 @@ beforeEach(async () => {
   });
 });
 afterEach(async () => {
-  await rm(base, { recursive: true, force: true });
+  await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 const write = (rel: string, text: string) => writeFile(path.join(project, rel), text);

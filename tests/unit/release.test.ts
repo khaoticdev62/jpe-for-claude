@@ -95,7 +95,7 @@ describe.skipIf(!built)("release package", () => {
     run(path.join(out, "b"));
   }, 120_000);
   afterAll(async () => {
-    await rm(out, { recursive: true, force: true });
+    await rm(out, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("is byte-for-byte reproducible and its published checksum is correct", async () => {

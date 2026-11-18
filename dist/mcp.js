@@ -36681,7 +36681,7 @@ function redactSecrets(text2) {
 // package.json
 var package_default = {
   name: "jpe-for-claude",
-  version: "1.10.0",
+  version: "1.10.1",
   description: "JPE For Claude: Just Plain English programming intelligence plugin for Claude Code",
   private: true,
   type: "module",
@@ -40433,11 +40433,11 @@ function reviewText(review, now) {
 }
 function hudLines(hud, profile, now) {
   const label = (text2) => [span(text2, { role: "muted" })];
-  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(" \xB7 ");
+  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(` ${profile.symbols.dot} `);
   const v = hud.verification;
   const age = v.at === void 0 ? "never run" : `last run ${formatAge(v.at, now)}`;
   const servers = hud.languageServersMissing.length === 0 ? "all found" : `missing: ${hud.languageServersMissing.join(", ")}`;
-  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} \xB7 approvals: ${hud.runtime.approval}`;
+  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} ${profile.symbols.dot} approvals: ${hud.runtime.approval}`;
   const rows = [
     ["Project", project],
     ["Git", gitText(hud)],
@@ -40463,7 +40463,7 @@ function hudLines(hud, profile, now) {
 }
 function actionBody(a, profile) {
   const indent = (lines) => lines.map((l) => [span("   "), ...l]);
-  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(" \xB7 ");
+  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(` ${profile.symbols.dot} `);
   const why = a.basis === void 0 ? a.detail : `${a.detail} (${a.basis})`;
   const width = Math.max(8, profile.width - 3);
   return [...indent(notes === "" ? [] : textLines(notes, width, { role: "muted" })), ...indent(textLines(why, width, { role: "muted" }))];
@@ -40707,7 +40707,8 @@ var UNICODE_SYMBOLS = {
   barEmpty: "\u2591",
   ellipsis: "\u2026",
   bullet: "\u2022",
-  arrow: "\u2192"
+  arrow: "\u2192",
+  dot: "\xB7"
 };
 var ASCII_SYMBOLS = {
   status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
@@ -40716,7 +40717,8 @@ var ASCII_SYMBOLS = {
   barEmpty: "-",
   ellipsis: "...",
   bullet: "*",
-  arrow: "->"
+  arrow: "->",
+  dot: "-"
 };
 var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
 
@@ -41885,7 +41887,7 @@ function lookupFor2(ctx) {
 var rel = (ctx, file2) => path27.relative(ctx.cwd, file2).split(path27.sep).join("/") || file2;
 function formatDiagnostics(ctx, report) {
   return [
-    `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} \u2014 ${report.server}`,
+    `Source: ${report.source === "lsp" ? "language server" : report.source === "cli" ? "compiler command (NOT a language server)" : "none"} - ${report.server}`,
     `Errors: ${report.errors}, warnings: ${report.warnings}`,
     ...report.diagnostics.slice(0, 50).map((d) => `  ${rel(ctx, d.file)}:${d.line}:${d.column} ${d.severity}${d.code ? ` ${d.code}` : ""}: ${d.message}`),
     ...report.diagnostics.length > 50 ? [`  ...and ${report.diagnostics.length - 50} more`] : [],
@@ -41904,7 +41906,7 @@ async function statusSub(ctx) {
   const lines = ["Languages and their language servers:"];
   for (const { language, files: count2 } of languages) {
     const status = await checkServer(language, { lookup: lookup2, run: ctx.run, cwd: ctx.cwd, timeoutMs: 1e4 });
-    lines.push(`- ${language.name} (${count2} files): ${status.state.toUpperCase()} \u2014 ${status.detail}`);
+    lines.push(`- ${language.name} (${count2} files): ${status.state.toUpperCase()} - ${status.detail}`);
     if (status.state === "missing" && !seen.has(language.server.binary)) {
       seen.add(language.server.binary);
       if (language.server.nativePlugin) lines.push(`    Claude Code plugin: ${language.server.nativePlugin} (install the ${language.server.binary} binary first, then /plugin install ${language.server.nativePlugin}@claude-plugins-official)`);
@@ -42113,7 +42115,7 @@ var MAX_SHOWN_CHARS = 4e3;
 function formatReport(report) {
   const { request } = report;
   const lines = [
-    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} \u2014 topic: ${request.topic}`,
+    `Documentation research: ${request.library}${request.version ? `@${request.version}` : " (no exact version known)"} - topic: ${request.topic}`,
     report.offline ? "MODE: offline. Network sources were not contacted." : "MODE: online.",
     report.hasFreshSource ? "" : "WARNING: nothing was freshly verified in this run. Do not treat the material below as confirmed current.",
     ""
@@ -43030,7 +43032,7 @@ function logView(entries, now, minimum, configured, total, profile, settingsProb
   if (entries.length === 0) {
     out.push(...textLines(total === 0 ? "Nothing has been logged for this project yet. A failed or timed-out hook is recorded here, so no entry is good news." : `No entries at level ${minimum} or above. ${total} lower-level ${total === 1 ? "entry is" : "entries are"} recorded: add --level debug to see them.`, profile.width));
   } else {
-    out.push(...bulletList(entries.map((e) => `${formatAge(e.at, now)} \xB7 ${LEVEL_MARK[e.level]} \xB7 ${inline(e.source)}: ${inline(e.message)}`), profile));
+    out.push(...bulletList(entries.map((e) => `${formatAge(e.at, now)} ${profile.symbols.dot} ${LEVEL_MARK[e.level]} ${profile.symbols.dot} ${inline(e.source)}: ${inline(e.message)}`), profile));
   }
   out.push(blank(), ...bulletList([`Logging level is ${configured}: entries below it are not written. Errors are always written.`, "The log holds hook failures and timeouts and session starts, with secrets removed. It never holds prompts, file contents or command output.", "Only the latest 500 entries are kept."], profile));
   return out;

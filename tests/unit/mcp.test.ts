@@ -21,7 +21,7 @@ beforeEach(async () => {
   await mkdir(project);
 });
 afterEach(async () => {
-  await rm(base, { recursive: true, force: true });
+  await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
 });
 
 async function connect(): Promise<Client> {

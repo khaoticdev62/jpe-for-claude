@@ -43,7 +43,7 @@ describe("resolveInsideReal", () => {
     }
   });
   afterAll(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
   it("accepts not-yet-existing files inside the root", async () => {
     const got = await resolveInsideReal(path.join(base, "root"), "new/file.ts");

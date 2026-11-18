@@ -685,11 +685,11 @@ function reviewText(review, now) {
 }
 function hudLines(hud, profile, now) {
   const label = (text) => [span(text, { role: "muted" })];
-  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(" \xB7 ");
+  const project = [inline(hud.project.name), hud.project.ecosystems.length === 0 ? "no recognised language" : hud.project.ecosystems.join(", ") + (hud.project.packageManager === void 0 ? "" : ` (${hud.project.packageManager})`)].join(` ${profile.symbols.dot} `);
   const v = hud.verification;
   const age = v.at === void 0 ? "never run" : `last run ${formatAge(v.at, now)}`;
   const servers = hud.languageServersMissing.length === 0 ? "all found" : `missing: ${hud.languageServersMissing.join(", ")}`;
-  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} \xB7 approvals: ${hud.runtime.approval}`;
+  const mode = `${hud.runtime.offline ? "offline (documentation from the cache only)" : "online"} ${profile.symbols.dot} approvals: ${hud.runtime.approval}`;
   const rows = [
     ["Project", project],
     ["Git", gitText(hud)],
@@ -715,7 +715,7 @@ function hudLines(hud, profile, now) {
 }
 function actionBody(a, profile) {
   const indent = (lines) => lines.map((l) => [span("   "), ...l]);
-  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(" \xB7 ");
+  const notes = [a.changesThings ? "asks first" : "", TAG_WORDS[a.tag]].filter((n) => n !== "").join(` ${profile.symbols.dot} `);
   const why = a.basis === void 0 ? a.detail : `${a.detail} (${a.basis})`;
   const width = Math.max(8, profile.width - 3);
   return [...indent(notes === "" ? [] : textLines(notes, width, { role: "muted" })), ...indent(textLines(why, width, { role: "muted" }))];
@@ -878,7 +878,8 @@ var UNICODE_SYMBOLS = {
   barEmpty: "\u2591",
   ellipsis: "\u2026",
   bullet: "\u2022",
-  arrow: "\u2192"
+  arrow: "\u2192",
+  dot: "\xB7"
 };
 var ASCII_SYMBOLS = {
   status: { success: "+", warning: "!", error: "x", info: "i", inactive: "-", pending: "~" },
@@ -887,7 +888,8 @@ var ASCII_SYMBOLS = {
   barEmpty: "-",
   ellipsis: "...",
   bullet: "*",
-  arrow: "->"
+  arrow: "->",
+  dot: "-"
 };
 var symbolsFor = (unicode) => unicode ? UNICODE_SYMBOLS : ASCII_SYMBOLS;
 

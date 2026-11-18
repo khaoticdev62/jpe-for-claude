@@ -208,7 +208,7 @@ describe("the settings command", () => {
     errs.length = 0;
   });
   afterEach(async () => {
-    await rm(base, { recursive: true, force: true });
+    await rm(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
   it("lists every setting with its source, as text and as JSON", async () => {
